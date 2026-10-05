@@ -219,7 +219,7 @@ Repo root `D:\Downloads\Buildathon Vels\black-onyx` (venv `.venv`, git-ignored `
 | `eval/finetune_laya.py`, `finetune_sweep.py`, `finetune_seeds.py`, `ft_analysis.py`, `vote_analysis.py`, `live_probe.py`, `probe_score.py` | fine-tune and analysis scripts (GPU ones need `venv-cuda`) |
 | `eval/data/*.jsonl`, `live_probe.json` | datasets |
 | `docs/results.md/json`, `laya-results.md`, `laya-finetune.md`, `laya-extra.md`, `redteam.md`, `trust-model.md`, `event-schema.md`, `integration.md`, `judge-prompts.md`, `docs/judge-prompts/index.html` (benchmarks + prompts page), `docs/notes/` | documentation |
-| `scripts/build_prompts_html.py`, `scripts/notify.sh`, `scripts/extract_laya_version.py`, `scripts/check_laya_version.py`, `scripts/laya_latency.py`, `eval/gpu_bench.py` | page builder, ntfy push, weight extraction/check, latency timing, GPU step-time benchmark |
+| `eval/notify.py` (Python ntfy helper), `scripts/build_prompts_html.py`, `scripts/notify.sh`, `scripts/extract_laya_version.py`, `scripts/check_laya_version.py`, `scripts/laya_latency.py`, `eval/gpu_bench.py` | page builder, ntfy push, weight extraction/check, latency timing, GPU step-time benchmark |
 | `examples/guarded_agent.py`, `examples/real_llm_agent.py` | real-agent examples |
 | `tests/` | 144 tests (`test_laya_v2.py`, `test_ui_*`, `test_sentinel.py`, `test_guard.py`, ...) |
 | `.scratch/ft/` (git-ignored, local) | `best_model.pt` (full v2 seed-1905 weights, 1.7 GB), `model.pt` (v1), `final_seed{1905,7,42,11,2024}.json` (dev/test/probe scores per seed), `probe.json`, logs, `analysis.json`, `vote_analysis.json` |
@@ -374,4 +374,106 @@ sh scripts/notify.sh "Title" "message"                                  # phone 
 ## 14. First message to send in the new session (suggested)
 
 "Read `day1context.md` in the repo root. Goal: train Laya so it can work alone (D4, no rules) and build the solo benchmark in section 11. Start with section 12.F steps 0 to 3 and tell me the
-GPU you see. Keep `main` and the demo untouched until a model beats v0 on the live-format probe and D4; use a branch for code changes; push a phone notification after each step."
+GPU you see. Keep `main` and the demo untouched until a model beats v0 on the live-format probe and D4; use a branch for code changes; push a phone notification after each step (section 15) and use the methods catalogue in section 16 for ETAs, where to run, and expected outcomes."
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+## 15. Progress notifications for training and tuning (the user wants a phone push for every step)
+
+The user is asleep during the overnight run, so **every long job must push a short status to their phone** at each milestone and on any failure.
+
+* **Channel:** ntfy.sh topic `build_thon` (the user's phone subscribes to it). The app's own block alerts use topic `black_onyx`; do not mix them. Override with env `BLACKONYX_PROGRESS_TOPIC`.
+* **From a shell:** `sh scripts/notify.sh "Title" "message"` (uses `curl`).
+* **From Python (any venv, standard library only):** `eval/notify.py`
+  ```python
+  # in a script that lives in eval/ and is run as a file (the GPU scripts do this): sys.path[0] is eval/
+  from notify import notify
+  notify("Laya v4 sweep", "layers=8 lr=5e-5: best dev acc 0.931 (cfg 3/6)")      # background thread, never raises
+  notify("Laya v4 sweep", "ALL DONE: best cfg layers=8 lr=5e-5", wait=True)      # wait=True before the process exits
+  ```
+  From modules under `src/` or from `python -m eval.x`, import it as `from eval.notify import notify` instead.
+* **Already wired in:** `eval/finetune_sweep.py` (one push per config and at the end), `eval/finetune_seeds.py` (one push per seed with test accuracy/recall/false warnings, and at the end),
+  `eval/run_eval.py --notify` (a push at every 20% of a D3/D4 run), `scripts/notify.sh` (manual).
+* **Pattern for every new training script** (copy this):
+  1. push at start: `notify("Laya <step>", "started: <config>")`;
+  2. push once per **epoch only if the run is long** (more than about 10 epochs), otherwise once per **seed or config**; never more than about one push per minute;
+  3. push on completion with the key numbers (dev accuracy, false warnings, recall, time taken);
+  4. push on failure: wrap `main()` in `try/except Exception as e: notify("Laya <step> FAILED", f"{type(e).__name__}: {str(e)[:150]}", wait=True); raise`;
+  5. keep messages to numbers and names (ntfy topics are not private: no data, no keys, no file contents);
+  6. for jobs that can hang, also launch a watchdog in a second shell: `until grep -q "^done" .scratch/ft/<log>; do sleep 30; done; sh scripts/notify.sh "Laya <step>" "finished"`, and a
+     "still running" push every 30 minutes (`while true; do sleep 1800; sh scripts/notify.sh "Laya <step>" "still running: $(tail -1 .scratch/ft/<log>)"; done`).
+* **Run long jobs detached**, with a log, e.g.
+  `Start-Process -NoNewWindow -FilePath "D:\Buildathon-Toolkit\venv-cuda\Scripts\python.exe" -ArgumentList "-u","eval\finetune_v4.py" -RedirectStandardOutput ".scratch\ft\v4.log" -RedirectStandardError ".scratch\ft\v4.err"`
+  (or in Git Bash: `nohup <python> -u eval/finetune_v4.py > .scratch/ft/v4.log 2>&1 &`), then read the log tail instead of staying attached.
+* Also push a **summary at the end of the whole night**: best config, dev/test/live-probe numbers, D4 benchmark numbers, which files changed, and "main untouched / merged".
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+## 16. Methods catalogue: ETA, where to run it, and the expected outcome
+
+**How to read it.** *Where:* **L-CPU** = laptop/home CPU, **L-GPU** = the 6 GB RTX 4050 (or the home GPU, ETAs scale with it), **Cloud** = Colab/Kaggle/Vertex, **API** = needs internet
+(Gemini key in `.env`). *Outcome:* numbers marked **(measured)** come from today's runs; **(est.)** are my estimates, to be replaced by the benchmark. Baselines are the held-out set (Pool B, 400
+pairs; accuracy / false warnings) and the 45-state live-format probe (false warnings / injected calls caught). ETAs include writing the code (about 60% of most of them) and assume the data code exists.
+
+### 16.1 Data and validation (do these first; every later method depends on them)
+
+| # | Method | ETA | Where | Expected outcome |
+|---|---|---|---|---|
+| D1 | Template ids + template-disjoint train/dev split; thresholds by cost target (12.B) | 30 to 45 min | L-CPU | dev accuracy 99.5% to about 92 to 95% (est., honest); thresholds now transfer: held-out false warnings at a 5% target about 5 to 8% instead of 27% (measured failure of the dev-fitted budget threshold) |
+| D2 | Empty-argument pairs in both classes + runtime-style values (12.C.1, .2), then retrain top 8 layers | 45 to 60 min (retrain 2 min per seed) | L-GPU | live-format false warnings 28.3% (single) / 17.2% (vote) to about 8 to 14% / 5 to 9% (est.; 4 of the 5 vote errors are empty-arg `read_inbox`) |
+| D3 | Clean-request injected-call families (new Pool C attacks) + hard negatives/positives (12.C.3, .4) | 45 min | L-CPU + L-GPU | injected-call recall on the live probe 93.8 to 98% (est.); held-out accuracy +1 to 2 points |
+| D4 | Diversity expansion: 50+ phrasings per task, 5k to 20k unique pairs, no repeated rows, Gemini-assisted paraphrases (12.C.5, .6, .9) | 60 to 90 min | API for generation, L-GPU to train | held-out accuracy 90.9% to 93 to 96% (est.); live false warnings a further 3 to 6 points lower; removes the "evil/attacker string" shortcut |
+| D5 | Mine real runtime states from all task x attack x variant runs (12.C.7) | 30 min | L-CPU | training/validation material that matches the live format; makes the probe larger |
+| D6 | Expand and freeze the live-format probe to 300+ states | 30 to 40 min | L-CPU | accuracy unchanged; the interval on live numbers shrinks from about ±11 points (N=29 legit) to about ±3 to 5 |
+
+### 16.2 Training recipes
+
+| # | Method | ETA | Where | Expected outcome |
+|---|---|---|---|---|
+| T1 | Baseline repro on the new data (`finetune_seeds.py` copy, top 8 layers, 3 seeds) | 30 min | L-GPU | first honest numbers; v2 on the old data is 90.9% / 16.7% held-out (measured) |
+| T2 | Top-N layers x lr sweep (N 4/8/12/16; lr 1e-5/2e-5/5e-5; 3 to 6 epochs), chosen on the template-disjoint dev | 60 to 90 min | L-GPU (N=16 needs checkpointing) | +0 to 2 points accuracy (est.): 8 layers vs 4 layers gave no clear gain on the old data (measured) |
+| T3 | LoRA or 8-bit AdamW on all layers (needs `pip install peft bitsandbytes` while online) | 60 to 90 min | L-GPU (6 GB ok) or Cloud | +0 to 2 points (est.); full fine-tune in fp32 does not fit 6 GB (measured: 8.7 GB peak, 11 s/step) |
+| T4 | Full fine-tune of all 421M parameters | 20 to 40 min per run | home GPU with 12 GB or more, or Cloud | +0 to 1 point over top-8 (est.); mainly useful once the data is rich |
+| T5 | Loss variants: false-warning-weighted cross-entropy (2 to 3x), focal loss, soft labels on synthetic rows, ranking term | 20 min per try | L-GPU | false warnings -1 to -3 points at equal recall (est.) |
+| T6 | Train with the per-tool questions as augmentation, score with the generic one | 25 min | L-GPU | +0 to 1 point (est.) |
+| T7 | Provenance-hint input format ("Origin: to <- email body (untrusted)", plus a context excerpt) vs the request-only control (12.C.8) | 60 to 90 min | L-GPU | hypothesis: live false warnings to about 2 to 5% and recall to about 99%; this is the main route to a Laya that can act alone (must be labelled "with provenance hints") |
+
+### 16.3 Ensembles, speed and calibration
+
+| # | Method | ETA | Where | Expected outcome |
+|---|---|---|---|---|
+| E1 | 5-seed unanimous vote | 10 to 12 min | L-GPU | **held-out false warnings 16.7% to 7.5%, accuracy 90.9% to 95.2% (measured)**; live false warnings 28.3% to 17.2% (measured); latency x5 (1.15 s CPU / 161 ms GPU, measured) |
+| E2 | Model soup (average trained top-layer weights of seeds from the same start) | 20 to 30 min | L-GPU | recovers some of E1 at x1 latency (est. half of the gain, could be none) |
+| E3 | Distillation of the vote into one model (teacher scores 10k+ synthetic states, student trained on soft scores) | 60 to 90 min | L-GPU | single model close to vote quality: held-out false warnings about 8 to 10% (est.) at x1 latency |
+| E4 | Shared-trunk multi-head (frozen bottom 20 layers once, N top stacks) | 60 to 90 min | L-CPU/L-GPU | vote quality at about x2 latency instead of x5 (layer-count arithmetic) |
+| E5 | Cascade (single model; full vote only near the threshold) | 40 min | L-CPU | average latency about x1.2 with vote quality on borderline calls (est.) |
+| E6 | INT8 / ONNX quantization (`laya[onnx]`, `onnxruntime` are in `.venv`) | 40 to 60 min | L-CPU | CPU latency 288 ms to about 100 to 150 ms (est.); accuracy change -1 to 0 points |
+| E7 | Temperature/Platt calibration + cost-target threshold on the template-disjoint dev | 15 to 20 min | L-CPU | ECE 0.066 to under 0.05 (est.; temperature scaling gave 0.066 to 0.061, measured); stable false-warning rate at the chosen target |
+
+### 16.4 Benchmark and proof (needed for any "Laya alone" claim)
+
+| # | Method | ETA | Where | Outcome |
+|---|---|---|---|---|
+| B1 | D4 benchmark on the 310-run suite with the new model (`run_eval --laya-all --notify`) + per-attack table + over-blocking row | 45 to 60 min | L-CPU | measured D4 numbers; v0 baseline 2/310 through, 25.2% task completion |
+| B2 | Fresh attack set + the 15 judge prompts as an untouched judge set | 30 to 45 min | L-CPU | unbiased leak rate (the suite must never be trained on) |
+| B3 | Adaptive attacker: Gemini generates many paraphrases of an injected call; count how many pass the sentinel | 30 to 45 min | API + L-CPU | leak rate under a query budget (the honest weak point; the rules are immune to wording) |
+| B4 | Latency table (CPU fp32 and GPU, 1 model vs vote) with `scripts/laya_latency.py` | 10 min | L-CPU + L-GPU | numbers for the benchmarks page |
+| B5 | Add columns v4, v5... to `app/ui/laya_versions.py`, rebuild the page, update README/docs | 20 min | L-CPU | docs ready for the finals |
+
+### 16.5 Where each kind of job should run
+
+* **Laptop GPU (RTX 4050, 6 GB):** everything up to top-8/top-12 layer training, seeds, votes, distillation students, benchmark scoring (about 2 min per seed, 5 seeds in about 10 min). Do not run the app and the test suite at the same time as training.
+* **Home GPU (unknown, check `nvidia-smi`):** if 12 GB or more, T4 (full fine-tune) is reasonable and T2 can be wider; keep the same scripts, only batch size/layers change.
+* **Cloud (Colab free T4 16 GB is the quick option; Vertex needs GPU quota and 1 to 2 hours of setup):** only worth it for full fine-tunes or running 5 seeds in parallel (about 3x faster wall clock). Upload `eval/data`, the scripts and the repo; the weights download from Hugging Face. Copy results back and run the analysis locally. The finals demo itself must stay offline.
+* **API (internet):** Gemini for data paraphrases and the adaptive test only; never in the live path, never with secrets in prompts.
+
+### 16.6 Expected result of the whole plan (restating the estimates)
+
+| | Today (best measured) | After D1 to D6 + T1 to T2 + E1/E7 | After adding T7 (provenance hints) |
+|---|---|---|---|
+| Held-out accuracy | 90.9% single / 95.2% vote | 92 to 96% | 94 to 97% (est.) |
+| Live-format false warnings | 28.3% single / 17.2% vote | 6 to 10% | 2 to 5% (est.) |
+| D4 task completion in attack runs | 25.2% (v0) | about 55 to 75% | about 80 to 90% (est.) |
+| D4 attacks through (non-adaptive) | 0.6% (v0) | 1 to 4% | under 1 to 2% (est.) |
+
+Task completion is about (1 - per-call false warnings)^3.5. These are estimates, not promises; the adaptive test (B3) is the number most likely to disappoint, so run it early.

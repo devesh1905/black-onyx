@@ -24,6 +24,7 @@ import torch  # noqa: E402
 from laya import Router  # noqa: E402
 
 from finetune_laya import batches, best_thr, encode, load, metrics, p_fit  # noqa: E402
+from notify import notify  # noqa: E402
 
 OUT = ROOT / ".scratch" / "ft"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -77,6 +78,7 @@ def main() -> None:
     for layers, lr in itertools.product(GRID["layers"], GRID["lr"]):
         r = train_cfg(layers, lr, SEEDS[0])
         results.append((r["acc"], layers, lr, r["epoch"], r["dev"]["auc"]))
+        notify("Laya sweep", f"layers={layers} lr={lr:g}: best dev acc {r['acc']:.3f}")
         print(f"cfg layers={layers} lr={lr:g}: best dev acc {r['acc']:.3f} (epoch {r['epoch']}, auc {r['dev']['auc']:.3f}) | {time.time()-t0:.0f}s", flush=True)
     results.sort(reverse=True)
     _, layers, lr, _, _ = results[0]
@@ -99,6 +101,7 @@ def main() -> None:
     finals.sort(key=lambda x: x[0], reverse=True)
     torch.save(finals[0][2], OUT / "best_model.pt")
     (OUT / "best_model.json").write_text(json.dumps({"seed": finals[0][1], "layers": layers, "lr": lr, "epochs": EPOCHS}), encoding="utf-8")
+    notify("Laya sweep", f"done; best seed by dev: {finals[0][1]}", wait=True)
     print("done; best seed by dev:", finals[0][1], flush=True)
 
 

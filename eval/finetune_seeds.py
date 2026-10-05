@@ -19,6 +19,7 @@ import torch  # noqa: E402
 from laya import Router  # noqa: E402
 
 from finetune_laya import batches, best_thr, encode, load, metrics, p_fit  # noqa: E402
+from notify import notify  # noqa: E402
 
 OUT = ROOT / ".scratch" / "ft"
 SEEDS = [1905, 7, 42, 11, 2024]
@@ -71,7 +72,9 @@ def main() -> None:
                "dev_p": best["dev_p"], "dev_y": best["dev_y"], "test_p": pt.tolist(), "test_y": yt.tolist(),
                "probe_p": pp.tolist(), "probe_p_none": pn.tolist(), "probe_y": ypr.tolist()}
         (OUT / f"final_seed{seed}.json").write_text(json.dumps(rec), encoding="utf-8")
+        notify("Laya seeds", f"seed {seed} done: TEST acc {tm['acc']:.1%} recall {tm['recall_nofit']:.1%} FW {tm['false_warn']:.1%} ({time.time()-t0:.0f}s)")
         print(f"seed {seed}: epoch {best['epoch']} | TEST acc {tm['acc']:.3f} recall {tm['recall_nofit']:.3f} fw {tm['false_warn']:.3f} | {time.time()-t0:.0f}s", flush=True)
+    notify("Laya seeds", "all seeds done", wait=True)
     print("done", flush=True)
 
 
