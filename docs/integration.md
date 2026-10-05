@@ -23,7 +23,21 @@ is active (`with Audit(path): ...`), so the same UI can replay them.
 
 Runnable example (no network, a stand-in model that obeys injected text): `python examples/guarded_agent.py`.
 
-## Where the call goes in a real client (pattern, not run against a live API here)
+## Real LLM loop (`examples/real_llm_agent.py`)
+
+A complete loop with three backends: `stub` (offline, obeys the injected line), `openai` (any OpenAI-compatible endpoint,
+for example a local Ollama server) and `anthropic` (Messages API, key from your environment). It uses plain HTTP, runs the
+agent unguarded and then guarded, and prints what each run sent. The request and response handling for both HTTP formats is
+tested against mocked transports (`tests/test_real_llm_agent.py`); it has **not** been run against a live model in this repo,
+because the build is offline. The demo app never imports it.
+
+```
+python examples/real_llm_agent.py                                          # offline
+python examples/real_llm_agent.py --backend openai --model llama3.1        # local server
+python examples/real_llm_agent.py --backend anthropic --model <model id>   # needs ANTHROPIC_API_KEY
+```
+
+## Where the call goes in a real client (pattern)
 
 - OpenAI-style: after `response.choices[0].message.tool_calls`, call `guard.call(tc.function.name, **json.loads(tc.function.arguments))`
   and return `res.for_model()` as the `tool` message.
