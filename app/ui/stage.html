@@ -16,6 +16,7 @@ html,body{margin:0;height:100%;overflow-x:hidden;background:var(--bg);color:var(
 button,select,input{font:inherit;color:inherit}
 .app{width:100%;max-width:100vw;height:100vh;min-height:640px;display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:12px;padding:2px 2px 6px}
 .app>*{min-width:0}
+.app>.meta{grid-row:1}.app>.result{grid-row:2}.app>.decision{grid-row:3}.app>.main{grid-row:4}.app>.controls{grid-row:5}
 .lbl{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
 .mono{font-family:var(--mono)}
 /* ---- meta line ---- */
@@ -45,7 +46,7 @@ button,select,input{font:inherit;color:inherit}
 .dt .dec{font-weight:600;letter-spacing:.4px} .dt .dec.b{color:var(--red)} .dt .dec.x{color:var(--red)}
 @media (max-width:760px){.dt{grid-template-columns:1fr 1fr}.dt.h{display:none}}
 /* ---- main ---- */
-.main{display:grid;grid-template-columns:minmax(300px,38%) 1fr;gap:12px;min-height:0;position:relative}
+.main{display:grid;grid-template-columns:minmax(300px,38%) 1fr;grid-template-rows:minmax(0,1fr);gap:12px;min-height:0;position:relative}
 .main>*{min-width:0}
 .panel{display:flex;flex-direction:column;min-height:0;background:var(--p);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
 .panel>header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--bd)}
@@ -97,6 +98,9 @@ svg.dragging{cursor:grabbing}
 .edge.show{opacity:1}
 .edge.c-UNTRUSTED{stroke:var(--amber);opacity:0}.edge.c-UNTRUSTED.show{opacity:.75}
 .edge.c-VERIFIED{stroke:var(--blue)}
+.arr{fill:#34425a;opacity:0}.arr.show{opacity:1}
+.arr.c-UNTRUSTED{fill:var(--amber)}.arr.c-UNTRUSTED.show{opacity:.85}
+.arr.c-VERIFIED{fill:var(--blue)}.arr.deny{fill:var(--red)}
 .edge.dash{stroke-dasharray:4 4}
 .edge.deny{stroke:var(--red);stroke-width:1.8;stroke-dasharray:6 4}
 .elabel{font:10.5px var(--mono);fill:var(--red);opacity:0}.elabel.show{opacity:1}
@@ -351,31 +355,31 @@ function drawGraph(){
   const sc = (x)=>Math.min(PW/(x.maxX-x.minX), PH/(x.maxY-x.minY));
   const ext = sc(b) > sc(a)*0.9 ? b : layout('LR');
   const TB = ext.TB === true;
-  const defs = el('defs',{},svg);
-  ['UNTRUSTED:#E7A33D','VERIFIED:#4F8CFF','USER:#5C6675','NONE:#34425a','DENY:#F05D67'].forEach(s=>{
-    const [k,c]=s.split(':'); const m=el('marker',{id:'ah-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'},defs);
-    el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m);
-  });
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
   baseVB = {x:ext.minX,y:ext.minY,w:ext.maxX-ext.minX,h:ext.maxY-ext.minY}; vb = {...baseVB};
   svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   gEdges = el('g',{},svg); gNodes = el('g',{},svg);
+  const AL = 8, AW = 3.6;   // arrowhead length / half-width: the line stops at the arrowhead base, so they always connect
   edges.forEach((e,idx)=>{
     const na=nodes.get(e.from), nb=nodes.get(e.to); if(!na||!nb) return;
-    let d, mx, my;
+    let P0,P1,P2,P3;
     if(TB){
-      const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(20,(y2-y1)/2);
-      d = y2>y1 ? `M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2-2}` : `M${na.l+NW},${na.t+NH/2} C${na.l+NW+50},${na.t+NH/2} ${nb.l+NW+50},${nb.t+NH/2} ${nb.l+NW+2},${nb.t+NH/2}`;
-      mx=(x1+x2)/2+6; my=(y1+y2)/2;
+      const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(24,(y2-y1)/2);
+      if(y2>y1){ P0=[x1,y1]; P1=[x1,y1+dy]; P2=[x2,y2-dy]; P3=[x2,y2]; }
+      else { P0=[na.l+NW,na.t+NH/2]; P1=[na.l+NW+50,na.t+NH/2]; P2=[nb.l+NW+50,nb.t+NH/2]; P3=[nb.l+NW,nb.t+NH/2]; }
     } else {
-      const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(24,(x2-x1)/2);
-      d = x2>x1 ? `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2-2},${y2}` : `M${na.l+NW/2},${na.t+NH} C${na.l+NW/2},${na.t+NH+36} ${nb.l+NW/2},${nb.t-36} ${nb.l+NW/2},${nb.t-2}`;
-      mx=(x1+x2)/2; my=(y1+y2)/2-6;
+      const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(28,(x2-x1)/2);
+      if(x2>x1){ P0=[x1,y1]; P1=[x1+dx,y1]; P2=[x2-dx,y2]; P3=[x2,y2]; }
+      else { P0=[na.l+NW/2,na.t+NH]; P1=[na.l+NW/2,na.t+NH+40]; P2=[nb.l+NW/2,nb.t-40]; P3=[nb.l+NW/2,nb.t]; }
     }
-    const cls = 'edge c-'+(e.trust||'NONE')+(e.dash||e.kind==='seq'?' dash':'')+(e.deny?' deny':'');
-    const p = el('path',{d,class:cls,'marker-end':`url(#ah-${e.deny?'DENY':(e.trust||'NONE')})`},gEdges);
-    let lab=null; if(e.label){ lab = el('text',{x:mx,y:my,class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
-    edgeEls[idx]={p,lab};
+    let tx=P3[0]-P2[0], ty=P3[1]-P2[1]; const tl=Math.hypot(tx,ty)||1; tx/=tl; ty/=tl;
+    const E=[P3[0]-tx*AL, P3[1]-ty*AL];
+    const d=`M${P0[0]},${P0[1]} C${P1[0]},${P1[1]} ${P2[0]},${P2[1]} ${E[0]},${E[1]}`;
+    const cls = 'c-'+(e.trust||'NONE')+(e.deny?' deny':'');
+    const p = el('path',{d,class:'edge '+cls+(e.dash||e.kind==='seq'?' dash':'')},gEdges);
+    const a = el('polygon',{points:`${P3[0]},${P3[1]} ${E[0]-ty*AW},${E[1]+tx*AW} ${E[0]+ty*AW},${E[1]-tx*AW}`,class:'arr '+cls},gEdges);
+    let lab=null; if(e.label){ lab = el('text',{x:(P0[0]+P3[0])/2+(TB?8:0),y:(P0[1]+P3[1])/2-(TB?0:6),class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
+    edgeEls[idx]={p,a,lab};
   });
   [...nodes.values()].forEach(n=>{
     const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}`},gNodes);
@@ -388,17 +392,38 @@ function drawGraph(){
     nodeEls[n.id]=g;
   });
 }
+let userView=false, vbAnim=null;
+function targetVB(ids){
+  const r=$('gwrap').getBoundingClientRect(); const PW=Math.max(300,r.width||800), PH=Math.max(240,r.height||500);
+  const list=[...ids].map(id=>nodes.get(id)).filter(Boolean);
+  if(!list.length) return baseVB;
+  const minX=Math.min(...list.map(n=>n.l))-30, maxX=Math.max(...list.map(n=>n.l))+NW+30;
+  const minY=Math.min(...list.map(n=>n.t))-34, maxY=Math.max(...list.map(n=>n.t))+NH+70;
+  const asp=PW/PH; let W=Math.max(maxX-minX, PW/1.15), H=Math.max(maxY-minY, PH/1.15);   // never zoom in past 1.15x
+  if(W/H>asp) H=W/asp; else W=H*asp;
+  return {x:(minX+maxX)/2-W/2, y:(minY+maxY)/2-H/2, w:W, h:H};
+}
+function fitView(ids, animate){
+  const t=targetVB(ids); if(!t) return;
+  cancelAnimationFrame(vbAnim);
+  if(!animate||REDUCED||!vb){ vb={...t}; applyVB(); return; }
+  const from={...vb}, t0=performance.now();
+  const step=(now)=>{ const k=Math.min(1,(now-t0)/260), e=1-Math.pow(1-k,3);
+    vb={x:from.x+(t.x-from.x)*e,y:from.y+(t.y-from.y)*e,w:from.w+(t.w-from.w)*e,h:from.h+(t.h-from.h)*e}; applyVB(); if(k<1) vbAnim=requestAnimationFrame(step); };
+  vbAnim=requestAnimationFrame(step);
+}
+let visibleIds=new Set();
 function applyVB(){ if(vb) svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
 svg.addEventListener('wheel',ev=>{ if(!vb) return; ev.preventDefault(); const r=svg.getBoundingClientRect(); const fx=(ev.clientX-r.left)/r.width, fy=(ev.clientY-r.top)/r.height; const k=ev.deltaY<0?0.88:1.14;
   const nw=Math.min(baseVB.w*3,Math.max(baseVB.w*0.15,vb.w*k)), nh=vb.h*(nw/vb.w);
-  vb={x:vb.x+(vb.w-nw)*fx,y:vb.y+(vb.h-nh)*fy,w:nw,h:nh}; applyVB(); },{passive:false});
+  userView=true; cancelAnimationFrame(vbAnim); vb={x:vb.x+(vb.w-nw)*fx,y:vb.y+(vb.h-nh)*fy,w:nw,h:nh}; applyVB(); },{passive:false});
 let drag=null;
-svg.addEventListener('pointerdown',ev=>{ if(ev.target.closest('.node')||!vb) return; drag={x:ev.clientX,y:ev.clientY,vb:{...vb}}; svg.classList.add('dragging'); svg.setPointerCapture(ev.pointerId); });
+svg.addEventListener('pointerdown',ev=>{ if(ev.target.closest('.node')||!vb) return; userView=true; cancelAnimationFrame(vbAnim); drag={x:ev.clientX,y:ev.clientY,vb:{...vb}}; svg.classList.add('dragging'); svg.setPointerCapture(ev.pointerId); });
 svg.addEventListener('pointermove',ev=>{ if(!drag) return; const r=svg.getBoundingClientRect(); const sc=Math.max(drag.vb.w/r.width,drag.vb.h/r.height); vb={...drag.vb,x:drag.vb.x-(ev.clientX-drag.x)*sc,y:drag.vb.y-(ev.clientY-drag.y)*sc}; applyVB(); });
 const endDrag=()=>{drag=null;svg.classList.remove('dragging');};
 svg.addEventListener('pointerup',endDrag); svg.addEventListener('pointercancel',endDrag);
-svg.addEventListener('dblclick',()=>{ if(baseVB){vb={...baseVB};applyVB();} });
-$('fit').onclick=()=>{ if(baseVB){vb={...baseVB};applyVB();} };
+svg.addEventListener('dblclick',()=>{ userView=false; fitView(visibleIds,true); });
+$('fit').onclick=()=>{ userView=false; fitView(visibleIds,true); };
 
 /* ---------- 3. playback ---------- */
 let cur = 0, timer = null, playing = false;
@@ -411,13 +436,13 @@ function badgeEl(g, text, warn){
 }
 function resetVisual(){
   Object.values(nodeEls).forEach(g=>{ g.classList.remove('show','enter','blocked','shock','done','running','sel'); g.querySelectorAll('.badge').forEach(b=>b.remove()); });
-  edgeEls.forEach(e=>{ if(!e) return; e.p.classList.remove('show'); if(e.lab) e.lab.classList.remove('show'); });
+  edgeEls.forEach(e=>{ if(!e) return; e.p.classList.remove('show'); e.a.classList.remove('show'); if(e.lab) e.lab.classList.remove('show'); });
 }
 function applyFx(list, animate){
   list.forEach(f=>{
     const g = f.id? nodeEls[f.id] : null;
     if(f.t==='show' && g){ g.classList.add('show'); if(animate){ g.classList.remove('enter'); void g.getBoundingClientRect(); g.classList.add('enter'); } }
-    if(f.t==='edge'){ const e=edgeEls[f.idx]; if(e){ e.p.classList.add('show'); if(e.lab) e.lab.classList.add('show'); } }
+    if(f.t==='edge'){ const e=edgeEls[f.idx]; if(e){ e.p.classList.add('show'); e.a.classList.add('show'); if(e.lab) e.lab.classList.add('show'); } }
     if(f.t==='state' && g){ g.classList.remove('running','done'); if(f.state==='blocked') g.classList.add('blocked'); else if(!g.classList.contains('blocked')) g.classList.add(f.state); }
     if(f.t==='shock' && g){ g.classList.remove('shock'); void g.getBoundingClientRect(); g.classList.add('shock'); }
     if(f.t==='badge' && g){ badgeEl(g,f.text,f.warn); }
@@ -445,14 +470,16 @@ function setResult(n, leaks, alertsN, done){
 function renderTo(n, animate){
   n = Math.max(0,Math.min(EVENTS.length,n));
   resetVisual(); $('feed').innerHTML='';
-  const aSeen=[], lSeen=[];
+  const aSeen=[], lSeen=[]; visibleIds=new Set();
   for(let k=0;k<n;k++){
     const last=(k===n-1);
-    applyFx(fx[k], animate&&last);
+    applyFx(fx[k], animate&&last); fx[k].forEach(f=>{ if(f.t==='show') visibleIds.add(f.id); });
     if(rows[k]){ $('feed').insertAdjacentHTML('beforeend', rows[k]); if(!(animate&&last)) $('feed').lastElementChild.style.animation='none'; }
     const e=EVENTS[k]; if(e.type==='alert') aSeen.push(e); if(e.type==='effect'&&e.leak) lSeen.push(e);
   }
   if(!EVENTS.length) $('feed').innerHTML='<div class="empty">No events yet. Pick a scenario and run it to see requests, tool results, policy decisions and effects in order.</div>';
+  if(n===0) userView=false;
+  if(!userView) fitView(visibleIds, animate);
   const done = n>=EVENTS.length && !!summary;
   if(done) $('feed').insertAdjacentHTML('beforeend', row({seq:EVENTS.length}, summary.task_ok?'ok':'harm', summary.task_ok?'<b>Task completed</b>':'Task not completed', ''));
   cur=n; $('scrub').value=n; $('pos').textContent=`${n} / ${EVENTS.length}`; $('feed').scrollTop=$('feed').scrollHeight;
