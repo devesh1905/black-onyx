@@ -36,7 +36,7 @@ html,body,.stApp,[data-testid="stAppViewContainer"]{background:var(--bg)!importa
 [data-testid="stHeader"],.stAppHeader{height:2.4rem!important;min-height:0!important}
 /* the CSS-only st.markdown blocks must not take layout space (each one added a block gap above the tabs) */
 [data-testid="stElementContainer"]:has(style):not(:has(.bo-splash)){display:none!important}
-[data-testid="stElementContainer"]:has(.bo-splash){position:fixed!important;top:0;left:0;width:0;height:0;margin:0!important;overflow:visible!important}
+[data-testid="stElementContainer"]:has(.bo-splash){position:fixed!important;z-index:2147483000!important;top:0;left:0;width:0;height:0;margin:0!important;overflow:visible!important}
 [data-testid="stSidebar"]{background:var(--p)!important;border-right:1px solid var(--bd)}
 [data-testid="stSidebar"][aria-expanded="true"]{min-width:280px!important;max-width:280px!important}
 [data-testid="stSidebar"] .block-container{padding:16px 16px!important}
