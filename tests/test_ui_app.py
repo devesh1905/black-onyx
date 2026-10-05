@@ -43,3 +43,9 @@ def test_laya_versions_panel_html():
     for col in LAYA_COLS:
         assert f">{col}<" in h
     assert "95.2%" in h and "81.0%" in h and "Only v0 runs by default" in h
+
+
+def test_d4_laya_alone_is_selectable():
+    at = AppTest.from_file(APP_PATH, default_timeout=60)
+    at.run()
+    assert any(o.startswith("D4") for o in at.sidebar.selectbox(key="defence_sel").options)

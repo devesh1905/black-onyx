@@ -114,6 +114,7 @@ DEFENCES = {
     "D1": "D1 · Keyword filter",
     "D2": "D2 · Black Onyx rules",
     "D3": "D3 · Rules + Laya sentinel",
+    "D4": "D4 · Laya alone (no rules)",
 }
 TASKS = {
     "L1": "L1 · Summarise my mail, email it to me",
@@ -239,6 +240,7 @@ with st.sidebar:
     st.button("Multi-hop: split address", use_container_width=True, on_click=_preset, args=("D2", "L1", "A8"), icon=":material/call_split:")
     st.button("Legitimate payment passes", use_container_width=True, on_click=_preset, args=("D2", "L4", "None"), icon=":material/payments:")
     st.button("With Laya second opinion", use_container_width=True, on_click=_preset, args=("D3", "L1", "A1"), icon=":material/psychology:")
+    st.button("Laya alone, no rules", use_container_width=True, on_click=_preset, args=("D4", "L1", "A1"), icon=":material/psychology_alt:")
 
 # ---------------------------------------------------------------- run
 if run_clicked or st.session_state.pop("pending_run", False) or "events" not in st.session_state:
