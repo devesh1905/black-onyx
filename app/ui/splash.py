@@ -101,7 +101,7 @@ CSS_CUSTOM = """
 CSS = """
 .bo-splash{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
   background:radial-gradient(ellipse at 50% 46%,#0b0f16 0%,#05070b 62%,#020305 100%);color:#fff;overflow:hidden;
-  animation:bo-out .36s ease-in 1.14s forwards;font-family:Inter,'Segoe UI',system-ui,sans-serif}
+  animation:bo-out .36s ease-in @OUT@s forwards;font-family:Inter,'Segoe UI',system-ui,sans-serif}
 .bo-splash *{box-sizing:border-box}
 .bo-stack{position:relative}
 .bo-stack img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;pointer-events:none}
@@ -139,7 +139,7 @@ CSS = """
 @keyframes bo-sweep{0%{opacity:1;transform:translateY(-120px)}100%{opacity:0;transform:translateY(110vh)}}
 @keyframes bo-out{to{opacity:0;visibility:hidden}}
 @media (prefers-reduced-motion:reduce){
-  .bo-splash{animation:bo-out .35s ease .55s forwards}
+  .bo-splash{animation:bo-out .4s ease 1.3s forwards}
   .bo-splash *{animation:none!important}
   .bo-ch,.bo-slice,.bo-sweep,.bo-lines{display:none!important}
   .bo-base{opacity:1!important}.bo-tag{opacity:1!important;transform:none!important}
@@ -147,10 +147,20 @@ CSS = """
 """
 
 
+def _timed(css: str) -> str:
+    """Stretch every duration/delay by SPLASH_SCALE (env BLACKONYX_SPLASH_SCALE, default 1.8) and add a hold before the fade-out."""
+    import re
+    k = float(os.environ.get("BLACKONYX_SPLASH_SCALE", "1.8"))
+    out_at = 1.14 * k + 1.1                      # the finished wordmark stays on screen for about a second
+    keep = css.replace("@OUT@", "@@OUT@@")
+    scaled = re.sub(r"(?<![\w.%-])(\d*\.\d+|\d+)s\b", lambda m: f"{float(m.group(1)) * k:.3f}s", keep)
+    return scaled.replace("@@OUT@@s", f"{out_at:.2f}s")
+
+
 def splash_html() -> str:
     img = custom_emblem()
     if img:
-        return (f"<style>{CSS}{CSS_CUSTOM}</style><div class='bo-splash' role='img' aria-label='Black Onyx'><div class='bo-lines'></div><div class='bo-sweep'></div>"
+        return (f"<style>{_timed(CSS + CSS_CUSTOM)}</style><div class='bo-splash' role='img' aria-label='Black Onyx'><div class='bo-lines'></div><div class='bo-sweep'></div>"
                 f"<div class='bo-img'><img src='{img}' alt=''><div class='bo-slice2'><img src='{img}' alt=''></div></div></div>")
     m, w = _mark_variants(), _word_variants()
 
@@ -159,6 +169,6 @@ def splash_html() -> str:
                 f'<img class="bo-ch b" src="{v["b"]}" alt=""><img class="bo-base" src="{v["base"]}" alt="">'
                 + ('<div class="bo-slice"><img src="' + v["base"] + '" alt=""></div>' if cls == "bo-mark" else "") + "</div>")
 
-    return (f"<style>{CSS}</style><div class='bo-splash' role='img' aria-label='Black Onyx. Trust every action. Verify every source.'>"
+    return (f"<style>{_timed(CSS)}</style><div class='bo-splash' role='img' aria-label='Black Onyx. Trust every action. Verify every source.'>"
             f"<div class='bo-lines'></div><div class='bo-sweep'></div>{stack('bo-mark', m)}{stack('bo-word', w)}"
             f"<div class='bo-tag'>Trust every action. Verify every source.</div></div>")
