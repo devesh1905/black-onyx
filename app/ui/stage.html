@@ -192,7 +192,8 @@ select.btn option{background:#0D121A;color:#E6EAF0}
       <div><dt>{{ic:shield-x:13}} Blocked</dt><dd id="v-alert">00</dd></div>
       <div><dt>{{ic:alert:13}} Harmful calls</dt><dd id="v-leak">00</dd></div>
       <div><dt>{{ic:list:13}} Events</dt><dd id="v-ev">00</dd></div>
-      <div><dt>{{ic:timer:13}} Policy eval</dt><dd id="v-ms" class="dim">&mdash;</dd></div>
+      <div><dt>{{ic:timer:13}} Rule check</dt><dd id="v-ms" class="dim">&mdash;</dd></div>
+      <div><dt>{{ic:sparkle:13}} Laya (advisory)</dt><dd id="v-laya" class="dim">off</dd></div>
     </dl>
   </section>
 
@@ -628,6 +629,8 @@ function renderTo(n, animate){
   $('gcount').textContent = nodes.size? `${nodes.size} nodes`:''; $('m-ev2').textContent = EVENTS.length? `${n}/${EVENTS.length}`:'';
   const gated=['D2','D3','D4'].includes((EVENTS[0]||{}).defence);
   if(done && gated && summary.gate_ms!=null){ $('v-ms').textContent=Math.max(1,Math.round(summary.gate_ms*1000))+' µs'; $('v-ms').className=''; } else { $('v-ms').textContent='—'; $('v-ms').className='dim'; }
+  const lm=EVENTS.slice(0,n).filter(e=>e.type==='laya_score').map(e=>e.ms).sort((a,b)=>a-b);
+  if(lm.length){ const med=lm[Math.floor(lm.length/2)]; $('v-laya').textContent=(med>=1000?(med/1000).toFixed(1)+' s':Math.round(med)+' ms'); $('v-laya').className=''; } else { $('v-laya').textContent=['D3','D4'].includes((EVENTS[0]||{}).defence)?'—':'off'; $('v-laya').className='dim'; }
   const dec=$('decision'); const rowsHtml=decisionRows(aSeen,lSeen); dec.hidden=!rowsHtml; $('dec-rows').innerHTML=rowsHtml;
   setResult(n, lSeen.length, aSeen.length, done);
 }

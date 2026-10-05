@@ -205,6 +205,7 @@ with st.sidebar:
                                placeholder="Paste an injection. It is planted where the chosen task will read it (email, web page or document).")
     with st.container(border=True):
         autoplay = st.toggle("Animate playback", value=True)
+        phone = st.toggle("Phone alert on block", value=True, help="Pushes a short message (tool and policy reason only) to the ntfy topic when a call is blocked. Silent if offline.")
         run_clicked = st.button("Run scenario", type="primary", use_container_width=True, icon=":material/play_arrow:")
 
     st.markdown('<div class="sec">Test cases</div>', unsafe_allow_html=True)
@@ -219,6 +220,9 @@ with st.sidebar:
 if run_clicked or st.session_state.pop("pending_run", False) or "events" not in st.session_state:
     eff_task = task_id
     ev, src = execute(defence_id, eff_task, attack_id, inject_text)
+    if phone:
+        from app.phone_alerts import send_block_alerts
+        send_block_alerts(ev)
     st.session_state.update(events=ev, runner_source=src, last_defence=defence_id, run_id=st.session_state.get("run_id", 0) + 1)
 
 events: List[dict[str, Any]] = st.session_state.get("events", [])
