@@ -70,7 +70,9 @@ def results_html(r: dict[str, Any]) -> str:
     d = r["defences"]
     sent = html.escape(str(r.get("sentinel", "")))
     if str(r.get("sentinel", "")).startswith("Laya"):
-        laya_note = ("D3 and D4 used the real Laya sentinel on a deterministic subset of the variants (every 10th, so 30 instead of 300) because it takes about 0.3 s per call. "
+        nv = (d.get("D3", {}).get("asr_var") or {}).get("n")
+        sub = f" on {nv} of the variants (a deterministic subset, because it takes about 0.3 s per call)" if nv and nv < 300 else " on every variant"
+        laya_note = (f"D3 and D4 used the real Laya sentinel{sub}. "
                      "D4 (Laya alone, no rules) also blocks legitimate work, which is why the rules do the blocking.")
     else:
         laya_note = f"D3 in this table ran with <b>{sent}</b>, so it equals D2; the live demo uses the real Laya sentinel."
