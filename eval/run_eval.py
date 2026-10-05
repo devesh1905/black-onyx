@@ -172,6 +172,31 @@ def write_report(res: dict, m: dict, path: Path, h: str) -> None:
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
+def export_json(res: dict, m: dict, path: Path, h: str) -> None:
+    """Machine-readable results for the UI (docs/results.json)."""
+    def pack(kn):
+        k, n = kn
+        lo, hi = wilson(k, n)
+        return {"k": k, "n": n, "p": (k / n if n else 0.0), "lo": lo, "hi": hi}
+    out = {"seed": res["seed"], "sentinel": res["sentinel"], "hash": h, "n_tasks": len(LEGIT_TASKS),
+           "n_attacks": len(ATTACKS), "n_variants": len(res["defences"]["D0"]["variants"]),
+           "defences": {}, "attacks": [], "invariance": pack(m["invariance"])}
+    for d, x in m.items():
+        if d == "invariance":
+            continue
+        out["defences"][d] = {"name": NAMES[d], **{k: pack(x[k]) for k in ("asr_base", "asr_var", "asr_all", "bu", "uua",
+                              "overblock")}, "false_alerts": x["false_alerts"], "gate_mean_ms": x["gate_mean_ms"],
+                              "gate_p95_ms": x["gate_p95_ms"], "laya_median_ms": x["laya_median_ms"]}
+    for a, atk in ATTACKS.items():
+        row = {"id": a, "desc": atk.desc, "cells": {}}
+        for d, rec in res["defences"].items():
+            b = next(x for x in rec["base"] if x["attack"] == a)
+            vs = [x for x in rec["variants"] if x["attack"] == a]
+            row["cells"][d] = {"leaked": b["leaked"], "var_leaks": sum(x["leaked"] for x in vs), "var_n": len(vs)}
+        out["attacks"].append(row)
+    path.write_text(json.dumps(out, indent=1), encoding="utf-8")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=60, help="variants per text attack")
@@ -186,6 +211,7 @@ def main() -> None:
         print(f"reproducibility: {h} vs {h2} -> {'IDENTICAL' if h == h2 else 'DIFFERENT'}")
     m = metrics(res)
     write_report(res, m, Path(a.out), h)
+    export_json(res, m, Path(a.out).with_suffix('.json'), h)
     print(Path(a.out).read_text(encoding="utf-8"))
 
 

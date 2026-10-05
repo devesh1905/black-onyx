@@ -32,7 +32,7 @@ def label_of(x: Any) -> Label:
     return x.label if isinstance(x, LabeledObject) else NEUTRAL
 
 
-QUIET_OPS = {"index", "slice", "extract_sentence", "split"}
+QUIET_OPS = {"index", "slice", "extract_sentence", "split", "first_sentence", "fmt"}
 
 
 def _preview(v: Any) -> str:

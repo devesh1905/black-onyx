@@ -14,7 +14,7 @@ python -m venv .venv
 pip install --no-index --find-links D:\Buildathon-Toolkit\wheels-black-onyx -r requirements.txt
 pytest -q
 python -m eval.run_eval --check-repro        # all tables -> docs/results.md
-streamlit run app/streamlit_app.py           # split-screen demo with live provenance graph
+streamlit run app/streamlit_app.py           # animated monitor + provenance graph, results, how it works
 python demo/replay.py runs/example.jsonl     # terminal fallback
 ```
 Laya numbers: CPU, fp32, English checkpoint only (see `docs/laya-results.md`).

@@ -36,7 +36,7 @@ Variants whose policy decision equals the base attack's decision (D2): 300/300 =
 
 ## Latency (this machine)
 
-Rule engine (policy gate), D2: mean 0.006 ms, p95 0.018 ms per tool call (target < 5 ms).
+Rule engine (policy gate), D2: mean 0.009 ms, p95 0.026 ms per tool call (target < 5 ms).
 
 Laya sentinel (advisory), median 0 ms per call. Warn rate on attack runs 0/310 = 0.0% [0.0-1.2]; warnings on clean runs: 0.
 
