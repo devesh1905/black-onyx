@@ -42,3 +42,5 @@ A `call_check` with decision "deny" is always followed by an `alert` for the sam
   Use it to show the HIJACKED banner.
 - The log ends with a `summary` event: `{task_id, attack_id, defence, task_ok, leaked, alerts, gate_ms}`. Use it for
   the scoreboard (task finished, leaks, alerts, rule-check time).
+
+- `note` (`level`, `text`): a plain-language hint from the engine, for example when pasted text caused no action because the simulated agent found no instruction it understands.

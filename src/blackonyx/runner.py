@@ -32,6 +32,11 @@ class RunResult:
     denied: list[dict] = field(default_factory=list)
 
 
+NO_ACTION_NOTE = ("Your text was planted where this task reads it, but the simulated agent found no instruction it "
+                  "understands, so nothing was attempted and there is nothing to block. It looks for an address, URL, "
+                  "account or file path together with a verb such as send, pay, fetch or read. Try including one.")
+
+
 def inject_text(world: World, task_id: str, text: str) -> None:
     """Live injection from the UI: plant the text where the chosen task will read it."""
     if task_id == "L5":      # the page the user asked to fetch
@@ -66,6 +71,8 @@ def run(task_id: str, attack_id: Optional[str] = None, defence: str = "D2", inje
             ip.run(plan_for(t))
             ip_last = ip
         final = tasks[-1]
+        if injected_text and not any(str(e.get("call_id", "")).startswith("x") for e in audit.events):
+            audit.emit("note", level="info", text=NO_ACTION_NOTE)
         audit.emit("summary", task_id=final, attack_id=attack_id, defence=defence, task_ok=CHECKS[final](world),
                    leaked=bool(world.leaks()), alerts=sum(1 for e in audit.events if e["type"] == "alert"),
                    gate_ms=round(sum(ip_last.gate_ms) / max(1, len(ip_last.gate_ms)), 4))

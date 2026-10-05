@@ -255,7 +255,7 @@ const isRead = (t)=>['read_inbox','read_file','web_fetch','search_docs'].include
 
 /* ---------- 1. build graph + per-event reveal script ---------- */
 const nodes = new Map(), edges = [], fx = EVENTS.map(()=>[]), rows = EVENTS.map(()=>null);
-let seqN = 0, summary = null;
+let seqN = 0, summary = null, noteText = null;
 const valNode = {}, callNodes = {}, results = [];
 function addNode(n, i){ n.order = ++seqN; n.checks = n.checks||[]; nodes.set(n.id, n); fx[i].push({t:'show',id:n.id}); return n; }
 function addEdge(e, i){ e.order = ++seqN; edges.push(e); fx[i].push({t:'edge',idx:edges.length-1}); return e; }
@@ -343,6 +343,7 @@ EVENTS.forEach((ev,i)=>{
     fx[i].push({t:'state',id:c.id,state:'done'});
     rows[i] = row(ev, ev.leak?'harm':'ok', ev.leak?'Executed <i style="color:var(--red)">harmful</i>':'<b>Executed</b>', esc(ev.description), false, ev.leak?'alert':'check');
     break; }
+  case 'note': noteText = ev.text; rows[i] = row(ev,'', 'Note', esc(ev.text), false, 'info'); break;
   case 'summary': summary = ev; break;
   }
 });
@@ -540,7 +541,7 @@ function setResult(n, leaks, alertsN, done){
   const task = done&&summary ? (summary.task_ok?'Legitimate task completed.':'Legitimate task did not complete.') : '';
   if(leaks){ setResIcon('alert'); R.classList.add('hijack'); $('r-kick').textContent='No enforcement'; $('r-title').textContent=`${leaks} harmful action${leaks>1?'s':''} executed`; $('r-sub').textContent=`Instructions inside untrusted content were followed. ${task}`; }
   else if(alertsN){ setResIcon('shield-x'); R.classList.add('block'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=`${alertsN} unsafe call${alertsN>1?'s':''} blocked`; $('r-sub').textContent=task||'Enforcing…'; }
-  else if(done){ setResIcon('shield-check'); R.classList.add('clean'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent='No violations'; $('r-sub').textContent=task+' No unsafe call was attempted.'; }
+  else if(done){ setResIcon('shield-check'); R.classList.add('clean'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=noteText?'Nothing was attempted':'No violations'; $('r-sub').textContent=noteText?(task+' Your pasted text triggered no action; see the note in the timeline.'):(task+' No unsafe call was attempted.'); }
   else { setResIcon('loader'); $('r-kick').textContent=def||'Running'; $('r-title').textContent=n?'Agent running':'Ready'; $('r-sub').textContent='Reading tool output…'; }
 }
 function renderTo(n, animate){
