@@ -25,36 +25,35 @@ st.set_page_config(page_title="Black Onyx", page_icon="◆", layout="wide", init
 
 st.markdown("""
 <style>
-:root{--bg:#070a12;--surface:#0d1424;--line:#1e2b45;--text:#e6eefc;--mute:#8ea0ba;--accent:#1d5fd6}
-html,body,.stApp,[data-testid="stAppViewContainer"]{background:var(--bg)!important;color:var(--text);font-family:'Montserrat','Segoe UI',system-ui,sans-serif}
+:root{--bg:#070A0F;--p:#0D121A;--p2:#111823;--bd:#1B2532;--bd2:#263243;--tx:#E6EAF0;--t2:#8C96A6;--t3:#5C6675;--blue:#4F8CFF}
+html,body,.stApp,[data-testid="stAppViewContainer"]{background:var(--bg)!important;color:var(--tx);font-family:Inter,'Segoe UI',system-ui,sans-serif;font-size:13px}
 [data-testid="stHeader"],.stAppHeader{background:transparent!important;pointer-events:none}
 [data-testid="stHeader"] *,.stAppHeader *{pointer-events:auto}
 #MainMenu,footer,[data-testid="stToolbar"],[data-testid="stDecoration"]{display:none!important}
-.block-container{padding:14px 22px 10px!important;max-width:1700px}
-[data-testid="stSidebar"]{background:#0a101d!important;border-right:1px solid var(--line);min-width:320px!important;max-width:320px!important}
-[data-testid="stSidebar"] .block-container{padding:12px 16px!important}
-[data-testid="stSidebar"] label p{font-size:11px!important;letter-spacing:1.1px;text-transform:uppercase;color:var(--mute)!important;font-weight:600}
-div[data-baseweb="select"]>div,textarea,input{background:#0d1424!important;border:1px solid #243557!important;border-radius:12px!important;color:var(--text)!important;min-height:44px}
-div[data-baseweb="select"]:focus-within>div,textarea:focus{border-color:#60a5fa!important}
-.stButton>button{min-height:46px;border-radius:12px;border:1px solid #243557;background:#0d1424;color:var(--text);font-weight:600;transition:background .15s,border-color .15s,transform .1s}
-.stButton>button:hover{border-color:#60a5fa;background:#13203d;color:#fff}
-.stButton>button:active{transform:scale(.98)}
-.stButton>button[kind="primary"]{background:linear-gradient(180deg,#2a6df0,#1d5fd6);border-color:#3b82f6;color:#fff}
-.stButton>button[kind="primary"]:hover{background:linear-gradient(180deg,#3b7bff,#2563eb)}
-.stButton>button:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}
-.stTabs [data-baseweb="tab-list"]{gap:6px;border-bottom:1px solid var(--line)}
-.stTabs [data-baseweb="tab"]{height:46px;border-radius:12px 12px 0 0;padding:0 18px;color:var(--mute);font-weight:600}
-.stTabs [aria-selected="true"]{color:#fff!important;background:#0d1424}
-.stTabs [data-baseweb="tab-highlight"]{background:#3b82f6!important}
-[data-testid="stCode"] pre,[data-testid="stCode"] code{white-space:pre-wrap!important;word-break:break-word!important}
-.brand{display:flex;gap:12px;align-items:center;margin-bottom:4px}
-.brand svg{flex:none}.brand b{font-size:19px;letter-spacing:.6px}.brand small{display:block;color:var(--mute);font-size:11.5px;letter-spacing:.3px}
-.sec{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:#5b677a;font-weight:700;margin:16px 0 6px}
-.how{border:1px solid var(--line);background:#0d1424;border-radius:12px;padding:9px 12px;color:var(--mute);font-size:12.5px;line-height:1.45}
-.how b{color:var(--text)}
-.topbar{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
-.pill{border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:12px;color:var(--mute);background:#0d1424}
-.pill.on{color:#bbf7d0;border-color:#1f7a45;background:#0f2a1c}
+.block-container{padding:12px 20px 8px!important;max-width:1700px}
+[data-testid="stSidebar"]{background:var(--p)!important;border-right:1px solid var(--bd);min-width:280px!important;max-width:280px!important}
+[data-testid="stSidebar"] .block-container{padding:16px 16px!important}
+[data-testid="stSidebar"] label p{font-size:11px!important;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)!important}
+div[data-baseweb="select"]>div,textarea,input{background:var(--bg)!important;border:1px solid var(--bd2)!important;border-radius:4px!important;color:var(--tx)!important;min-height:38px;font-size:13px}
+div[data-baseweb="select"]:focus-within>div,textarea:focus{border-color:var(--blue)!important}
+textarea{font-family:Consolas,'Cascadia Mono',monospace!important;font-size:12px!important}
+.stButton>button{min-height:38px;border-radius:4px;border:1px solid var(--bd2);background:var(--bg);color:var(--tx);font-weight:500;font-size:13px;transition:background .12s,border-color .12s}
+.stButton>button:hover{border-color:var(--t3);background:var(--p2);color:var(--tx)}
+.stButton>button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.stButton>button[kind="primary"]{background:var(--blue);border-color:var(--blue);color:#06101f;font-weight:600}
+.stButton>button[kind="primary"]:hover{background:#6aa0ff;border-color:#6aa0ff;color:#06101f}
+.stButton>button[kind="secondary"]{justify-content:flex-start;text-align:left}
+.stButton>button[kind="secondary"] div,.stButton>button[kind="secondary"] p{justify-content:flex-start!important;text-align:left!important;width:100%}
+.stTabs [data-baseweb="tab-list"]{gap:4px;border-bottom:1px solid var(--bd)}
+.stTabs [data-baseweb="tab"]{height:40px;padding:0 14px;color:var(--t2);font-weight:500;background:transparent}
+.stTabs [aria-selected="true"]{color:var(--tx)!important}
+.stTabs [data-baseweb="tab-highlight"]{background:var(--blue)!important;height:2px}
+[data-testid="stCode"] pre,[data-testid="stCode"] code{white-space:pre-wrap!important;word-break:break-word!important;font-size:12px!important}
+[data-testid="stExpander"]{border:1px solid var(--bd)!important;border-radius:6px!important;background:var(--p)}
+hr{border-color:var(--bd)!important;margin:14px 0!important}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:2px}
+.brand b{font-size:16px;font-weight:600;letter-spacing:.2px}.brand small{display:block;color:var(--t3);font-size:11.5px}
+.sec{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin:16px 0 6px}
 @media (max-width:900px){[data-testid="stSidebar"]{min-width:260px!important}.block-container{padding:10px!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -144,9 +143,8 @@ def execute(defence: str, task: str, attack: str, inject: str) -> tuple[list[dic
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
     st.markdown("""
-<div class="brand"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#0b1f4b"/></linearGradient></defs>
-<path d="M20 2 35 11v18L20 38 5 29V11z" fill="#0d1424" stroke="url(#g)" stroke-width="2.4"/><path d="M20 10 28 15v10l-8 5-8-5V15z" fill="url(#g)"/></svg>
-<div><b>BLACK ONYX</b><small>Provenance firewall for AI agents</small></div></div>
+<div class="brand"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 2 26 8.5v13L15 28 4 21.5v-13z" fill="none" stroke="#E6EAF0" stroke-width="1.6"/><path d="M15 2v26" stroke="#E6EAF0" stroke-width="1.6"/></svg>
+<div><b>Black Onyx</b><small>Provenance firewall for AI agents</small></div></div>
 """, unsafe_allow_html=True)
 
     st.markdown('<div class="sec">Scenario</div>', unsafe_allow_html=True)
@@ -154,37 +152,25 @@ with st.sidebar:
     attack_id = st.selectbox("Attack", list(ATTACKS), format_func=ATTACKS.get, key="attack_sel")
     typed = bool(st.session_state.get("inject_txt", "").strip())
     has_attack = attack_id != "None" and not typed
-    task_id = st.selectbox("Legit task", list(TASKS), format_func=TASKS.get, key="task_sel", disabled=has_attack,
-                           help="A preset attack runs on its own host task, so this is locked while one is selected.")
+    task_id = st.selectbox("Task", list(TASKS), format_func=TASKS.get, key="task_sel", disabled=has_attack)
     if has_attack:
-        st.caption(f"Preset attack {attack_id} runs on its own host task: **{HOST[attack_id]}**")
+        st.caption(f"{attack_id} runs on its own host task: {HOST[attack_id]}")
     elif typed and attack_id != "None":
-        st.caption("Your pasted text takes priority, so the attack dropdown is ignored.")
-    inject_text = st.text_area("Paste your own attack", key="inject_txt", height=96,
-                               placeholder="Paste any injection here (see the prompt library in the main panel), pick a task, press Run.",
-                               help="Hidden where the chosen task will read it: an email, the fetched web page, or a document.")
-    autoplay = st.toggle("Animate playback", value=True, help="Off shows the finished run instantly. You can always scrub.")
-    run_clicked = st.button("▶  Run scenario", type="primary", use_container_width=True)
+        st.caption("Custom attack takes priority over the attack selection.")
 
-    st.markdown('<div class="sec">Demo script</div>', unsafe_allow_html=True)
-    st.button("① Undefended agent gets hijacked", use_container_width=True, on_click=_preset, args=("D0", "L1", "A1"))
-    st.button("② Same input, Black Onyx contains it", use_container_width=True, on_click=_preset, args=("D2", "L1", "A1"))
-    st.button("③ Reworded attack beats keyword filter", use_container_width=True, on_click=_preset, args=("D1", "L1", "A2"))
-    st.button("④ Multi-hop: split address (A8)", use_container_width=True, on_click=_preset, args=("D2", "L1", "A8"))
-    st.button("⑤ Legit payment still passes (L4)", use_container_width=True, on_click=_preset, args=("D2", "L4", "None"))
-    st.button("⑥ With the Laya second opinion", use_container_width=True, on_click=_preset, args=("D3", "L1", "A1"))
+    st.markdown('<div class="sec">Custom attack</div>', unsafe_allow_html=True)
+    inject_text = st.text_area("Paste an injection", key="inject_txt", height=96, label_visibility="collapsed",
+                               placeholder="Paste an injection. It is planted where the chosen task will read it (email, web page or document).")
+    autoplay = st.toggle("Animate playback", value=True)
+    run_clicked = st.button("Run scenario", type="primary", use_container_width=True)
 
-    st.markdown('<div class="sec">What am I looking at?</div>', unsafe_allow_html=True)
-    st.markdown('<div class="how">An AI agent reads your data (email, web, files) and uses tools. <b>Attackers hide '
-                'instructions inside that data.</b> Black Onyx tags every value with where it came from and refuses to let '
-                'untrusted text choose a destination, a file or an account. Pick <b>D0</b> to see the agent obey, then '
-                '<b>D2</b> to see it contained.</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="sec">Legend</div>', unsafe_allow_html=True)
-    st.markdown('<div class="how"><b style="color:#4ade80">Green</b> you · <b style="color:#60a5fa">blue</b> verified lookup · '
-                '<b style="color:#fb923c">orange</b> untrusted data · <b style="color:#f87171">red</b> blocked · '
-                '<b style="color:#a78bfa">purple</b> Laya.<br>Keys: <b>Space</b> play · <b>←/→</b> step · <b>E</b> end · <b>R</b> restart.</div>',
-                unsafe_allow_html=True)
+    st.markdown('<div class="sec">Demo scenarios</div>', unsafe_allow_html=True)
+    st.button("01  Agent is hijacked", use_container_width=True, on_click=_preset, args=("D0", "L1", "A1"))
+    st.button("02  Black Onyx contains it", use_container_width=True, on_click=_preset, args=("D2", "L1", "A1"))
+    st.button("03  Reworded attack, keyword filter", use_container_width=True, on_click=_preset, args=("D1", "L1", "A2"))
+    st.button("04  Multi-hop: split address", use_container_width=True, on_click=_preset, args=("D2", "L1", "A8"))
+    st.button("05  Legitimate payment passes", use_container_width=True, on_click=_preset, args=("D2", "L4", "None"))
+    st.button("06  With Laya second opinion", use_container_width=True, on_click=_preset, args=("D3", "L1", "A1"))
 
 # ---------------------------------------------------------------- run
 if run_clicked or st.session_state.pop("pending_run", False) or "events" not in st.session_state:
@@ -196,22 +182,16 @@ events: List[dict[str, Any]] = st.session_state.get("events", [])
 src = st.session_state.get("runner_source", "engine")
 shown_defence = st.session_state.get("last_defence", defence_id)
 
-tab_live, tab_results, tab_how = st.tabs(["Live demo", "Results", "How it works"])
+tab_live, tab_results, tab_how = st.tabs(["Run", "Results", "Explain"])
 
 with tab_live:
-    st.markdown(
-        f'<div class="topbar"><span class="pill on">offline · 0 cloud calls</span>'
-        f'<span class="pill">{DEFENCES.get(shown_defence, shown_defence)}</span>'
-        f'<span class="pill">{len(events)} events</span><span class="pill">{"live engine" if src == "engine" else src}</span></div>',
-        unsafe_allow_html=True)
-    components.html(render_stage(events, autoplay=autoplay, defence=shown_defence), height=830, scrolling=False)
+    components.html(render_stage(events, autoplay=autoplay, defence=shown_defence), height=860, scrolling=False)
     prompts = load_prompts()
     if prompts:
-        with st.expander(f"Prompt library: {len(prompts)} fresh attacks to paste into the box (not in the dropdown)"):
-            st.caption("Copy a prompt (button at the top right of each box), paste it into **Paste your own attack** in the "
-                       "sidebar, choose the task shown, set the defence, press Run. Try D0 first, then D2.")
+        with st.expander(f"Prompt library ({len(prompts)} custom attacks)"):
+            st.caption("Copy a prompt, paste it into Custom attack in the sidebar, choose the task shown and run. Compare D0 with D2.")
             for n, title, task, text in prompts:
-                st.markdown(f"**{n}. {title}** · use task **{task}**")
+                st.markdown(f"**{n:02d}  {title}** · task {task}")
                 st.code(text, language=None)
 
 with tab_results:

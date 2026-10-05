@@ -29,4 +29,4 @@ def test_events_carry_ui_fields():
 def test_results_and_how_panels_render():
     r = load_results()
     assert r and "D2" in r["defences"]
-    assert "Honest limits" in results_html(r) and "Control vs data" in howitworks_html()
+    assert "Limits" in results_html(r) and "Control and data arguments" in howitworks_html()

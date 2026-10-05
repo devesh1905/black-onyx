@@ -3,225 +3,190 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Black Onyx stage</title>
+<title>Black Onyx console</title>
 <style>
 :root{
-  --bg:#070a12; --surface:#0d1424; --surface2:#111b30; --line:#1e2b45; --line2:#2a3a5c;
-  --text:#e6eefc; --mute:#8ea0ba; --faint:#5b677a;
-  --user:#4ade80; --user-bg:#0f2a1c;
-  --ver:#60a5fa; --ver-bg:#0e2347;
-  --unt:#fb923c; --unt-bg:#33200f;
-  --block:#f87171; --block-bg:#3a1416;
-  --laya:#a78bfa; --laya-bg:#241a3f;
-  --accent:#1d5fd6; --cyan:#7dd3fc;
-  --font:'Montserrat','Segoe UI',system-ui,-apple-system,sans-serif; --mono:Consolas,'Cascadia Mono',ui-monospace,monospace;
-  --ease-out:cubic-bezier(.2,0,0,1);
+  --bg:#070A0F; --p:#0D121A; --p2:#111823; --bd:#1B2532; --bd2:#263243;
+  --tx:#E6EAF0; --t2:#8C96A6; --t3:#5C6675;
+  --blue:#4F8CFF; --green:#35D07F; --amber:#E7A33D; --red:#F05D67;
+  --font:Inter,'Segoe UI',system-ui,-apple-system,sans-serif; --mono:Consolas,'Cascadia Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow-x:hidden;background:transparent;color:var(--text);font-family:var(--font);font-size:15px;line-height:1.45}
-button{font:inherit;color:inherit}
-.app{width:100%;max-width:100vw;height:100vh;min-height:620px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:10px;padding:2px 2px 6px}
-/* ---------- top strip ---------- */
-.story{border:1px solid var(--line);border-left:4px solid var(--accent);background:#0b1426;border-radius:12px;padding:8px 14px;font-size:14.5px;line-height:1.5;display:flex;gap:12px;align-items:baseline}
-.story .sk{flex:none;font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--cyan);font-weight:700}
-.story.hijack{border-left-color:var(--block)} .story.safe{border-left-color:var(--user)}
-.plain{border:1px solid #1f4e79;border-left:4px solid var(--cyan);background:#0a1a2d;border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:14px;line-height:1.55}
-.plain b.k{display:block;font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--cyan);margin-bottom:3px}
-.main>*,.strip>*,.tiles>*{min-width:0}
-.strip{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
-.verdict{flex:1 1 280px;min-height:64px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:14px;padding:10px 16px;position:relative;overflow:hidden;transition:background .35s var(--ease-out),border-color .35s var(--ease-out)}
-.verdict .ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--surface2);border:1px solid var(--line2);flex:none}
-.verdict h2{margin:0;font-size:17px;letter-spacing:.4px;font-weight:700}
-.verdict p{margin:2px 0 0;color:var(--mute);font-size:13px}
-.verdict.run{background:#0d1a33}
-.verdict.hijack{background:linear-gradient(100deg,#3a1416,#1a0e12);border-color:var(--block)}
-.verdict.hijack .ico{background:var(--block-bg);border-color:var(--block);color:var(--block)}
-.verdict.hijack h2{color:#fecaca}
-.verdict.safe{background:linear-gradient(100deg,#0f2a1c,#0b1a16);border-color:#1f7a45}
-.verdict.safe .ico{background:var(--user-bg);border-color:#1f7a45;color:var(--user)}
-.verdict.safe h2{color:#bbf7d0}
-.tiles{display:flex;gap:8px;flex:2 1 360px;flex-wrap:wrap}
-.tile{flex:1 1 80px;min-width:0;border-radius:14px;border:1px solid var(--line);background:var(--surface);padding:8px 12px;display:flex;flex-direction:column;justify-content:center}
-.tile b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
-.tile span{font-size:11px;color:var(--mute);letter-spacing:.9px;text-transform:uppercase}
-.tile.bad b{color:var(--block)} .tile.good b{color:var(--user)} .tile.warn b{color:var(--laya)}
-/* ---------- main ---------- */
-.main{display:grid;grid-template-columns:minmax(300px,38%) 1fr;gap:10px;min-height:0}
-.panel{border:1px solid var(--line);background:var(--surface);border-radius:16px;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-.panel>header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);gap:8px;flex-wrap:wrap;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute);font-weight:600}
-.feed{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth}
-.empty{margin:auto;text-align:center;color:var(--mute);max-width:280px}
-.empty .big{font-size:34px;margin-bottom:6px}
-.card{border-radius:12px;border:1px solid var(--line);background:var(--surface2);padding:9px 12px;font-size:14px;animation:rise .32s var(--ease-out) both}
-.card small{display:block;color:var(--mute);font-size:12px;margin-top:3px}
-.card .who{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:600;margin-bottom:2px}
-.card.user{background:var(--user-bg);border-color:#1f7a45}
-.card.plan .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
-.chip{border:1px solid var(--line2);background:#0b1220;border-radius:99px;padding:2px 10px;font-size:12px;font-family:var(--mono)}
-.chip.ok{border-color:#1f7a45;color:#bbf7d0}.chip.ver{border-color:#2b5bb0;color:#bfdbfe}.chip.unt{border-color:#8a4a1d;color:#fed7aa}
-.arrow{color:var(--faint)}
-.card.res{display:flex;gap:9px;align-items:flex-start}
-.dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
-.d-unt{background:var(--unt)}.d-ver{background:var(--ver)}.d-user{background:var(--user)}.d-block{background:var(--block)}
-.card.ver{background:var(--ver-bg);border-color:#2b5bb0}
-.card.rej{background:#2a2410;border-color:#8a6a1d}
-.card.alert{background:var(--block-bg);border-color:var(--block);box-shadow:0 0 0 0 rgba(248,113,113,.6);animation:rise .32s var(--ease-out) both,pulse 1.4s ease-out 2}
-.card.alert h3{margin:0 0 4px;font-size:15px;color:#fecaca;display:flex;gap:8px;align-items:center}
-.chain{font-family:var(--mono);font-size:12.5px;background:#1d0b0d;border:1px solid #5a2327;border-radius:8px;padding:6px 8px;margin:6px 0;overflow-wrap:anywhere;color:#fecaca}
-.chain .t-e{color:var(--unt)} .chain .t-b{color:var(--block);font-weight:700}
-.card.laya{background:var(--laya-bg);border-color:#4c3a8a;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.meter{flex:1;min-width:70px;height:6px;border-radius:3px;background:#3a2f66;position:relative}
-.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--laya)}
-.card.eff{background:var(--user-bg);border-color:#1f7a45}
-.card.eff.leak{background:var(--block-bg);border-color:var(--block)}
-.tag{display:inline-block;font-size:10.5px;letter-spacing:.8px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
-.tag.leak{background:var(--block);color:#1a0607}.tag.safe{background:#1f7a45;color:#eafff3}
-.card.final{border-width:2px;font-weight:600}
-.card.final.hijack{background:var(--block-bg);border-color:var(--block)}
-.card.final.safe{background:var(--user-bg);border-color:#1f7a45}
-/* ---------- graph ---------- */
-.graphwrap{position:relative;flex:1;min-height:0;background:
-  radial-gradient(circle at 1px 1px,#16213a 1px,transparent 0) 0 0/22px 22px}
+html,body{margin:0;height:100%;overflow-x:hidden;background:var(--bg);color:var(--tx);font:13px/1.5 var(--font)}
+button,select,input{font:inherit;color:inherit}
+.app{width:100%;max-width:100vw;height:100vh;min-height:640px;display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:12px;padding:2px 2px 6px}
+.app>*{min-width:0}
+.lbl{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.mono{font-family:var(--mono)}
+/* ---- meta line ---- */
+.meta{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;color:var(--t2)}
+.meta b{color:var(--tx);font-weight:600;font-size:14px}
+.meta .r{display:flex;gap:18px;flex-wrap:wrap;font-size:12px}
+.live{color:var(--green)}
+/* ---- result ---- */
+.result{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding:14px 16px;background:var(--p);border:1px solid var(--bd);border-radius:6px}
+.result .title{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:600;letter-spacing:-.2px;margin-top:2px}
+.result .sq{width:10px;height:10px;border-radius:2px;background:var(--t3);flex:none}
+.result.block .sq{background:var(--red)} .result.hijack .sq{background:var(--red)} .result.clean .sq{background:var(--green)}
+.result.hijack .title{color:var(--red)}
+.result .sub{color:var(--t2);margin-top:2px}
+.metrics{display:flex;margin:0}
+.metrics div{padding:0 22px;border-left:1px solid var(--bd)}
+.metrics div:first-child{border-left:0;padding-left:0}
+.metrics dt{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.metrics dd{margin:2px 0 0;font:600 20px/1.1 var(--mono);font-variant-numeric:tabular-nums}
+.metrics dd.red{color:var(--red)} .metrics dd.dim{color:var(--t2)}
+/* ---- decision table ---- */
+.decision{border:1px solid var(--bd);border-radius:6px;background:var(--p);overflow:hidden}
+.decision[hidden]{display:none}
+.dt{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(160px,1.4fr) minmax(200px,2fr) 110px;gap:0 16px;padding:8px 16px;border-top:1px solid var(--bd);align-items:baseline}
+.dt.h{border-top:0;padding-top:9px;padding-bottom:7px;background:var(--p2)}
+.dt .c{overflow-wrap:anywhere}
+.dt .dec{font-weight:600;letter-spacing:.4px} .dt .dec.b{color:var(--red)} .dt .dec.x{color:var(--red)}
+@media (max-width:760px){.dt{grid-template-columns:1fr 1fr}.dt.h{display:none}}
+/* ---- main ---- */
+.main{display:grid;grid-template-columns:minmax(300px,38%) 1fr;gap:12px;min-height:0;position:relative}
+.main>*{min-width:0}
+.panel{display:flex;flex-direction:column;min-height:0;background:var(--p);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.panel>header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--bd)}
+.tl{flex:1;overflow:auto;padding:2px 14px 10px}
+.row{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd);animation:fade .25s ease-out both}
+.row:last-child{border-bottom:0}
+.row .n{font:11px/1.9 var(--mono);color:var(--t3)}
+.row .h{font-weight:600} .row .h i{font-style:normal;font-weight:500;color:var(--t2)}
+.row .s{color:var(--t2);font-size:12px;overflow-wrap:anywhere}
+.row .s.m{font-family:var(--mono);font-size:11.5px}
+.row.blocked{border-left:2px solid var(--red);margin-left:-14px;padding-left:12px;background:linear-gradient(90deg,rgba(240,93,103,.07),transparent 60%)}
+.row.blocked .h{color:var(--red)} .row.blocked .kv{margin-top:3px}
+.row.harm .h{color:var(--red)}
+.row.ok .h b{color:var(--green)}
+.row.ver .h b{color:var(--blue)} .row.rej .h b{color:var(--amber)}
+.unt{color:var(--amber)} .ver{color:var(--blue)}
+.kv{display:grid;grid-template-columns:54px 1fr;gap:1px 8px;font-size:12px}
+.kv span:nth-child(odd){color:var(--t3)}
+.empty{margin:auto;color:var(--t2);text-align:center;max-width:300px;padding:30px 10px}
+/* ---- graph ---- */
+.graphwrap{position:relative;flex:1;min-height:0}
 svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 svg.dragging{cursor:grabbing}
-.legend{position:absolute;left:12px;bottom:10px;max-width:60%;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mute);background:rgba(7,10,18,.78);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.hint{position:absolute;right:12px;top:8px;font-size:12px;color:var(--faint);pointer-events:none}
+.key{position:absolute;left:14px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--t2)}
+.key i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.tip{display:inline-grid;place-items:center;width:18px;height:18px;border:1px solid var(--bd2);border-radius:50%;font-size:11px;color:var(--t2);cursor:help;margin-left:4px}
 .node{cursor:pointer;opacity:0;pointer-events:none;outline:none}
 .node.show{opacity:1;pointer-events:auto}
-.node.enter{animation:pop .36s var(--ease-out) both}
-.node rect.body{fill:var(--surface2);stroke:var(--line2);stroke-width:1.5;transition:stroke .3s,fill .3s}
-.node text{fill:var(--text);font-family:var(--font);pointer-events:none}
-.node .l1{font-size:14px;font-weight:600}.node .l2{font-size:10.5px;fill:var(--mute);font-family:var(--mono)}
-.node .ic{font-size:14px}
-.node.user rect.body{stroke:var(--user);fill:var(--user-bg)}
-.node.value.t-UNTRUSTED rect.body{stroke:var(--unt);fill:var(--unt-bg)}
-.node.value.t-VERIFIED rect.body,.node.verified rect.body{stroke:var(--ver);fill:var(--ver-bg)}
-.node.value.t-USER rect.body{stroke:var(--user);fill:var(--user-bg)}
-.node.call rect.body{stroke:var(--faint)}
-.node.call.running rect.body{stroke:var(--cyan)}
-.node.call.done rect.body{stroke:var(--user);fill:#0c2218}
-.node.call.blocked rect.body{stroke:var(--block);fill:var(--block-bg);stroke-width:2.2}
-.node.call.blocked .l1{fill:#fecaca}
-.node.effect rect.body{stroke:#1f7a45;fill:#0c2218}
-.node.effect.leak rect.body{stroke:var(--block);fill:var(--block-bg);stroke-width:2.2}
-.node.rejected rect.body{stroke:#b4881d;fill:#2a2410;stroke-dasharray:5 3}
-.node:hover rect.body,.node:focus-visible rect.body{stroke-width:2.6}
-.node:focus-visible rect.body{stroke:var(--cyan)}
-.node.sel rect.body{stroke:var(--cyan);stroke-width:3}
-.glow{fill:none;stroke:var(--block);stroke-width:3;opacity:0}
-.node.blocked .glow{animation:flash .9s ease-in-out infinite}
-.ring{fill:none;stroke:var(--block);stroke-width:2.5;opacity:0;transform-box:fill-box;transform-origin:center}
-.node.shock .ring{animation:shock .8s var(--ease-out) 2}
-.badge{font-size:10.5px;font-weight:700}
-.badge rect{fill:var(--laya)} .badge text{fill:#14092e}
-.edge{fill:none;stroke-width:1.8;opacity:0}
-.edge.show{opacity:.9}
-.edge.c-UNTRUSTED{stroke:var(--unt)}.edge.c-VERIFIED{stroke:var(--ver)}.edge.c-USER{stroke:var(--user)}.edge.c-NONE{stroke:var(--faint)}
-.edge.dash{stroke-dasharray:6 5}
-.edge.deny{stroke:var(--block);stroke-width:2.6;stroke-dasharray:7 4;animation:march .8s linear infinite}
-.elabel{font-size:10.5px;fill:var(--mute);font-family:var(--mono);opacity:0}
-.elabel.show{opacity:1}
-.arrowhead{fill:currentColor}
-/* ---------- controls ---------- */
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.btn{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);cursor:pointer;display:grid;place-items:center;font-size:16px;transition:background .15s,border-color .15s,transform .15s}
-.btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.btn:active{transform:scale(.96)}
-@media (hover:hover) and (pointer:fine){.btn:hover{background:#17274a;border-color:var(--ver)}}
-.btn.primary{background:var(--accent);border-color:#3b82f6;font-weight:700;padding:0 14px}
-.scrub{flex:1;accent-color:#3b82f6;height:44px;cursor:pointer;min-width:60px}
-.pos{font-variant-numeric:tabular-nums;color:var(--mute);font-size:13px;min-width:74px;text-align:right}
-select.btn{padding:0 10px;appearance:none;text-align:center;color:var(--text);background:var(--surface2);font-weight:600}
-select.btn option{background:#0d1424;color:#e6eefc}
-/* ---------- drawer ---------- */
-.drawer{position:absolute;top:0;right:0;bottom:0;width:min(380px,92%);background:#0b1220;border-left:1px solid var(--line2);transform:translateX(102%);transition:transform .28s var(--ease-out);z-index:10;display:flex;flex-direction:column;box-shadow:-18px 0 40px rgba(0,0,0,.45)}
+.node.enter{animation:pop .3s ease-out both}
+.node rect.body{fill:var(--p2);stroke:var(--bd2);stroke-width:1.2;transition:stroke .25s}
+.node text{fill:var(--tx);font-family:var(--font);pointer-events:none}
+.node .l1{font-size:12.5px;font-weight:600}.node .l2{font-size:10.5px;fill:var(--t2);font-family:var(--mono)}
+.node.value.t-UNTRUSTED rect.body{stroke:var(--amber)}
+.node.verified rect.body,.node.value.t-VERIFIED rect.body{stroke:var(--blue)}
+.node.call.running rect.body{stroke:var(--blue)}
+.node.call.done rect.body{stroke:var(--green)}
+.node.call.blocked rect.body{stroke:var(--red);stroke-width:1.8;fill:#1a1015}
+.node.call.blocked .l1{fill:var(--red)}
+.node.effect rect.body{stroke:var(--green)}
+.node.effect.leak rect.body{stroke:var(--red);stroke-width:1.8;fill:#1a1015}
+.node.effect.leak .l1{fill:var(--red)}
+.node.rejected rect.body{stroke:var(--amber);stroke-dasharray:4 3}
+.node:hover rect.body{stroke-width:2}
+.node:focus-visible rect.body,.node.sel rect.body{stroke:var(--tx);stroke-width:2}
+.ring{fill:none;stroke:var(--red);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+.node.shock .ring{animation:shock .7s ease-out 1}
+.badge text{fill:#0b0f16;font:600 10px var(--font)}
+.edge{fill:none;stroke:#34425a;stroke-width:1.3;opacity:0}
+.edge.show{opacity:1}
+.edge.c-UNTRUSTED{stroke:var(--amber);opacity:0}.edge.c-UNTRUSTED.show{opacity:.75}
+.edge.c-VERIFIED{stroke:var(--blue)}
+.edge.dash{stroke-dasharray:4 4}
+.edge.deny{stroke:var(--red);stroke-width:1.8;stroke-dasharray:6 4}
+.elabel{font:10.5px var(--mono);fill:var(--red);opacity:0}.elabel.show{opacity:1}
+/* ---- controls ---- */
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0 0}
+.btn{min-width:44px;min-height:40px;padding:0 12px;border:1px solid var(--bd2);border-radius:4px;background:var(--p);cursor:pointer;display:grid;place-items:center;transition:background .12s,border-color .12s}
+.btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.btn:hover{background:var(--p2);border-color:var(--t3)}}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#06101f;font-weight:600}
+.scrub{flex:1;min-width:80px;accent-color:var(--blue);height:40px;cursor:pointer}
+.pos{color:var(--t2);font:12px var(--mono);min-width:64px;text-align:right}
+select.btn{appearance:none;background:var(--p);text-align:center}
+select.btn option{background:#0D121A;color:#E6EAF0}
+/* ---- inspector ---- */
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(380px,94%);background:var(--p);border:1px solid var(--bd2);border-radius:6px;transform:translateX(104%);transition:transform .22s ease-out;z-index:10;display:flex;flex-direction:column;box-shadow:-14px 0 30px rgba(0,0,0,.5)}
 .drawer.open{transform:none}
-.drawer header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
-.drawer h3{margin:0;font-size:15px}
-.drawer .body{padding:12px 14px;overflow:auto;font-size:13.5px}
-.kv{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;margin:0 0 12px}
-.kv dt{color:var(--mute);font-size:11px;letter-spacing:.8px;text-transform:uppercase;padding-top:2px}
-.kv dd{margin:0;overflow-wrap:anywhere}
-.pill{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:600;border:1px solid var(--line2);margin:0 4px 4px 0}
-.pill.UNTRUSTED{color:var(--unt);border-color:#8a4a1d;background:var(--unt-bg)}
-.pill.VERIFIED{color:var(--ver);border-color:#2b5bb0;background:var(--ver-bg)}
-.pill.USER{color:var(--user);border-color:#1f7a45;background:var(--user-bg)}
-.pill.deny{color:var(--block);border-color:var(--block);background:var(--block-bg)}
-.pill.allow{color:var(--user);border-color:#1f7a45;background:var(--user-bg)}
-.mono{font-family:var(--mono);font-size:12.5px;background:#070c18;border:1px solid var(--line);border-radius:8px;padding:6px 8px;display:block;overflow-wrap:anywhere}
-.chk{border:1px solid var(--line);border-radius:10px;padding:7px 9px;margin-bottom:7px;background:var(--surface)}
-.chk small{display:block;color:var(--mute);margin-top:3px}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
-@keyframes flash{0%,100%{opacity:.15}50%{opacity:1}}
-@keyframes shock{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
-@keyframes march{to{stroke-dashoffset:-22}}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(248,113,113,.55)}100%{box-shadow:0 0 0 16px rgba(248,113,113,0)}}
-.node .wrap{transform-box:fill-box}
+.drawer header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd)}
+.drawer h3{margin:0;font-size:14px}
+.drawer .body{padding:12px 14px;overflow:auto}
+.drawer dl{display:grid;grid-template-columns:84px 1fr;gap:8px 12px;margin:0 0 14px}
+.drawer dt{color:var(--t3);font-size:11px;letter-spacing:.8px;text-transform:uppercase;padding-top:2px}
+.drawer dd{margin:0;overflow-wrap:anywhere}
+.drawer p.sum{margin:0 0 14px;color:var(--t2)}
+.drawer table{width:100%;border-collapse:collapse;font-size:12px}
+.drawer th{color:var(--t3);font-weight:500;font-size:11px;letter-spacing:.6px;text-transform:uppercase;text-align:left;padding:4px 6px 4px 0}
+.drawer td{padding:6px 6px 6px 0;border-top:1px solid var(--bd);vertical-align:top}
+.chain{font:11.5px var(--mono);color:var(--t2)}
+.red{color:var(--red)} .green{color:var(--green)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes shock{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
 @media (max-width:860px){
   .app{height:auto;min-height:100vh}
-  .panel{min-height:300px}
-  .graphwrap{min-height:380px}
-  .feed{max-height:340px}
   .main{grid-template-columns:1fr;grid-template-rows:auto auto}
-  .tile{flex:1 1 calc(50% - 8px)}
-  .legend{display:none}
+  .tl{max-height:320px}.graphwrap{min-height:380px}
+  .metrics div{padding:0 12px}.key{display:none}
 }
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-  .node.blocked .glow{opacity:1}
-}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <div class="strip">
-    <div class="verdict" id="verdict" role="status" aria-live="polite">
-      <div class="ico" id="vico">&#9670;</div>
-      <div><h2 id="vtitle">Ready</h2><p id="vsub">Pick a scenario and press Run.</p></div>
-    </div>
-    <div class="tiles">
-      <div class="tile" id="t-task" title="Did the thing you asked for still get done correctly?"><b id="v-task">&ndash;</b><span>Your task</span></div>
-      <div class="tile" id="t-leak" title="Real harmful effects that happened: data sent outside, money to a stranger, and so on."><b id="v-leak">0</b><span>Harm done</span></div>
-      <div class="tile" id="t-alert" title="Unsafe calls that Black Onyx stopped before they ran."><b id="v-alert">0</b><span>Blocked</span></div>
-      <div class="tile" id="t-ms" title="Time the rule check added to each tool call."><b id="v-ms">&ndash;</b><span>Check time</span></div>
-    </div>
+  <div class="meta">
+    <div><b id="m-def">Black Onyx</b> <span id="m-name"></span></div>
+    <div class="r"><span class="live" id="m-live">&#9679; LIVE</span><span>Offline &middot; 0 cloud calls</span><span id="m-ev"></span></div>
   </div>
 
-  <div class="story" id="story" aria-live="polite"><span class="sk">In plain words</span><span id="storytxt"></span></div>
+  <section class="result" id="result" aria-live="polite">
+    <div>
+      <div class="lbl" id="r-kick">Ready</div>
+      <div class="title"><span class="sq"></span><span id="r-title">No run yet</span></div>
+      <div class="sub" id="r-sub">Choose a scenario and run it.</div>
+    </div>
+    <dl class="metrics">
+      <div><dt>Blocked</dt><dd id="v-alert">00</dd></div>
+      <div><dt>Harmful calls</dt><dd id="v-leak">00</dd></div>
+      <div><dt>Events</dt><dd id="v-ev">00</dd></div>
+      <div><dt>Policy eval</dt><dd id="v-ms" class="dim">&mdash;</dd></div>
+    </dl>
+  </section>
 
-  <div class="main" style="position:relative">
-    <section class="panel" aria-label="Agent activity">
-      <header><span>Agent &amp; security monitor</span><span id="defchip"></span></header>
-      <div class="feed" id="feed"></div>
+  <section class="decision" id="decision" hidden aria-label="Policy decisions">
+    <div class="dt h lbl"><span>Requested</span><span>Cause</span><span>Policy</span><span>Decision</span></div>
+    <div id="dec-rows"></div>
+  </section>
+
+  <div class="main">
+    <section class="panel" aria-label="Event timeline">
+      <header><span class="lbl">Event timeline</span><span class="lbl" id="m-ev2"></span></header>
+      <div class="tl" id="feed"></div>
     </section>
     <section class="panel" aria-label="Provenance graph">
-      <header><span>Provenance graph</span><span style="display:flex;gap:10px;align-items:center"><span id="gcount"></span><button class="btn" id="fit" style="min-height:34px;min-width:44px;font-size:12px;padding:0 10px" aria-label="Fit graph to view">Fit</button></span></header>
+      <header><span class="lbl">Provenance <span class="tip" title="Click a node to inspect it. Scroll to zoom, drag to pan.">i</span></span>
+        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view">Fit</button></span></header>
       <div class="graphwrap" id="gwrap">
-        <svg id="svg" role="img" aria-label="Data flow graph. Use Tab to focus nodes and Enter to open details."></svg>
-        <div class="legend">
-          <span><i style="background:var(--user)"></i>You</span>
-          <span><i style="background:var(--ver)"></i>Verified</span>
-          <span><i style="background:var(--unt)"></i>Untrusted</span>
-          <span><i style="background:var(--block)"></i>Blocked</span>
-          <span><i style="background:var(--laya)"></i>Laya</span>
-          <span style="flex-basis:100%;color:var(--faint)">Orange line = untrusted data flowing &middot; red dashed = blocked</span>
-        </div>
-        <div class="hint" id="hint">Click a node for details &middot; scroll to zoom &middot; drag to pan</div>
+        <svg id="svg" role="img" aria-label="Provenance graph. Tab to a node and press Enter to inspect it."></svg>
+        <div class="key"><span><i style="background:var(--bd2)"></i>Trusted</span><span><i style="background:var(--amber)"></i>Untrusted</span><span><i style="background:var(--blue)"></i>Verified</span><span><i style="background:var(--green)"></i>Completed</span><span><i style="background:var(--red)"></i>Blocked</span></div>
       </div>
     </section>
-    <aside class="drawer" id="drawer" aria-label="Node details">
-      <header><h3 id="dtitle">Details</h3><button class="btn" id="dclose" aria-label="Close details">&#10005;</button></header>
+    <aside class="drawer" id="drawer" aria-label="Inspector">
+      <header><h3 id="dtitle">Inspector</h3><button class="btn" id="dclose" aria-label="Close inspector" style="min-height:34px">&#10005;</button></header>
       <div class="body" id="dbody"></div>
     </aside>
   </div>
 
   <div class="controls" role="group" aria-label="Replay controls">
     <button class="btn" id="b-restart" title="Restart (R)" aria-label="Restart">&#9198;</button>
-    <button class="btn" id="b-prev" title="Step back (&larr;)" aria-label="Step back">&#9664;</button>
+    <button class="btn" id="b-prev" title="Step back" aria-label="Step back">&#9664;</button>
     <button class="btn primary" id="b-play" title="Play / pause (Space)" aria-label="Play">&#9654; Play</button>
-    <button class="btn" id="b-next" title="Step forward (&rarr;)" aria-label="Step forward">&#9654;&#9654;</button>
+    <button class="btn" id="b-next" title="Step forward" aria-label="Step forward">&#9654;&#9654;</button>
     <input class="scrub" id="scrub" type="range" min="0" value="0" aria-label="Replay position">
     <span class="pos" id="pos">0 / 0</span>
     <select class="btn" id="speed" aria-label="Playback speed"><option value="0.5">0.5&times;</option><option value="1" selected>1&times;</option><option value="2">2&times;</option><option value="4">4&times;</option></select>
@@ -237,133 +202,86 @@ const $ = (id)=>document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
 const esc = (s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const short = (s,n)=>{s=String(s==null?'':s).replace(/\s+/g,' ');return s.length>n?s.slice(0,n-1)+'…':s;};
-const TOOL_ICON = {read_inbox:'✉',send_email:'✉',reply_email:'↩',transfer_money:'₹',read_file:'▤',write_file:'✎',web_fetch:'◎',calendar_add:'▦',search_docs:'⌕'};
-const EFF_ICON = {email_sent:'✉',money_moved:'₹',http_request:'◎',file_written:'✎',file_read:'▤',calendar_added:'▦'};
+const pad2 = (n)=>String(n).padStart(2,'0');
 
-/* =============== plain-language helpers =============== */
-const ACTION = {send_email:'send an email',reply_email:'reply to an email',transfer_money:'send money',read_file:'open a file',write_file:'save a file',web_fetch:'visit a web address',calendar_add:'add a calendar guest',read_inbox:'read your inbox',search_docs:'search your documents'};
-const ARGP = {to:'the recipient',account:'the bank account',amount:'the amount',path:'the file',url:'the web address',attendees:'the guest',message_id:'the message',content:'the content'};
-const ORIGIN = {EMAIL:'an email',WEB:'a web page',FILE:'a file',TOOL_OTHER:'a tool result',DOC_INDEX:'the document index',CONTACTS:'your contacts',PAYEE_LIST:'the payee list',USER:'you'};
+/* ---------- vocabulary ---------- */
+const ACTION = {send_email:'send email',reply_email:'reply to email',transfer_money:'transfer money',read_file:'read file',write_file:'write file',web_fetch:'fetch URL',calendar_add:'add calendar guest',read_inbox:'read inbox',search_docs:'search documents'};
+const ARGP = {to:'recipient',account:'account',amount:'amount',path:'file path',url:'URL',attendees:'guest',message_id:'message',content:'content'};
+const ORIGIN = {EMAIL:'EMAIL',WEB:'WEB',FILE:'FILE',TOOL_OTHER:'TOOL',DOC_INDEX:'DOC INDEX',CONTACTS:'CONTACTS',PAYEE_LIST:'PAYEE LIST',USER:'USER'};
 const RULE = {
- 'send_email.to':'An email may only go to you or to someone in your contacts.',
- 'transfer_money.account':'Money may only go to an account you named or one on the trusted payee list.',
- 'transfer_money.amount':'An amount must come from you, or be no more than what the ledger says is owed.',
- 'read_file.path':'A file may only be opened if you named it, or it came from the trusted document index.',
- 'write_file.path':'Files may only be saved where you said.',
- 'web_fetch.url':'A web address must come from you, or be an approved site with no data added to the link.',
- 'calendar_add.attendees':'Calendar guests may only be you or your contacts.',
- 'reply_email.message_id':'A reply must target a real message in your mailbox.'};
-const originWords = (srcs)=> (srcs||[]).map(s=>ORIGIN[s]||s).join(' and ') || 'outside text';
+ 'send_email.to':'Recipients must come from the user or contacts.',
+ 'transfer_money.account':'Accounts must come from the user or the payee list.',
+ 'transfer_money.amount':'Amounts must come from the user or stay within the ledger.',
+ 'read_file.path':'File paths must come from the user or the document index.',
+ 'write_file.path':'Write paths must come from the user.',
+ 'web_fetch.url':'URLs must come from the user or an approved host with no data in the link.',
+ 'calendar_add.attendees':'Guests must come from the user or contacts.',
+ 'reply_email.message_id':'Replies must target a real mailbox message.'};
+const originWords = (srcs)=> (srcs||[]).map(s=>ORIGIN[s]||s).join(' + ') || 'external text';
 function chainInfo(chain){
-  // "to <- extract_email(email#7) <- EMAIL, UNTRUSTED"  or  "read_file(path <- ... )"
   const m = String(chain||'').match(/^(?:[a-z_]+\()?(\w+) <-/); const arg = m?m[1]:'';
   const tail = String(chain||'').split(' <- ').pop().replace(/\)$/,''); const srcs = tail.split(',').map(x=>x.trim()).filter(x=>ORIGIN[x]);
   return {arg, srcs};
 }
-function plainAlert(ev, offplan){
-  const ci = chainInfo(ev.chain); const act = ACTION[ev.tool]||ev.tool; const arg = ARGP[ci.arg]||'a value';
-  const rule = RULE[ev.tool+'.'+ci.arg];
-  if(offplan) return `While reading, the agent found text telling it to <b>${esc(act)}</b>, something you never asked for. That call was not in the plan made from your request, so it was refused. (${esc(arg)} came from ${esc(originWords(ci.srcs))}, which is untrusted.)`;
-  return `The agent was about to <b>${esc(act)}</b>, but ${esc(arg)} came from <b>${esc(originWords(ci.srcs))}</b>, which cannot be trusted. ${rule?esc(rule):''} So it was stopped.`;
-}
-function plainNode(n){
-  if(n.kind==='user') return 'This is your request, the only thing the agent is allowed to take orders from.';
-  if(n.kind==='call'){
-    const act = ACTION[n.tool]||n.tool;
-    if(n.alert) return plainAlert(n.alert, n.offplan);
-    if(n.offplan) return `The agent tried to <b>${esc(act)}</b> but it was not part of the plan, so Black Onyx would refuse it.`;
-    const untrustedData = (n.checks||[]).some(c=>c.trust==='UNTRUSTED' && /data argument/.test(c.reason));
-    return `This is a step from your request: <b>${esc(act)}</b>. Every value that chooses a destination or action came from you or a trusted source, so it ran.${untrustedData?' Untrusted text was only used as content (data), which is allowed.':''}`;
-  }
-  if(n.kind==='verified') return `This value was looked up in a trusted table (${esc(originWords(n.sources))}) instead of being copied from untrusted text, so it is safe to use as a destination.`;
-  if(n.kind==='rejected') return 'A check tried to confirm this value in a trusted table and could not. It stays untrusted, so it cannot be used as a destination.';
-  if(n.kind==='effect') return n.leak? `This really happened in the (mock) world: ${esc(n.full)}. Nothing stopped it.` : 'This is the intended result of your request.';
-  if(n.kind==='value'){
-    if(n.trust==='UNTRUSTED') return `This is data that came from <b>${esc(originWords(n.sources))}</b>. The agent may read and summarise it, but it can never decide where anything is sent, which file is opened or which account is paid.`;
-    return 'This value came from you or a trusted source.';
-  }
-  return '';
-}
-const PLAN_NOTE = 'The agent writes its plan from your request alone, before it reads anything.';
-function storyText(n, leaks, alertsN, done, firstAlert, leakList){
-  if(!EVENTS.length) return 'Pick a scenario on the left and press Run. This panel explains, step by step, what is happening.';
-  const req = String((EVENTS[0]||{}).text||'your request').replace(/[.!\s]+$/,'');
-  let t = `You asked: <b>“${esc(short(req,70))}”</b>. `;
-  if(n<2) return t+PLAN_NOTE;
-  if(leaks){ const a = leakList.length? leakList.map(x=>esc(x.description)).join('; then '):'an unsafe action'; return t+`While reading, the agent met text telling it to do something else, and it simply obeyed: <b>${a}</b>. Nothing checked where that instruction came from.`; }
-  if(alertsN && firstAlert){ const ci=chainInfo(firstAlert.chain); const act=ACTION[firstAlert.tool]||firstAlert.tool;
-    return t+`While reading, the agent met hidden text telling it to <b>${esc(act)}</b>. Black Onyx saw that ${esc(ARGP[ci.arg]||'the target')} came from <b>${esc(originWords(ci.srcs))}</b>, which is untrusted, so it blocked the call.${done&&summary?(summary.task_ok?' Your original task still finished.':' Your original task did not finish.'):''}`; }
-  if(done) return t+`Nothing unsafe was attempted and your task ${summary&&summary.task_ok?'finished':'did not finish'}. Untrusted text was read as data only.`;
-  return t+PLAN_NOTE+' It is now reading data.';
-}
+const isRead = (t)=>['read_inbox','read_file','web_fetch','search_docs'].includes(t);
 
-/* =============== 1. build a static graph + per-event reveal script =============== */
-const nodes = new Map(), edges = [], fx = EVENTS.map(()=>[]), feedHtml = EVENTS.map(()=>null);
-let seqN = 0, lastResult = null, summary = null;
-const valNode = {};            // value id -> node id
-const callNodes = {};          // call id -> node id
-const results = [];            // tool_result nodes in order
-const alerts = {}, laya = {};
+/* ---------- 1. build graph + per-event reveal script ---------- */
+const nodes = new Map(), edges = [], fx = EVENTS.map(()=>[]), rows = EVENTS.map(()=>null);
+let seqN = 0, summary = null;
+const valNode = {}, callNodes = {}, results = [];
 function addNode(n, i){ n.order = ++seqN; n.checks = n.checks||[]; nodes.set(n.id, n); fx[i].push({t:'show',id:n.id}); return n; }
 function addEdge(e, i){ e.order = ++seqN; edges.push(e); fx[i].push({t:'edge',idx:edges.length-1}); return e; }
 function ensureCall(cid, tool, i){
   if(callNodes[cid]) return nodes.get(callNodes[cid]);
   const planned = !String(cid).startsWith('x');
-  const n = addNode({id:'call:'+cid,kind:'call',label:tool,sub:planned?cid:cid+' · off-plan',icon:TOOL_ICON[tool]||'⚙',cid,tool,offplan:!planned,state:'planned'}, i);
+  const n = addNode({id:'call:'+cid,kind:'call',label:tool,sub:planned?cid:cid+' · off-plan',cid,tool,offplan:!planned,state:'planned'}, i);
   callNodes[cid] = n.id; return n;
 }
 function resolve(vid, sources){
   if(vid && valNode[vid]) return valNode[vid];
-  // unknown intermediate value: attach to the latest result that shares an origin
   for(let k=results.length-1;k>=0;k--){ const r=nodes.get(results[k]); if(!sources||!sources.length||sources.some(s=>(r.sources||[]).includes(s))) return r.id; }
   return results.length? results[results.length-1] : 'req';
 }
-function nodeKindFromTrust(t){ return t==='VERIFIED'?'verified':'value'; }
+const trustHtml = (t,srcs)=>`${esc(originWords(srcs))} · <span class="${t==='UNTRUSTED'?'unt':t==='VERIFIED'?'ver':''}">${esc(t)}</span>`;
+const row = (ev,cls,h,s,m)=>`<div class="row ${cls||''}"><span class="n">${pad2(ev.seq)}</span><div><div class="h">${h}</div>${s?`<div class="s${m?' m':''}">${s}</div>`:''}</div></div>`;
 
 EVENTS.forEach((ev,i)=>{
   switch(ev.type){
   case 'request':
-    addNode({id:'req',kind:'user',label:'You',sub:short(ev.text,26),icon:'●',full:ev.text,trust:'USER',sources:['USER']}, i);
-    feedHtml[i] = `<div class="card user"><div class="who">You</div>${esc(ev.text)}</div>`;
+    addNode({id:'req',kind:'user',label:'User request',sub:short(ev.text,22),full:ev.text,trust:'USER',sources:['USER']}, i);
+    rows[i] = row(ev,'', 'Request', esc(ev.text));
     break;
   case 'plan': {
     let prev = 'req';
-    (ev.steps||[]).forEach(s=>{
-      const n = ensureCall(s.call_id, s.tool, i); n.desc = s.desc;
-      addEdge({from:prev,to:n.id,kind:'seq',trust:'NONE'}, i); prev = n.id;
-    });
-    const chips = (ev.steps||[]).map(s=>`<span class="chip">${esc(s.tool)}</span>`).join('<span class="arrow">›</span>');
-    feedHtml[i] = `<div class="card plan"><div class="who">Plan fixed from your request only</div><small>Injected text cannot add, remove or reorder these calls.</small><div class="chips">${chips}</div></div>`;
+    (ev.steps||[]).forEach(s=>{ const n = ensureCall(s.call_id, s.tool, i); n.desc = s.desc; addEdge({from:prev,to:n.id,kind:'seq',trust:'NONE'}, i); prev = n.id; });
+    rows[i] = row(ev,'', 'Plan fixed', (ev.steps||[]).map(s=>esc(s.tool)).join(' → '), true);
     break; }
   case 'tool_result': {
     const c = ensureCall(ev.call_id, ev.tool, i);
-    if(!['read_inbox','read_file','web_fetch','search_docs'].includes(ev.tool)){
-      fx[i].push({t:'state',id:c.id,state:c.state==='blocked'?'blocked':'done'}); break;
-    }
-    const n = addNode({id:'val:'+ev.value_id,kind:'value',label:ev.tool+' result',sub:short(ev.preview,24),trust:ev.trust,sources:ev.sources,full:ev.preview,vid:ev.value_id,icon:'▤'}, i);
+    if(!isRead(ev.tool)){ fx[i].push({t:'state',id:c.id,state:c.state==='blocked'?'blocked':'done'}); break; }
+    const n = addNode({id:'val:'+ev.value_id,kind:'value',label:ev.tool+' result',sub:short(ev.preview,22),trust:ev.trust,sources:ev.sources,full:ev.preview,vid:ev.value_id}, i);
     valNode[ev.value_id] = n.id; results.push(n.id);
     addEdge({from:c.id,to:n.id,kind:'flow',trust:ev.trust}, i);
     fx[i].push({t:'state',id:c.id,state:c.state==='blocked'?'blocked':'done'});
-    const cls = ev.trust==='UNTRUSTED'?'unt':ev.trust==='VERIFIED'?'ver':'user';
-    if(['read_inbox','read_file','web_fetch','search_docs'].includes(ev.tool)) feedHtml[i] = `<div class="card res"><span class="dot d-${cls}"></span><div><b>${esc(ev.tool)}</b> returned data<small>${esc((ev.sources||[]).join(' + '))} · <b>${esc(ev.trust)}</b> — may be read, never trusted to choose a destination</small></div></div>`;
+    rows[i] = row(ev,'', esc(ev.tool), trustHtml(ev.trust, ev.sources));
     break; }
   case 'op': {
-    const n = addNode({id:'val:'+ev.output,kind:'value',label:ev.op,sub:short(ev.preview,24),trust:ev.trust,sources:ev.sources,full:ev.preview,vid:ev.output,icon:'ƒ'}, i);
+    const n = addNode({id:'val:'+ev.output,kind:'value',label:ev.op,sub:short(ev.preview,22),trust:ev.trust,sources:ev.sources,full:ev.preview,vid:ev.output}, i);
     valNode[ev.output] = n.id;
-    (ev.inputs||[]).forEach(v=>addEdge({from:resolve(v,ev.sources),to:n.id,kind:'op',trust:ev.trust,label:''}, i));
+    (ev.inputs||[]).forEach(v=>addEdge({from:resolve(v,ev.sources),to:n.id,kind:'op',trust:ev.trust}, i));
     if(!(ev.inputs||[]).length) addEdge({from:resolve(null,ev.sources),to:n.id,kind:'op',trust:ev.trust}, i);
     break; }
   case 'declassify': {
     const inp = resolve(ev.input, null);
     if(ev.ok===false){
-      const n = addNode({id:'rej:'+ev.seq,kind:'rejected',label:ev.validator,sub:'rejected input',trust:'UNTRUSTED',sources:[],full:ev.rule,icon:'⚠',rule:ev.rule}, i);
+      const n = addNode({id:'rej:'+ev.seq,kind:'rejected',label:ev.validator,sub:'rejected',trust:'UNTRUSTED',sources:[],full:ev.rule,rule:ev.rule}, i);
       addEdge({from:inp,to:n.id,kind:'op',trust:'UNTRUSTED',dash:true}, i);
-      feedHtml[i] = `<div class="card rej"><b>⚠ ${esc(ev.validator)}</b> rejected the input<small>${esc(ev.rule)} — value stays UNTRUSTED</small></div>`;
+      rows[i] = row(ev,'rej', `<b>Rejected</b> <i>${esc(ev.validator)}</i>`, esc(ev.rule));
     } else {
-      const n = addNode({id:'val:'+ev.output,kind:'verified',label:ev.validator,sub:short(ev.preview,24),trust:'VERIFIED',sources:ev.sources,full:ev.preview,vid:ev.output,icon:'✔',rule:ev.rule}, i);
+      const n = addNode({id:'val:'+ev.output,kind:'verified',label:ev.validator,sub:short(ev.preview,22),trust:'VERIFIED',sources:ev.sources,full:ev.preview,vid:ev.output,rule:ev.rule}, i);
       valNode[ev.output] = n.id;
-      addEdge({from:inp,to:n.id,kind:'declass',trust:'VERIFIED',dash:true,label:'declassify'}, i);
-      feedHtml[i] = `<div class="card ver"><b>✔ ${esc(ev.validator)}</b> → <span class="chip ver">${esc(short(ev.preview,34))}</span><small>Looked up in a trusted table (${esc((ev.sources||[]).join(', '))}). Rule: ${esc(ev.rule)}</small></div>`;
+      addEdge({from:inp,to:n.id,kind:'declass',trust:'VERIFIED',dash:true}, i);
+      rows[i] = row(ev,'ver', `<b>Verified</b> <i>${esc(ev.validator)}</i>`, `${esc(short(ev.preview,40))} · ${esc(originWords(ev.sources))}`);
     }
     break; }
   case 'call_check': {
@@ -373,38 +291,36 @@ EVENTS.forEach((ev,i)=>{
     if(deny){ fx[i].push({t:'state',id:c.id,state:'blocked'}); }
     else if(c.state!=='blocked'){ fx[i].push({t:'state',id:c.id,state:'running'}); }
     if(ev.value_id && valNode[ev.value_id] && (deny || ev.trust!=='USER')){
-      addEdge({from:valNode[ev.value_id],to:c.id,kind:'arg',trust:ev.trust,deny,label:ev.argument}, i);
+      addEdge({from:valNode[ev.value_id],to:c.id,kind:'arg',trust:ev.trust,deny,label:deny?ev.argument:''}, i);
     }
     break; }
   case 'laya_score': {
-    const c = ensureCall(ev.call_id, '?', i); c.laya = ev; laya[ev.call_id] = ev;
-    fx[i].push({t:'badge',id:c.id,text:ev.score==null?'Laya: no opinion':'fit '+Number(ev.score).toFixed(2),warn:!!ev.warn});
-    const pct = ev.score==null?0:Math.round(ev.score*100);
-    const verdict = ev.score==null?'no opinion':(ev.warn?'does not fit your request':'fits your request');
-    feedHtml[i] = `<div class="card laya"><b>Laya</b><span>${esc(c.tool)}: ${esc(verdict)}</span><span class="meter"><i style="width:${pct}%"></i></span><span class="mono" style="padding:1px 6px;display:inline">${ev.score==null?'–':Number(ev.score).toFixed(2)} · ${Math.round(ev.ms||0)} ms</span><small style="width:100%">Advisory second opinion. The rules decide; Laya never overrides them.</small></div>`;
+    const c = ensureCall(ev.call_id, '?', i); c.laya = ev;
+    fx[i].push({t:'badge',id:c.id,text:ev.score==null?'Laya –':'fit '+Number(ev.score).toFixed(2),warn:!!ev.warn});
+    rows[i] = row(ev,'', `Laya <i>${esc(c.tool)}</i>`, ev.score==null?'no opinion (advisory)':`fit ${Number(ev.score).toFixed(2)} · ${ev.warn?'low':'ok'} · advisory`);
     break; }
   case 'alert': {
-    const c = ensureCall(ev.call_id, ev.tool, i); alerts[ev.call_id]=ev; c.alert=ev;
+    const c = ensureCall(ev.call_id, ev.tool, i); c.alert=ev;
     fx[i].push({t:'state',id:c.id,state:'blocked'},{t:'shock',id:c.id});
-    const chain = esc(ev.chain).replace(/(EMAIL|WEB|FILE|TOOL_OTHER)/g,'<span class="t-e">$1</span>').replace(/UNTRUSTED/g,'<span class="t-b">UNTRUSTED</span>');
-    feedHtml[i] = `<div class="card alert" role="alert"><h3>⛔ BLOCKED <span class="chip">${esc(ev.tool)}</span></h3><p style="margin:2px 0 4px">${plainAlert(ev, String(ev.call_id).startsWith('x'))}</p><div class="chain" title="Where the blocked value came from, step by step">${chain}</div><small>The chain above is the value's journey. Black Onyx decided from where it came from, not from what the text said.</small></div>`;
+    const ci = chainInfo(ev.chain), off = String(ev.call_id).startsWith('x');
+    const cause = `${ARGP[ci.arg]||'value'} derived from ${originWords(ci.srcs)} · UNTRUSTED`;
+    const pol = off ? 'Call is not in the plan fixed from the request.' : (RULE[ev.tool+'.'+ci.arg]||ev.reason);
+    c.decision = {requested:ev.tool, cause, policy: off?`${pol} ${RULE[ev.tool+'.'+ci.arg]||''}`:pol, off};
+    rows[i] = row(ev,'blocked', `Blocked <i style="color:var(--tx)">${esc(ev.tool)}</i>`, `<div class="kv"><span>Cause</span><span>${esc(cause)}</span><span>Policy</span><span>${esc(pol)}</span></div><div class="s m" style="margin-top:4px">${esc(ev.chain)}</div>`);
     break; }
   case 'effect': {
     const c = ensureCall(ev.call_id, '?', i);
-    const n = addNode({id:'eff:'+ev.seq,kind:'effect',leak:!!ev.leak,label:ev.leak?'LEAK':'done',sub:short(ev.description,26),full:ev.description,icon:EFF_ICON[ev.kind]||'•',trust:ev.leak?'UNTRUSTED':'USER',sources:[]}, i);
-    addEdge({from:c.id,to:n.id,kind:'flow',trust:ev.leak?'UNTRUSTED':'USER',deny:false}, i);
+    const n = addNode({id:'eff:'+ev.seq,kind:'effect',leak:!!ev.leak,label:ev.leak?'Executed (harmful)':'Executed',sub:short(ev.description,24),full:ev.description,trust:ev.leak?'UNTRUSTED':'USER',sources:[]}, i);
+    addEdge({from:c.id,to:n.id,kind:'flow',trust:ev.leak?'UNTRUSTED':'USER'}, i);
     fx[i].push({t:'state',id:c.id,state:'done'});
-    feedHtml[i] = `<div class="card eff${ev.leak?' leak':''}"><b>${ev.leak?'⚠ Real-world effect':'✔ Done'}</b>${ev.leak?'<span class="tag leak">LEAK</span>':'<span class="tag safe">SAFE</span>'}<small>${esc(ev.description)}</small></div>`;
+    rows[i] = row(ev, ev.leak?'harm':'ok', ev.leak?'Executed <i style="color:var(--red)">harmful</i>':'<b>Executed</b>', esc(ev.description));
     break; }
-  case 'summary':
-    summary = ev;
-    break;
+  case 'summary': summary = ev; break;
   }
 });
 
-/* =============== 2. layout =============== */
-const NW = 160, NH = 52, GX = 40, GY = 20;
-const layers = {};
+/* ---------- 2. layout ---------- */
+const NW = 160, NH = 46, GX = 38, GY = 18;
 function layout(dir){
   const preds = {}; edges.forEach(e=>{(preds[e.to]=preds[e.to]||[]).push(e.from);});
   const depth = {}; const list = [...nodes.values()].sort((a,b)=>a.order-b.order);
@@ -416,34 +332,30 @@ function layout(dir){
   Object.entries(layers).forEach(([l,arr])=>{
     arr.sort((a,b)=>a.order-b.order);
     arr.forEach((n,k)=>{
-      if(TB){ n.l = (k-(arr.length-1)/2)*(NW+34) + (maxPer-1)*(NW+34)/2; n.t = Number(l)*(NH+46); }
+      if(TB){ n.l = (k-(arr.length-1)/2)*(NW+30) + (maxPer-1)*(NW+30)/2; n.t = Number(l)*(NH+40); }
       else  { n.l = Number(l)*(NW+GX); n.t = (k-(arr.length-1)/2)*(NH+GY) + (maxPer-1)*(NH+GY)/2; }
     });
   });
-  const all = list;
-  const minX=Math.min(...all.map(n=>n.l))-24, maxX=Math.max(...all.map(n=>n.l))+NW+24;
-  const minY=Math.min(...all.map(n=>n.t))-34, maxY=Math.max(...all.map(n=>n.t))+NH+78;
+  const minX=Math.min(...list.map(n=>n.l))-24, maxX=Math.max(...list.map(n=>n.l))+NW+24;
+  const minY=Math.min(...list.map(n=>n.t))-30, maxY=Math.max(...list.map(n=>n.t))+NH+64;
   return {minX,maxX,minY,maxY,TB};
 }
 const svg = $('svg');
 function el(tag, attrs, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
-let baseVB=null, vb=null; let gEdges, gNodes; const nodeEls = {}, edgeEls = [];
+let baseVB=null, vb=null, gEdges, gNodes; const nodeEls = {}, edgeEls = [];
 function drawGraph(){
   svg.innerHTML='';
   if(!nodes.size) return;
-  // try both directions, keep the one that renders larger in this panel
   const r = $('gwrap').getBoundingClientRect(); const PW = Math.max(300,r.width||800), PH = Math.max(240,r.height||500);
   const a = layout('LR'), b = layout('TB');
   const sc = (x)=>Math.min(PW/(x.maxX-x.minX), PH/(x.maxY-x.minY));
-  const ext = sc(b) > sc(a)*1.15 ? b : layout('LR');   // layout() mutates positions: recompute the winner last
+  const ext = sc(b) > sc(a)*0.9 ? b : layout('LR');
+  const TB = ext.TB === true;
   const defs = el('defs',{},svg);
-  ['UNTRUSTED:#fb923c','VERIFIED:#60a5fa','USER:#4ade80','NONE:#5b677a','DENY:#f87171'].forEach(s=>{
-    const [k,c]=s.split(':'); const m=el('marker',{id:'ah-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);
+  ['UNTRUSTED:#E7A33D','VERIFIED:#4F8CFF','USER:#5C6675','NONE:#34425a','DENY:#F05D67'].forEach(s=>{
+    const [k,c]=s.split(':'); const m=el('marker',{id:'ah-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'},defs);
     el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m);
   });
-  const all=[...nodes.values()];
-  const TB = ext.TB === true;
-  if(TB && ext===b){ layout('TB'); }
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
   baseVB = {x:ext.minX,y:ext.minY,w:ext.maxX-ext.minX,h:ext.maxY-ext.minY}; vb = {...baseVB};
   svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
@@ -452,123 +364,107 @@ function drawGraph(){
     const na=nodes.get(e.from), nb=nodes.get(e.to); if(!na||!nb) return;
     let d, mx, my;
     if(TB){
-      const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(24,(y2-y1)/2);
-      d = y2>y1 ? `M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2-2}` : `M${na.l+NW},${na.t+NH/2} C${na.l+NW+60},${na.t+NH/2} ${nb.l+NW+60},${nb.t+NH/2} ${nb.l+NW+2},${nb.t+NH/2}`;
+      const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(20,(y2-y1)/2);
+      d = y2>y1 ? `M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2-2}` : `M${na.l+NW},${na.t+NH/2} C${na.l+NW+50},${na.t+NH/2} ${nb.l+NW+50},${nb.t+NH/2} ${nb.l+NW+2},${nb.t+NH/2}`;
       mx=(x1+x2)/2+6; my=(y1+y2)/2;
     } else {
-      const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(30,(x2-x1)/2);
-      d = x2>x1 ? `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2-2},${y2}` : `M${na.l+NW/2},${na.t+NH} C${na.l+NW/2},${na.t+NH+40} ${nb.l+NW/2},${nb.t-40} ${nb.l+NW/2},${nb.t-2}`;
+      const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(24,(x2-x1)/2);
+      d = x2>x1 ? `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2-2},${y2}` : `M${na.l+NW/2},${na.t+NH} C${na.l+NW/2},${na.t+NH+36} ${nb.l+NW/2},${nb.t-36} ${nb.l+NW/2},${nb.t-2}`;
       mx=(x1+x2)/2; my=(y1+y2)/2-6;
     }
     const cls = 'edge c-'+(e.trust||'NONE')+(e.dash||e.kind==='seq'?' dash':'')+(e.deny?' deny':'');
     const p = el('path',{d,class:cls,'marker-end':`url(#ah-${e.deny?'DENY':(e.trust||'NONE')})`},gEdges);
-    let lab=null;
-    if(e.label){ lab = el('text',{x:mx,y:my,class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
+    let lab=null; if(e.label){ lab = el('text',{x:mx,y:my,class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
     edgeEls[idx]={p,lab};
   });
-  all.forEach(n=>{
-    const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.kind==='call'?'planned':''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}`},gNodes);
-    el('rect',{class:'glow',x:-4,y:-4,width:NW+8,height:NH+8,rx:14},g);
-    el('rect',{class:'ring',x:0,y:0,width:NW,height:NH,rx:12},g);
-    el('rect',{class:'body',x:0,y:0,width:NW,height:NH,rx:12},g);
-    const ic=el('text',{x:12,y:NH/2+5,class:'ic'},g); ic.textContent=n.icon||'';
-    const t1=el('text',{x:32,y:n.sub?21:NH/2+5,class:'l1'},g); t1.textContent=short(n.label,18);
-    if(n.sub){ const t2=el('text',{x:32,y:38,class:'l2'},g); t2.textContent=short(n.sub,22); }
+  [...nodes.values()].forEach(n=>{
+    const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}`},gNodes);
+    el('rect',{class:'ring',x:0,y:0,width:NW,height:NH,rx:4},g);
+    el('rect',{class:'body',x:0,y:0,width:NW,height:NH,rx:4},g);
+    const t1=el('text',{x:12,y:n.sub?19:NH/2+4,class:'l1'},g); t1.textContent=short(n.label,20);
+    if(n.sub){ const t2=el('text',{x:12,y:34,class:'l2'},g); t2.textContent=short(n.sub,24); }
     g.addEventListener('click',()=>openDrawer(n.id));
     g.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openDrawer(n.id);} });
     nodeEls[n.id]=g;
   });
 }
-
-/* pan / zoom */
 function applyVB(){ if(vb) svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
-function pt(ev){ const r=svg.getBoundingClientRect(); return {fx:(ev.clientX-r.left)/r.width, fy:(ev.clientY-r.top)/r.height}; }
-svg.addEventListener('wheel',ev=>{ if(!vb) return; ev.preventDefault(); const {fx,fy}=pt(ev); const k=ev.deltaY<0?0.88:1.14;
+svg.addEventListener('wheel',ev=>{ if(!vb) return; ev.preventDefault(); const r=svg.getBoundingClientRect(); const fx=(ev.clientX-r.left)/r.width, fy=(ev.clientY-r.top)/r.height; const k=ev.deltaY<0?0.88:1.14;
   const nw=Math.min(baseVB.w*3,Math.max(baseVB.w*0.15,vb.w*k)), nh=vb.h*(nw/vb.w);
   vb={x:vb.x+(vb.w-nw)*fx,y:vb.y+(vb.h-nh)*fy,w:nw,h:nh}; applyVB(); },{passive:false});
 let drag=null;
 svg.addEventListener('pointerdown',ev=>{ if(ev.target.closest('.node')||!vb) return; drag={x:ev.clientX,y:ev.clientY,vb:{...vb}}; svg.classList.add('dragging'); svg.setPointerCapture(ev.pointerId); });
-svg.addEventListener('pointermove',ev=>{ if(!drag) return; const r=svg.getBoundingClientRect(); const sc=Math.max(drag.vb.w/r.width,drag.vb.h/r.height);
-  vb={...drag.vb,x:drag.vb.x-(ev.clientX-drag.x)*sc,y:drag.vb.y-(ev.clientY-drag.y)*sc}; applyVB(); });
+svg.addEventListener('pointermove',ev=>{ if(!drag) return; const r=svg.getBoundingClientRect(); const sc=Math.max(drag.vb.w/r.width,drag.vb.h/r.height); vb={...drag.vb,x:drag.vb.x-(ev.clientX-drag.x)*sc,y:drag.vb.y-(ev.clientY-drag.y)*sc}; applyVB(); });
 const endDrag=()=>{drag=null;svg.classList.remove('dragging');};
 svg.addEventListener('pointerup',endDrag); svg.addEventListener('pointercancel',endDrag);
-svg.addEventListener('dblclick',ev=>{ if(baseVB){vb={...baseVB};applyVB();} });
+svg.addEventListener('dblclick',()=>{ if(baseVB){vb={...baseVB};applyVB();} });
 $('fit').onclick=()=>{ if(baseVB){vb={...baseVB};applyVB();} };
 
-/* =============== 3. playback =============== */
+/* ---------- 3. playback ---------- */
 let cur = 0, timer = null, playing = false;
-const DELAY = {request:450,plan:800,tool_result:650,op:230,declassify:700,call_check:170,laya_score:600,alert:1000,effect:800,summary:500};
+const DELAY = {request:400,plan:700,tool_result:550,op:200,declassify:600,call_check:150,laya_score:500,alert:900,effect:700,summary:400};
 function badgeEl(g, text, warn){
   g.querySelectorAll('.badge').forEach(b=>b.remove());
-  const b = el('g',{class:'badge',transform:`translate(${NW-70},${NH+4})`},g);
-  el('rect',{x:0,y:0,width:74,height:18,rx:9,fill:warn?'#f87171':'#a78bfa'},b);
-  const t = el('text',{x:37,y:13,'text-anchor':'middle',style:`fill:#14092e;font-size:10.5px;font-weight:700`},b); t.textContent=text;
+  const b = el('g',{class:'badge',transform:`translate(${NW-72},${NH+5})`},g);
+  el('rect',{x:0,y:0,width:72,height:16,rx:3,fill:warn?'#F05D67':'#8C96A6'},b);
+  const t = el('text',{x:36,y:11.5,'text-anchor':'middle'},b); t.textContent=text;
 }
 function resetVisual(){
-  Object.values(nodeEls).forEach(g=>{ g.classList.remove('show','enter','blocked','shock','done','running','sel'); if(g.classList.contains('call')) g.classList.add('planned'); g.querySelectorAll('.badge').forEach(b=>b.remove()); });
+  Object.values(nodeEls).forEach(g=>{ g.classList.remove('show','enter','blocked','shock','done','running','sel'); g.querySelectorAll('.badge').forEach(b=>b.remove()); });
   edgeEls.forEach(e=>{ if(!e) return; e.p.classList.remove('show'); if(e.lab) e.lab.classList.remove('show'); });
-  nodes.forEach(n=>{ if(n.kind==='call') n.state='planned'; });
 }
 function applyFx(list, animate){
   list.forEach(f=>{
     const g = f.id? nodeEls[f.id] : null;
-    if(f.t==='show' && g){ g.classList.add('show'); if(animate) { g.classList.remove('enter'); void g.getBoundingClientRect(); g.classList.add('enter'); } }
-    if(f.t==='edge'){ const e=edgeEls[f.idx]; if(e){ e.p.classList.add('show'); if(e.lab) e.lab.classList.add('show');
-        if(animate && !REDUCED){ const L=e.p.getTotalLength?e.p.getTotalLength():0; if(L && !e.p.classList.contains('dash')&&!e.p.classList.contains('deny')){ e.p.style.transition='none'; e.p.style.strokeDasharray=L; e.p.style.strokeDashoffset=L; void e.p.getBoundingClientRect(); e.p.style.transition='stroke-dashoffset .5s cubic-bezier(.2,0,0,1)'; e.p.style.strokeDashoffset=0; setTimeout(()=>{e.p.style.strokeDasharray='';e.p.style.transition='';},560);} } } }
-    if(f.t==='state' && g){ g.classList.remove('planned','running','done'); if(f.state==='blocked'){ g.classList.add('blocked'); } else { if(!g.classList.contains('blocked')) g.classList.add(f.state); } }
+    if(f.t==='show' && g){ g.classList.add('show'); if(animate){ g.classList.remove('enter'); void g.getBoundingClientRect(); g.classList.add('enter'); } }
+    if(f.t==='edge'){ const e=edgeEls[f.idx]; if(e){ e.p.classList.add('show'); if(e.lab) e.lab.classList.add('show'); } }
+    if(f.t==='state' && g){ g.classList.remove('running','done'); if(f.state==='blocked') g.classList.add('blocked'); else if(!g.classList.contains('blocked')) g.classList.add(f.state); }
     if(f.t==='shock' && g){ g.classList.remove('shock'); void g.getBoundingClientRect(); g.classList.add('shock'); }
     if(f.t==='badge' && g){ badgeEl(g,f.text,f.warn); }
   });
 }
+function decisionRows(alertsSeen, leaksSeen){
+  let h='';
+  alertsSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const d=c&&c.decision; if(!d) return;
+    h+=`<div class="dt"><span class="c mono">${esc(d.requested)}</span><span class="c">${esc(d.cause)}</span><span class="c">${esc(d.policy)}</span><span class="dec b">BLOCKED${d.off?' · off-plan':''}</span></div>`; });
+  leaksSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const ck=c&&c.checks.find(x=>x.trust!=='USER');
+    const cause = ck? `${ARGP[ck.arg]||'value'} derived from ${originWords(ck.sources)} · UNTRUSTED`:'instruction in untrusted content';
+    h+=`<div class="dt"><span class="c">${esc(ev.description)}</span><span class="c">${esc(cause)}</span><span class="c">None applied (undefended)</span><span class="dec x">EXECUTED</span></div>`; });
+  return h;
+}
+function setResult(n, leaks, alertsN, done){
+  const R=$('result'); R.className='result';
+  const def=(EVENTS[0]||{}).defence||'';
+  if(!EVENTS.length){ $('r-kick').textContent='Ready'; $('r-title').textContent='No run yet'; $('r-sub').textContent='Choose a scenario and run it.'; return; }
+  const task = done&&summary ? (summary.task_ok?'Legitimate task completed.':'Legitimate task did not complete.') : '';
+  if(leaks){ R.classList.add('hijack'); $('r-kick').textContent='No enforcement'; $('r-title').textContent=`${leaks} harmful action${leaks>1?'s':''} executed`; $('r-sub').textContent=`Instructions inside untrusted content were followed. ${task}`; }
+  else if(alertsN){ R.classList.add('block'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=`${alertsN} unsafe call${alertsN>1?'s':''} blocked`; $('r-sub').textContent=task||'Enforcing…'; }
+  else if(done){ R.classList.add('clean'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent='No violations'; $('r-sub').textContent=task+' No unsafe call was attempted.'; }
+  else { $('r-kick').textContent=def||'Running'; $('r-title').textContent=n?'Agent running':'Ready'; $('r-sub').textContent='Reading tool output…'; }
+}
 function renderTo(n, animate){
   n = Math.max(0,Math.min(EVENTS.length,n));
   resetVisual(); $('feed').innerHTML='';
-  let leaks=0, alertsN=0, firstAlert=null; const leakList=[];
+  const aSeen=[], lSeen=[];
   for(let k=0;k<n;k++){
-    const last = (k===n-1);
+    const last=(k===n-1);
     applyFx(fx[k], animate&&last);
-    if(feedHtml[k]){ $('feed').insertAdjacentHTML('beforeend', feedHtml[k]); if(!(animate&&last)){ $('feed').lastElementChild.style.animation='none'; } }
-    const e=EVENTS[k];
-    if(e.type==='effect'&&e.leak){ leaks++; leakList.push(e); }
-    if(e.type==='alert'){ alertsN++; firstAlert=firstAlert||e; }
+    if(rows[k]){ $('feed').insertAdjacentHTML('beforeend', rows[k]); if(!(animate&&last)) $('feed').lastElementChild.style.animation='none'; }
+    const e=EVENTS[k]; if(e.type==='alert') aSeen.push(e); if(e.type==='effect'&&e.leak) lSeen.push(e);
   }
-  if(!EVENTS.length) $('feed').innerHTML='<div class="empty"><div class="big">&#9670;</div>Pick a scenario in the sidebar and press <b>Run</b>. Then step through what the agent saw, what it tried, and what Black Onyx allowed.</div>';
-  const done = n>=EVENTS.length && summary;
-  if(done){ $('feed').insertAdjacentHTML('beforeend', finalCard(leaks,alertsN)); }
-  cur = n; $('scrub').value = n; $('pos').textContent = `${n} / ${EVENTS.length}`;
-  $('feed').scrollTop = $('feed').scrollHeight;
-  $('v-leak').textContent = leaks; $('v-alert').textContent = alertsN;
-  $('t-leak').className = 'tile'+(leaks?' bad':(n?' good':'')); $('t-alert').className='tile'+(alertsN?' warn':'');
-  $('gcount').textContent = nodes.size? `${nodes.size} nodes · ${edges.length} flows`:'';
-  setVerdict(leaks, alertsN, done, n);
-  $('storytxt').innerHTML = storyText(n, leaks, alertsN, !!done, firstAlert, leakList);
-  $('story').className = 'story'+(leaks?' hijack':(done&&alertsN?' safe':''));
-  if(done){ $('v-task').textContent = summary.task_ok?'✔ done':'✖ failed'; $('t-task').className='tile '+(summary.task_ok?'good':'bad'); const gated=['D2','D3','D4'].includes(summary.defence); $('v-ms').textContent = (gated&&summary.gate_ms!=null? Number(summary.gate_ms).toFixed(3)+' ms':'no gate'); $('t-ms').className='tile'+(gated?' good':''); }
-  else { $('v-task').textContent = n? '…':'–'; $('t-task').className='tile'; $('v-ms').textContent='–'; $('t-ms').className='tile'; }
-}
-function finalCard(leaks,alertsN){
-  const ok = summary.task_ok;
-  if(leaks) return `<div class="card final hijack">⚠ The undefended agent obeyed the injected text and acted on it. ${ok?'':'Your task did not finish correctly.'}<small>No check asked where the destination came from.</small></div>`;
-  if(alertsN) return `<div class="card final safe">✔ Contained. ${alertsN} unsafe call${alertsN>1?'s were':' was'} blocked${ok?', and your task still finished.':'; your task did not finish (the request itself depended on untrusted data).'}<small>Untrusted data was read as data, never as a command.</small></div>`;
-  return `<div class="card final safe">✔ Clean run. Task ${ok?'finished':'did not finish'}; nothing unsafe was attempted.</div>`;
-}
-function setVerdict(leaks, alertsN, done, n){
-  const v=$('verdict'); v.className='verdict';
-  if(!EVENTS.length){ $('vico').textContent='◆'; $('vtitle').textContent='Ready'; $('vsub').textContent='Pick a scenario and press Run.'; return; }
-  const def = (EVENTS[0]||{}).defence||'';
-  if(leaks){ v.classList.add('hijack'); $('vico').textContent='⚠'; $('vtitle').textContent='HIJACKED'; $('vsub').textContent='An injected instruction caused a real effect in the world.'; }
-  else if(done && alertsN){ v.classList.add('safe'); $('vico').textContent='⛨'; $('vtitle').textContent='CONTAINED'; $('vsub').textContent=`${alertsN} unsafe call${alertsN>1?'s':''} blocked. ${summary&&summary.task_ok?'Your task still finished.':''}`; }
-  else if(done){ v.classList.add('safe'); $('vico').textContent='✔'; $('vtitle').textContent='CLEAN RUN'; $('vsub').textContent='No unsafe call attempted.'; }
-  else if(alertsN){ v.classList.add('safe'); $('vico').textContent='⛨'; $('vtitle').textContent='BLOCKING'; $('vsub').textContent='Unsafe call stopped at the gate.'; }
-  else { v.classList.add('run'); $('vico').textContent='▶'; $('vtitle').textContent=n? 'Agent working…':'Ready'; $('vsub').textContent=def? `Defence ${def}`:''; }
+  if(!EVENTS.length) $('feed').innerHTML='<div class="empty">No events yet. Pick a scenario and run it to see requests, tool results, policy decisions and effects in order.</div>';
+  const done = n>=EVENTS.length && !!summary;
+  if(done) $('feed').insertAdjacentHTML('beforeend', row({seq:EVENTS.length}, summary.task_ok?'ok':'harm', summary.task_ok?'<b>Task completed</b>':'Task not completed', ''));
+  cur=n; $('scrub').value=n; $('pos').textContent=`${n} / ${EVENTS.length}`; $('feed').scrollTop=$('feed').scrollHeight;
+  $('v-alert').textContent=pad2(aSeen.length); $('v-leak').textContent=pad2(lSeen.length); $('v-leak').className=lSeen.length?'red':''; $('v-ev').textContent=pad2(n);
+  $('gcount').textContent = nodes.size? `${nodes.size} nodes`:''; $('m-ev2').textContent = EVENTS.length? `${n}/${EVENTS.length}`:'';
+  const gated=['D2','D3','D4'].includes((EVENTS[0]||{}).defence);
+  if(done && gated && summary.gate_ms!=null){ $('v-ms').textContent=Math.max(1,Math.round(summary.gate_ms*1000))+' µs'; $('v-ms').className=''; } else { $('v-ms').textContent='—'; $('v-ms').className='dim'; }
+  const dec=$('decision'); const rowsHtml=decisionRows(aSeen,lSeen); dec.hidden=!rowsHtml; $('dec-rows').innerHTML=rowsHtml;
+  setResult(n, lSeen.length, aSeen.length, done);
 }
 function stepDelay(k){ const t=(EVENTS[k]||{}).type; const spd=Number($('speed').value)||1; return (DELAY[t]||400)/spd; }
-function tick(){
-  if(cur>=EVENTS.length){ stop(); return; }
-  renderTo(cur+1,true);
-  if(cur>=EVENTS.length){ stop(); return; }
-  timer=setTimeout(tick, stepDelay(cur));
-}
+function tick(){ if(cur>=EVENTS.length){ stop(); return; } renderTo(cur+1,true); if(cur>=EVENTS.length){ stop(); return; } timer=setTimeout(tick, stepDelay(cur)); }
 function play(){ if(!EVENTS.length) return; if(cur>=EVENTS.length) renderTo(0,false); playing=true; $('b-play').innerHTML='&#10074;&#10074; Pause'; $('b-play').setAttribute('aria-label','Pause'); timer=setTimeout(tick,150); }
 function stop(){ playing=false; clearTimeout(timer); $('b-play').innerHTML='&#9654; Play'; $('b-play').setAttribute('aria-label','Play'); }
 $('b-play').onclick=()=>playing?stop():play();
@@ -584,49 +480,56 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Escape'){closeDrawer();} else if(e.key==='r'||e.key==='R'){stop();renderTo(0,false);} else if(e.key==='e'||e.key==='E'){stop();renderTo(EVENTS.length,false);}
 });
 
-/* =============== 4. drawer =============== */
+/* ---------- 4. inspector ---------- */
 function chainOf(id, depth){
-  depth=depth||0; const ins = edges.filter(e=>e.to===id && e.kind!=='seq').map(e=>e.from);
-  const n = nodes.get(id);
+  depth=depth||0; const ins = edges.filter(e=>e.to===id && e.kind!=='seq').map(e=>e.from); const n = nodes.get(id);
   if(!ins.length||depth>4) return n? n.label : id;
   return `${n.label}(${ins.map(i=>chainOf(i,depth+1)).join(', ')})`;
+}
+function summaryLine(n){
+  if(n.kind==='user') return 'The only source of intent for this run.';
+  if(n.kind==='call'){ if(n.alert) return n.offplan?'Not part of the plan. Refused before execution.':'An argument that selects a target came from untrusted content. Refused before execution.'; return n.offplan?'Not part of the plan.':'Part of the plan. All target-selecting arguments came from the user or a trusted source.'; }
+  if(n.kind==='verified') return 'Resolved from a trusted table, not copied from untrusted text.';
+  if(n.kind==='rejected') return 'Could not be confirmed in a trusted table. The value stays untrusted.';
+  if(n.kind==='effect') return n.leak?'Executed in the mock world with no enforcement.':'Intended result of the request.';
+  if(n.trust==='UNTRUSTED') return 'Untrusted content. It can be read and summarised but cannot select destinations or actions.';
+  return '';
 }
 function openDrawer(id){
   const n = nodes.get(id); if(!n) return;
   Object.values(nodeEls).forEach(g=>g.classList.remove('sel')); nodeEls[id].classList.add('sel');
-  $('dtitle').textContent = n.kind==='call'?`Call: ${n.label}`:n.label;
-  let h=`<div class="plain"><b class="k">In plain words</b>${plainNode(n)}</div><dl class="kv">`;
-  h+=`<dt>Kind</dt><dd>${esc({user:'Your request',call:n.offplan?'Off-plan call (not in the plan)':'Planned tool call',value:'Value',verified:'Verified value (declassified)',effect:n.leak?'Real-world effect: LEAK':'Real-world effect',rejected:'Validator rejected input'}[n.kind]||n.kind)}</dd>`;
-  if(n.trust) h+=`<dt>Trust</dt><dd><span class="pill ${esc(n.trust)}">${esc(n.trust)}</span></dd>`;
-  if(n.sources&&n.sources.length) h+=`<dt>Origin</dt><dd>${n.sources.map(s=>`<span class="pill">${esc(s)}</span>`).join('')}</dd>`;
-  if(n.full) h+=`<dt>Content</dt><dd><span class="mono">${esc(n.full)}</span></dd>`;
+  $('dtitle').textContent = n.kind==='call'?`Call · ${n.label}`:n.label;
+  let h=`<p class="sum">${esc(summaryLine(n))}</p><dl>`;
+  h+=`<dt>Node</dt><dd class="mono">${esc(n.kind==='call'?n.cid:(n.vid||n.id))}</dd>`;
+  if(n.trust) h+=`<dt>Trust</dt><dd><span class="${n.trust==='UNTRUSTED'?'unt':n.trust==='VERIFIED'?'ver':''}">${esc(n.trust)}</span></dd>`;
+  if(n.sources&&n.sources.length) h+=`<dt>Source</dt><dd>${esc(originWords(n.sources))}</dd>`;
+  if(n.full) h+=`<dt>Value</dt><dd class="mono">${esc(n.full)}</dd>`;
   if(n.rule) h+=`<dt>Rule</dt><dd>${esc(n.rule)}</dd>`;
-  if(n.kind!=='call'&&n.kind!=='user') h+=`<dt>Chain</dt><dd><span class="mono">${esc(chainOf(id))}</span></dd>`;
+  if(n.kind!=='call'&&n.kind!=='user') h+=`<dt>Chain</dt><dd class="chain">${esc(chainOf(id))}</dd>`;
+  if(n.kind==='call'){ h+=`<dt>Decision</dt><dd class="${n.alert?'red':'green'}">${n.alert?'BLOCKED':(n.checks.length?'ALLOWED':'—')}</dd>`; if(n.alert) h+=`<dt>Chain</dt><dd class="chain">${esc(n.alert.chain)}</dd>`; }
   h+='</dl>';
-  if(n.kind==='call'){
-    if(n.desc) h+=`<p style="margin:0 0 10px;color:var(--mute)">${esc(n.desc)}</p>`;
-    if(n.alert) h+=`<div class="card alert" style="animation:none;margin-bottom:10px"><h3>⛔ BLOCKED</h3><div class="chain" title="Where the blocked value came from, step by step">${esc(n.alert.chain)}</div><small>The value's journey, ending in the argument that was refused.</small></div>`;
-    h+='<div class="who" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin-bottom:6px">Rule check, argument by argument</div>';
-    n.checks.forEach(c=>{
-      const deny = c.decision==='deny'; const rule = RULE[n.tool+'.'+c.arg];
-      const why = deny ? (/not in the plan/.test(c.reason)?'Refused: this call was not in the plan.':(rule||c.reason)) : (/data argument/.test(c.reason)?'Content only (data), so any source is fine.':/undefended/.test(c.reason)?'No rule was applied (undefended).':'Origin is allowed for this argument.');
-      h+=`<div class="chk"><b>${esc(ARGP[c.arg]||c.arg)}</b> <span class="pill ${deny?'deny':'allow'}">${deny?'REFUSED':'OK'}</span> <span class="pill ${esc(c.trust)}">${esc(c.trust)}</span><small>${esc(why)}</small></div>`; });
-    if(!n.checks.length) h+='<p style="color:var(--mute)">No arguments were checked (the call was never attempted).</p>';
-    if(n.laya){ const sc=n.laya.score; const meaning = sc==null?'Laya had no opinion.':(n.laya.warn?'Low score: this call does not look like what you asked for.':'High score: this call looks like what you asked for.'); h+=`<div class="chk" style="border-color:#4c3a8a"><b>Laya second opinion</b> <span class="pill" style="color:var(--laya);border-color:#4c3a8a">${sc==null?'no opinion':Number(sc).toFixed(2)}</span><small>${meaning} Advisory only (${Math.round(n.laya.ms||0)} ms); the rules decide.</small></div>`; }
+  if(n.kind==='call' && n.checks.length){
+    h+='<table><tr><th>Argument</th><th>Origin</th><th>Result</th></tr>';
+    n.checks.forEach(c=>{ const deny=c.decision==='deny'; h+=`<tr><td>${esc(ARGP[c.arg]||c.arg)}</td><td>${trustHtml(c.trust,c.sources)}</td><td class="${deny?'red':'green'}">${deny?'Refused':'OK'}</td></tr>`; });
+    h+='</table>';
+    const rules = n.checks.filter(c=>c.decision==='deny').map(c=>RULE[n.tool+'.'+c.arg]).filter(Boolean);
+    if(rules.length) h+=`<p class="sum" style="margin-top:12px">Policy: ${esc(rules[0])}</p>`;
   }
+  if(n.laya){ const sc=n.laya.score; h+=`<p class="sum" style="margin-top:12px">Laya (advisory): ${sc==null?'no opinion':'fit '+Number(sc).toFixed(2)+(n.laya.warn?', low':', ok')} · ${Math.round(n.laya.ms||0)} ms. The rules decide.</p>`; }
   $('dbody').innerHTML=h; $('drawer').classList.add('open');
 }
 function closeDrawer(){ $('drawer').classList.remove('open'); Object.values(nodeEls).forEach(g=>g.classList.remove('sel')); }
 $('dclose').onclick=closeDrawer;
 
-/* =============== boot =============== */
-$('defchip').textContent = (OPT.defence?`${OPT.defence} · ${OPT.defenceName||''}`:'');
+/* ---------- boot ---------- */
+$('m-def').textContent = OPT.defence ? OPT.defence+' · '+(OPT.defenceName||'') : 'Black Onyx';
+$('m-ev').textContent = EVENTS.length? EVENTS.length+' events':'';
 $('scrub').max = EVENTS.length;
 function boot(){
   drawGraph();
-  if(!EVENTS.length){ renderTo(0,false); $('hint').style.display='none'; }
+  if(!EVENTS.length) renderTo(0,false);
   else if(OPT.autoplay && !REDUCED){ renderTo(0,false); setTimeout(play,300); }
-  else { renderTo(EVENTS.length,false); }
+  else renderTo(EVENTS.length,false);
 }
 requestAnimationFrame(()=>requestAnimationFrame(boot));
 let rzT=null, lastW=innerWidth;
