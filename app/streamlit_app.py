@@ -169,12 +169,13 @@ V2_AVAILABLE = (V2_DIR / "v2.pt").exists() and (V2_DIR / "v2.json").exists()
 def _load_sentinel(version: str = "v0"):
     """Laya loads once per version (about 10 s). Raises if the model did not load, so a failure is never cached."""
     from blackonyx.laya_sentinel import LayaSentinel
-    s = LayaSentinel(model_version=version)
+    s = LayaSentinel(model_version="v2") if version == "v2" else LayaSentinel()   # v0 never passes the new argument
     if s.agent is None:
-        raise RuntimeError(f"model did not load: {(s._load_error or 'unknown')[:80]}")
-    if version == "v2" and s.version != "v2":
-        return s, f"Laya v0 (English, CPU fp32); v2 not loaded: {(s._v2_error or 'unknown')[:80]}"
-    return s, ("Laya v2 fine-tuned (English, CPU fp32)" if s.version == "v2" else "Laya (English, CPU fp32)")
+        raise RuntimeError(f"model did not load: {(getattr(s, '_load_error', None) or 'unknown')[:80]}")
+    active = getattr(s, "version", "v0")
+    if version == "v2" and active != "v2":
+        return s, f"Laya v0 (English, CPU fp32); v2 not loaded: {(getattr(s, '_v2_error', None) or 'unknown')[:80]}"
+    return s, ("Laya v2 fine-tuned (English, CPU fp32)" if active == "v2" else "Laya (English, CPU fp32)")
 
 
 def get_sentinel(version: str = "v0"):
@@ -257,6 +258,8 @@ if run_clicked or st.session_state.pop("pending_run", False) or "events" not in 
 events: List[dict[str, Any]] = st.session_state.get("events", [])
 src = st.session_state.get("runner_source", "engine")
 shown_defence = st.session_state.get("last_defence", defence_id)
+if shown_defence in ("D3", "D4") and str(src).startswith("NullSentinel"):
+    st.warning(f"Laya could not be used for this run, so it gave no opinion. {src}")
 
 import os  # noqa: E402
 
