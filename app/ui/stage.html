@@ -17,7 +17,7 @@ button,select,input{font:inherit;color:inherit}
 .app{width:100%;max-width:100vw;height:100vh;min-height:640px;display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:12px;padding:2px 2px 6px}
 .app>*{min-width:0}
 .app>.meta{grid-row:1}.app>.result{grid-row:2}.app>.decision{grid-row:3}.app>.main{grid-row:4}.app>.controls{grid-row:5}
-.lbl{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.lbl{white-space:nowrap;font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
 .mono{font-family:var(--mono)}
 /* ---- meta line ---- */
 .meta{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;color:var(--t2)}
@@ -32,8 +32,8 @@ button,select,input{font:inherit;color:inherit}
 .result.hijack .title{color:var(--red)}
 .result .sub{color:var(--t2);margin-top:2px}
 .metrics{display:flex;flex-wrap:wrap;gap:8px;margin:0}
-.metrics div{padding:8px 16px;background:var(--p2);border:1px solid var(--bd);border-radius:4px;min-width:108px;flex:1 1 108px}
-.metrics dt{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.metrics div{padding:8px 16px;background:var(--p2);border:1px solid var(--bd);border-radius:4px;flex:0 0 auto;white-space:nowrap}
+.metrics dt{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);white-space:nowrap}
 .metrics dd{margin:2px 0 0;font:600 20px/1.1 var(--mono);font-variant-numeric:tabular-nums}
 .metrics dd.red{color:var(--red)} .metrics dd.dim{color:var(--t2)}
 /* ---- decision table ---- */
@@ -270,7 +270,7 @@ function chainInfo(chain){
 function plainAlert(ev, off){
   const ci = chainInfo(ev.chain); const act = ACTION[ev.tool]||ev.tool; const arg = ARGP[ci.arg]||'value';
   const src = `<b>${esc(originWords(ci.srcs))}</b>, which is untrusted`;
-  if(off) return `The agent tried to <b>${esc(act)}</b>, which was not in the plan made from your request. The ${esc(arg)} came from ${src}, so the call was refused before it ran.`;
+  if(off) return `The agent tried to <b>${esc(act)}</b>, which was not in the plan made from your request. The ${esc(arg)} came from ${src}, so the call was refused.`;
   return `The agent was about to <b>${esc(act)}</b>, but the ${esc(arg)} came from ${src}. So the call was stopped.`;
 }
 const isRead = (t)=>['read_inbox','read_file','web_fetch','search_docs'].includes(t);
