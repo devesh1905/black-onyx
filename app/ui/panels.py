@@ -24,7 +24,8 @@ h2{margin:0 0 10px;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;
 .bar{height:8px;border-radius:4px;background:#1b2740;margin:8px 0 4px;overflow:hidden}.bar i{display:block;height:100%;border-radius:4px;width:0;transition:width 1s cubic-bezier(.2,0,0,1)}
 table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
 th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:600}
-td.c{text-align:center;white-space:nowrap}
+table.atk{table-layout:fixed}table.atk th:first-child{width:34%}th.c{text-align:center}td.c{text-align:center;vertical-align:middle}
+.sub{display:block;min-height:16px;margin-top:3px;font-size:11.5px;color:var(--mute);white-space:nowrap}
 .cell{display:inline-block;border-radius:8px;padding:2px 10px;font-weight:700;font-size:12px;letter-spacing:.4px}
 .cell.leak{background:#3a1416;color:#fecaca;border:1px solid var(--block)}.cell.ok{background:#0f2a1c;color:#bbf7d0;border:1px solid #1f7a45}.cell.part{background:#33200f;color:#fed7aa;border:1px solid #8a4a1d}
 .note{border:1px dashed var(--line2);border-radius:14px;padding:12px 16px;color:var(--mute);font-size:13.5px;background:#0a1020}
@@ -78,7 +79,7 @@ def results_html(r: dict[str, Any]) -> str:
                 txt, cls = "blocked*", "part"
             else:
                 txt, cls = "blocked", "ok"
-            extra = f' <small style="display:inline;color:var(--mute)">+{c["var_leaks"]}/{c["var_n"]} var</small>' if c["var_n"] else ""
+            extra = f'<span class="sub">+{c["var_leaks"]}/{c["var_n"]} variants leaked</span>' if c["var_n"] else '<span class="sub">&nbsp;</span>'
             tds.append(f'<td class="c"><span class="cell {cls}">{txt}</span>{extra}</td>')
         rows.append(f'<tr><td><b>{a["id"]}</b> {html.escape(a["desc"])}</td>{"".join(tds)}</tr>')
     inv = r["invariance"]
@@ -90,8 +91,8 @@ def results_html(r: dict[str, Any]) -> str:
 <b>Attack success</b> means the attacker's goal really happened in the mock world, so lower is better. <b>Legit tasks completed</b> shows that normal work was not blocked, so higher is better.</div>
 <div class="grid g4">{''.join(cards)}</div>
 <div class="card" style="margin-top:12px"><h2>Every attack, every defence</h2>
-<div style="overflow:auto"><table><tr><th>Attack</th>{heads}</tr>{''.join(rows)}</table></div>
-<small style="color:var(--mute)">"+k/n var" = reworded variants that still leaked. * = base attack blocked but some variants got through.
+<div style="overflow:auto"><table class="atk"><tr><th>Attack</th>{heads}</tr>{''.join(rows)}</table></div>
+<small style="color:var(--mute)">"+k/n variants leaked" counts the reworded versions of that attack that still got through. * = the base attack was blocked but some rewordings were not.
 <br>D3 column in this table used <b>{sent}</b>: the rules decide everything, so D3 equals D2 here. The live demo runs the real Laya sentinel.</small></div>
 <div class="grid g2" style="margin-top:12px">
  <div class="card"><h2>Rewording does not matter</h2><div class="v good">{_pct(inv)}</div>
