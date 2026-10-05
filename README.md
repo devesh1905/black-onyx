@@ -111,13 +111,13 @@ the guard adapter and let 0 attacks through under D2 (`docs/redteam.md`).
 |---|---|---|---|---|---|
 | v0 original checkpoint | 81.0% | 77.0% | 15.0% | 288 ms / 32 ms | yes |
 | v1 top 4 layers, 3 epochs | 90.5% | 96.0% | 15.0% | 288 ms / 32 ms | no |
-| v2 top 8 layers (mean of 5 seeds) | 90.9% | 98.6% | 16.7% | 288 ms / 32 ms | opt-in switch |
+| v2 top 8 layers (mean of 5 seeds) | 90.9% | 98.6% | 16.7% | 288 ms / 32 ms | no (env setting) |
 | v2 + keyword stack (mean of 3 seeds) | 92.9% | 98.5% | 12.7% | 288 ms / 32 ms | no |
 | v3 five-seed unanimous vote of v2 | 95.2% | 98.0% | 7.5% | 1,146 ms / 161 ms | no |
 
 The keyword baseline scores 75.8% / 70.5% / 19.0% on the same set. On 45 real runtime states (a small format check) v0 has
 31.0% false warnings and catches 68.8% of injected calls; v3 has 17.2% and 93.8%, because the training data has no
-empty-argument or runtime-style calls yet. The fine-tuned weights are not in the repository. v2 can be switched on in the sidebar when its weights are present (D3 and D4, off by default); the demo runs v0.
+empty-argument or runtime-style calls yet. The fine-tuned weights are not in the repository. v2 can be enabled with `BLACKONYX_LAYA_MODEL=v2` when its weights are present (off by default, no on-screen switch); the demo runs v0.
 Details: `docs/laya-finetune.md`, `docs/laya-extra.md`, `docs/laya-results.md`.
 
 ## Honest limits

@@ -224,13 +224,7 @@ with st.sidebar:
     with st.container(border=True):
         autoplay = st.toggle("Animate playback", value=True)
         phone = st.toggle("Phone alert on block", value=True, help="Pushes a short message (tool and policy reason only) to the ntfy topic when a call is blocked. Silent if offline.")
-        laya_v2 = False
-        if V2_AVAILABLE and defence_id in ("D3", "D4"):
-            laya_v2 = st.toggle("Fine-tuned Laya (v2)", value=os.environ.get("BLACKONYX_LAYA_MODEL", "").lower() == "v2", key="laya_v2_sw",
-                                help="Uses the fine-tuned model (top 8 layers, 90.8% accuracy on the held-out set) instead of the original. "
-                                     "Advisory only; the rules still decide. Switching reloads the model (about 10 s).")
-            if laya_v2 and "v2 not loaded" in st.session_state.get("laya_status", ""):
-                st.caption("v2 could not be loaded; using the original Laya.")
+        laya_v2 = os.environ.get("BLACKONYX_LAYA_MODEL", "").strip().lower() == "v2"   # no on-screen switch; set the variable to use v2
         run_clicked = st.button("Run scenario", type="primary", use_container_width=True, icon=":material/play_arrow:")
 
     st.markdown('<div class="sec">Test cases</div>', unsafe_allow_html=True)

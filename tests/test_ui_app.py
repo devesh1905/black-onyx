@@ -42,7 +42,7 @@ def test_laya_versions_panel_html():
     h = versions_page_html()
     for col in LAYA_COLS:
         assert f">{col}<" in h
-    assert "95.2%" in h and "81.0%" in h and "Only v0 runs by default" in h
+    assert "95.2%" in h and "81.0%" in h and "Only v0 runs in the demo" in h
 
 
 def test_d4_laya_alone_is_selectable():
