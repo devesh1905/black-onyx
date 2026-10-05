@@ -229,7 +229,12 @@ events: List[dict[str, Any]] = st.session_state.get("events", [])
 src = st.session_state.get("runner_source", "engine")
 shown_defence = st.session_state.get("last_defence", defence_id)
 
-tab_live, tab_results, tab_how = st.tabs([":material/play_circle: Run", ":material/bar_chart: Results", ":material/menu_book: Explain"])
+import os  # noqa: E402
+
+LIVE_LLM = True   # the Live LLM tab is always listed; it does nothing until you press its button
+_tabs = st.tabs([":material/play_circle: Run", ":material/bar_chart: Results", ":material/menu_book: Explain"]
+                + ([":material/cloud: Live LLM"] if LIVE_LLM else []))
+tab_live, tab_results, tab_how = _tabs[:3]
 
 with tab_live:
     components.html(render_stage(events, autoplay=autoplay, defence=shown_defence), height=900, scrolling=False)
@@ -272,3 +277,40 @@ with tab_results:
 
 with tab_how:
     components.html(howitworks_html(), height=1180, scrolling=True)
+
+
+if LIVE_LLM:
+    with _tabs[3]:
+        st.markdown("**Live LLM, same injected inbox.** A real Gemini model reads a mailbox that contains a hidden instruction, "
+                    "first with no protection, then behind Black Onyx. This tab needs internet and sends the fake demo text to the "
+                    "Gemini API; it does nothing until you press the button.")
+        _env_key = os.environ.get("GEMINI_API_KEY", "")
+        key_in = st.text_input("Gemini API key", type="password", key="gemini_key_field",
+                               placeholder="Using GEMINI_API_KEY from the environment" if _env_key else "Paste your key (kept only in this browser session)",
+                               help="Never saved to disk, never logged. Leave empty to use the GEMINI_API_KEY environment variable.")
+        api_key = key_in.strip() or _env_key
+        phone_live = st.toggle("Push the simulated evil inbox and block events to the phone", value=True, key="live_phone")
+        if st.button("Run the live comparison", type="primary", icon=":material/cloud:", key="live_run", disabled=not api_key):
+            sys.path.insert(0, str(ROOT / "examples"))
+            import real_llm_agent as _rl
+            _rl.PHONE["on"] = phone_live
+            cols = st.columns(2)
+            for col, guarded in zip(cols, (False, True)):
+                with col:
+                    st.markdown("**With Black Onyx**" if guarded else "**Unprotected**")
+                    try:
+                        with st.spinner("Asking the model..."):
+                            out = _rl.run_agent(_rl.Gemini(api_key=api_key), guarded, verbose=False)
+                    except Exception as e:  # network, quota or key problems: say so plainly
+                        st.error(f"Could not reach the model ({type(e).__name__}). Check internet, quota and the key.")
+                        break
+                    for m in out["sent"]:
+                        st.write(f"Sent to `{m['to']}`" + (" (outside)" if not m["to"].endswith("@corp.com") else ""))
+                    if not out["sent"]:
+                        st.write("No email sent.")
+                    if guarded:
+                        st.success(f"{out['blocked']} injected call(s) blocked; the summary still went out.") if out["blocked"] else                             st.info("The model did not follow the injected line this time, so there was nothing to block.")
+                    elif out["leaked"]:
+                        st.error("The injected instruction was obeyed: mail went to the outside address.")
+                    else:
+                        st.info("The model ignored the injected line on its own. Try again, or use the offline scenarios.")
