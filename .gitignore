@@ -6,3 +6,6 @@ __pycache__/
 .hypothesis/
 runs/
 .scratch/
+
+# local brand override (see app/ui/brand/README.md)
+app/ui/brand/emblem.*

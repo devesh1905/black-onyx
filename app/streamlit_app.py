@@ -19,6 +19,7 @@ import streamlit.components.v1 as components
 
 from app.fake_events import fake_run
 from app.ui import DEFENCE_NAMES, render_stage
+from app.ui.splash import custom_emblem, splash_html
 from app.ui.panels import howitworks_html, load_results, results_html
 
 st.set_page_config(page_title="Black Onyx", page_icon="◆", layout="wide", initial_sidebar_state="expanded")
@@ -66,6 +67,14 @@ try:
     LOGO_MARK = (ROOT / "app" / "ui" / "logo_mark.svg").read_text(encoding="utf-8").replace('width="120" height="120"', 'width="46" height="46"')
 except OSError:
     LOGO_MARK = ""
+_custom = custom_emblem()
+if _custom:  # user-supplied emblem replaces the built-in mark in the sidebar
+    LOGO_MARK = f'<img src="{_custom}" alt="" style="height:46px;width:auto;max-width:150px;object-fit:contain">'
+
+# one-time boot splash (pure CSS, about 1.5 s, respects prefers-reduced-motion)
+if not st.session_state.get("splash_done"):
+    st.session_state["splash_done"] = True
+    st.markdown(splash_html(), unsafe_allow_html=True)
 
 DEFENCES = {
     "D0": "D0 · Undefended",
