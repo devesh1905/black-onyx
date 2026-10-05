@@ -294,11 +294,14 @@ if LIVE_LLM:
                                placeholder="Using GEMINI_API_KEY from the environment" if _env_key else "Paste your key (kept only in this browser session)",
                                help="Never saved to disk, never logged. Leave empty to use the GEMINI_API_KEY environment variable.")
         api_key = key_in.strip() or _env_key
+        style_live = st.radio("Injection style", ["mild", "forceful"], horizontal=True, key="live_style",
+                              help="Forceful dresses the hidden instruction up as a message from the account owner.")
         phone_live = st.toggle("Push the simulated evil inbox and block events to the phone", value=True, key="live_phone")
         if st.button("Run the live comparison", type="primary", icon=":material/cloud:", key="live_run", disabled=not api_key):
             sys.path.insert(0, str(ROOT / "examples"))
             import real_llm_agent as _rl
             _rl.PHONE["on"] = phone_live
+            _rl.set_style(style_live)
             cols = st.columns(2)
             for col, guarded in zip(cols, (False, True)):
                 with col:
