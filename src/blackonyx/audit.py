@@ -59,6 +59,8 @@ class Audit:
         """Readable provenance, e.g. concat(email#7, email#9)."""
         if vid in self.parents and depth < 6:
             op, ins = self.parents[vid]
+            if op in ("index", "slice", "extract_sentence", "split") and ins:
+                return self.chain(ins[-1], depth + 1)  # structural noise: show the underlying value
             return f"{op}({', '.join(self.chain(i, depth + 1) for i in ins)})"
         return self.names.get(vid, vid)
 

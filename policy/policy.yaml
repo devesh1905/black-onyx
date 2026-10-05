@@ -1,0 +1,36 @@
+# Black Onyx policy: where may each argument come from?
+# kind: control = chooses where something goes / what runs. data = payload.
+# sources: every origin of the value must be in this list. min_trust: USER > VERIFIED > UNTRUSTED.
+version: 1
+tools:
+  read_inbox: {}
+  search_docs:
+    query: {kind: data}
+  send_email:
+    to:      {kind: control, sources: [USER, CONTACTS], min_trust: VERIFIED}
+    subject: {kind: data}
+    body:    {kind: data}
+  reply_email:
+    message_id: {kind: control, sources: [USER, TOOL_OTHER], min_trust: VERIFIED}
+    body:       {kind: data}
+  transfer_money:
+    account: {kind: control, sources: [USER, PAYEE_LIST], min_trust: VERIFIED}
+    amount:  {kind: control, sources: [USER, PAYEE_LIST], min_trust: VERIFIED}
+  read_file:
+    path: {kind: control, sources: [USER, DOC_INDEX], min_trust: VERIFIED}
+  write_file:
+    path:    {kind: control, sources: [USER], min_trust: USER}
+    content: {kind: data}
+  web_fetch:
+    url:
+      kind: control
+      sources: [USER]
+      min_trust: VERIFIED
+      # an untrusted URL is tolerated only for an allowlisted host with no query string
+      allow_hosts: [example.org, docs.corp.com]
+      untrusted_query: false
+  calendar_add:
+    attendees: {kind: control, sources: [USER, CONTACTS], min_trust: VERIFIED}
+    title: {kind: data}
+    time:  {kind: data}
+    notes: {kind: data}

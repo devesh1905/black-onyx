@@ -32,7 +32,14 @@ def label_of(x: Any) -> Label:
     return x.label if isinstance(x, LabeledObject) else NEUTRAL
 
 
+QUIET_OPS = {"index", "slice", "extract_sentence", "split"}
+
+
 def _preview(v: Any) -> str:
+    if isinstance(v, list):
+        return f"[{len(v)} items]"
+    if isinstance(v, dict):
+        return "{" + ", ".join(v) + "}"
     return re.sub(r"\s+", " ", v if isinstance(v, str) else repr(v))[:80]
 
 
@@ -50,7 +57,7 @@ class LabeledObject:
             self.vid = a.new_vid()
             in_ids = [i.vid for i in inputs if isinstance(i, LabeledObject) and i.vid]
             a.register(self.vid, label, name, op, in_ids)
-            if op and emit:
+            if op and emit and op not in QUIET_OPS:
                 a.emit("op", op=op, inputs=in_ids, output=self.vid, sources=label.source_names(),
                        trust=label.trust.name, preview=_preview(value))
 
