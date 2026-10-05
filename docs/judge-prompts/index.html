@@ -18,18 +18,17 @@ h1{margin:0 0 4px;font-size:26px;letter-spacing:.3px}
 h2.sec,.tabpane>h2{margin:26px 0 8px;font-size:17px}
 .sub{color:var(--t2);margin:0 0 14px;max-width:780px}
 .cap{color:var(--t2);font-size:13px;margin:4px 0 10px;max-width:900px}
-.scroll{overflow-x:auto;border:1px solid var(--bd);border-radius:6px;background:var(--p)}
-table{border-collapse:collapse;width:100%;font-size:13.5px}
-th,td{padding:9px 12px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}
+.scroll{border:1px solid var(--bd);border-radius:6px;background:var(--p);overflow:hidden}
+table{border-collapse:collapse;width:100%;table-layout:auto;font-size:13.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top;overflow-wrap:break-word}
 thead th{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);background:var(--p2)}
 tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
-tbody th{font-weight:600;color:var(--tx);white-space:nowrap}
-.ver td,.ver thead th:not(:first-child){min-width:150px}
-.ver tbody th{position:sticky;left:0;background:var(--p);z-index:1}
+tbody th{font-weight:600;color:var(--tx)}
+.ver tbody th{width:17%}
 td.best{color:#bbf7d0;font-weight:600;background:rgba(53,208,127,.07)}
 tr.best th{color:#bbf7d0}
-.kv th{width:340px}
-.bar{height:6px;background:var(--bd);border-radius:3px;margin:0 0 5px;overflow:hidden;min-width:90px}
+.kv th{width:34%}
+.bar{height:6px;background:var(--bd);border-radius:3px;margin:0 0 5px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--red)}
 tr.best .bar i{background:var(--green)}
 .notes{color:var(--t2);font-size:13px;margin:12px 0 0;padding-left:20px;max-width:960px}
@@ -65,6 +64,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip.done{border-color:#1f7a45;color:#bbf7d0}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#14301f;border:1px solid #1f7a45;color:#bbf7d0;padding:8px 16px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
+@media (max-width:820px){main{padding:16px 12px 48px}table{font-size:12px}th,td{padding:7px 6px}thead th{font-size:10px;letter-spacing:.4px}.ver tbody th{width:20%}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
