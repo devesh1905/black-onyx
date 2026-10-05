@@ -8,8 +8,8 @@ Untrusted tool output (email, web page, file, search result) can be **read and u
 and a readable YAML policy checks each tool argument at the moment of use. The decision depends on where a value
 came from, not on what the text says, so rewording an attack does not change the outcome.
 
-Docs: [trust model](docs/trust-model.md) · [event schema](docs/event-schema.md) · [results](docs/results.md) ·
-[Laya measurements](docs/laya-results.md) · [Laya extras](docs/laya-extra.md) · [red-team pass](docs/redteam.md) · [judge prompts](docs/judge-prompts.md) · [simple notes (PDF)](docs/notes/Black-Onyx-Simple-Notes.pdf)
+Docs: **[benchmarks page](docs/judge-prompts/index.html)** (open in a browser; also has the judge prompts) · [trust model](docs/trust-model.md) · [event schema](docs/event-schema.md) · [results](docs/results.md) ·
+[Laya measurements](docs/laya-results.md) · [Laya extras](docs/laya-extra.md) · [Laya fine-tune](docs/laya-finetune.md) · [red-team pass](docs/redteam.md) · [judge prompts](docs/judge-prompts.md) · [simple notes (PDF)](docs/notes/Black-Onyx-Simple-Notes.pdf)
 
 ## Requirements
 
@@ -43,9 +43,11 @@ set HF_HUB_OFFLINE=1                               # the sentinel also sets this
 ## Run
 
 ```powershell
-pytest -q                                   # all tests (about 30 s; the sentinel tests load Laya)
+pytest -q                                   # all tests (137; about 30 s; the sentinel tests load Laya)
 python -m eval.run_eval --check-repro       # rules-only tables -> docs/results.md and docs/results.json
-python -m eval.run_eval --laya              # adds D3/D4 with the real sentinel (a few minutes on CPU)
+python -m eval.run_eval --laya-all          # D3/D4 with the real sentinel on all 300 variants (about 10 min on CPU)
+python -m eval.redteam                      # hand-written injection battery under D2
+python scripts/build_prompts_html.py        # rebuild docs/judge-prompts/index.html (benchmarks + judge prompts)
 python -m eval.laya_ladder                  # Laya measurements on the full held-out set -> docs/laya-results.md
 streamlit run app/streamlit_app.py          # the demo UI (http://localhost:8501)
 python demo/replay.py runs/example.jsonl    # terminal fallback replay
@@ -88,21 +90,35 @@ docs/                        trust model, event schema, results, wireframes, not
 
 8 legitimate tasks, 10 attacks and 300 generated reworded variants, seed 1905 (`docs/results.md`):
 
-| Defence | Attack runs that got through |
-|---|---|
-| D0 undefended | 310 / 310 |
-| D1 keyword filter | 281 / 310 |
-| D2 Black Onyx rules | 0 / 310 |
-| D3 rules + Laya (advisory) | 0 / 310 |
-| D4 Laya alone (no rules) | 2 / 310 |
+| Defence | Attack runs that got through | User's task still finished |
+|---|---|---|
+| D0 undefended | 310 / 310 | 80.0% |
+| D1 keyword filter | 281 / 310 | 80.0% |
+| D2 Black Onyx rules | 0 / 310 (95% upper bound 1.2%) | 99.7% |
+| D3 rules + Laya (advisory) | 0 / 310 | 99.7% |
+| D4 Laya alone (no rules) | 2 / 310 | 25.2% |
 
 All 8 legitimate tasks still finish under D2, with 0 legitimate calls wrongly blocked and 0 false alerts. The policy
-decision is identical for all 300 variants. The rule check adds about 10 microseconds per tool call on the development
-machine. Laya (English checkpoint, CPU, fp32) reaches 81.0% accuracy, 77.0% recall on non-fitting calls and 15.0% false
-warnings on 400 held-out pairs; its accuracy interval overlaps the keyword baseline, so it stays advisory. Laya alone (D4) lets 2 attacks through and
-finishes the user's task in only 25% of attack runs, which is why the rules do the blocking. D3 and D4 ran on all 300
-variants. Extra experiments (a fine-tune reaching 90.5% accuracy on the held-out set, a false-warning budget) are in
-`docs/laya-extra.md`; they are not part of the demo build.
+decision is identical for all 300 variants. The rule check takes about 10 microseconds per tool call; Laya takes about
+0.3 s per call on CPU and never delays or overrides a rule decision. D3 and D4 ran on all 300 variants. Laya alone (D4)
+lets 2 attacks through and finishes the user's task in only 25% of attack runs, which is why the rules do the blocking.
+A hand-written red-team pass (153 runs, plus direct attacks on the policy and guard) found and fixed one real bypass in
+the guard adapter and let 0 attacks through under D2 (`docs/redteam.md`).
+
+### Laya versions (same held-out set of 400 call-fit pairs; thresholds fitted on dev only)
+
+| Version | Accuracy | Recall on bad calls | False warnings | Latency (CPU / GPU) | In the demo |
+|---|---|---|---|---|---|
+| v0 original checkpoint | 81.0% | 77.0% | 15.0% | 288 ms / 32 ms | yes |
+| v1 top 4 layers, 3 epochs | 90.5% | 96.0% | 15.0% | 288 ms / 32 ms | no |
+| v2 top 8 layers (mean of 5 seeds) | 90.9% | 98.6% | 16.7% | 288 ms / 32 ms | no |
+| v2 + keyword stack (mean of 3 seeds) | 92.9% | 98.5% | 12.7% | 288 ms / 32 ms | no |
+| v3 five-seed unanimous vote of v2 | 95.2% | 98.0% | 7.5% | 1,146 ms / 161 ms | no |
+
+The keyword baseline scores 75.8% / 70.5% / 19.0% on the same set. On 45 real runtime states (a small format check) v0 has
+31.0% false warnings and catches 68.8% of injected calls; v3 has 17.2% and 93.8%, because the training data has no
+empty-argument or runtime-style calls yet. The fine-tuned weights (1.7 GB) are not in the repository and the demo runs v0.
+Details: `docs/laya-finetune.md`, `docs/laya-extra.md`, `docs/laya-results.md`.
 
 ## Honest limits
 
@@ -113,4 +129,6 @@ variants. Extra experiments (a fine-tune reaching 90.5% accuracy on the held-out
 - The guard adapter recovers provenance by matching text against the request and tool output; a red-team pass fixed one
   real bypass there (`docs/redteam.md`). An allow-listed URL host can still receive data in the URL path, so allow-list
   only hosts you control.
-- Laya is a second opinion only. It does not meet the accuracy gates we set (see `docs/laya-results.md`).
+- Laya is a second opinion only. The live checkpoint (v0) does not meet the accuracy gates we set (`docs/laya-results.md`); the
+  fine-tuned versions meet the accuracy and recall gates on the held-out set but are not yet validated on live-format calls and
+  are not wired into the demo (`docs/laya-finetune.md`).

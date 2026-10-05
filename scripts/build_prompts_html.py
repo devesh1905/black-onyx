@@ -76,12 +76,12 @@ def e(s: str) -> str:
     return html.escape(s)
 
 
-def defence_rows() -> tuple[str, dict]:
+def defence_rows() -> tuple[str, str, dict]:
     r = json.loads(RESULTS.read_text(encoding="utf-8"))
     d = r["defences"]
     names = {"D0": "D0 Undefended", "D1": "D1 Keyword filter", "D2": "D2 Black Onyx rules",
              "D3": "D3 Rules + Laya (advisory)", "D4": "D4 Laya alone, no rules"}
-    out = []
+    out, cards = [], []
     for k in ("D0", "D1", "D2", "D3", "D4"):
         x = d[k]
         a, u, o = x["asr_all"], x["uua"], x["overblock"]
@@ -102,12 +102,24 @@ def defence_rows() -> tuple[str, dict]:
             f'<tr class="{cls.strip()}"><th scope="row">{e(names[k])}</th>'
             f'<td><div class="bar"><i style="width:{max(pct, 0.4):.1f}%"></i></div>{a["k"]}/{a["n"]} ({pct:.1f}%){e(bound)}</td>'
             f'<td>{100 * u["k"] / u["n"]:.1f}%</td><td>{o["k"]}/{o["n"]}</td><td>{x["false_alerts"]}</td><td>{e(speed)}</td></tr>')
-    return "\n".join(out), r
+        facts = [("Attacks that got through", f'{a["k"]}/{a["n"]} ({pct:.1f}%){bound}'),
+                 ("User's task still finished", f'{100 * u["k"] / u["n"]:.1f}%'),
+                 ("Legit calls wrongly blocked", f'{o["k"]}/{o["n"]}'), ("False alerts", str(x["false_alerts"])),
+                 ("Check time per call", speed)]
+        dl = "".join(f"<div><dt>{e(lab)}</dt><dd>{e(val)}</dd></div>" for lab, val in facts)
+        cards.append(f'<article class="mcard{cls}"><h3>{e(names[k])}</h3>'
+                     f'<div class="bar"><i style="width:{max(pct, 0.4):.1f}%"></i></div><dl>{dl}</dl></article>')
+    return "\n".join(out), "".join(cards), r
 
 
 def benchmarks_html() -> str:
-    rows, r = defence_rows()
+    rows, dcards, r = defence_rows()
     head = "".join(f'<th scope="col">{e(c)}</th>' for c in LAYA_COLS)
+    vcards = []
+    for ci, col in enumerate(LAYA_COLS):
+        dl = "".join(f'<div><dt>{e(label)}</dt><dd class="{"best" if best == ci else ""}">{e(vals[ci])}</dd></div>'
+                     for label, vals, best in LAYA_ROWS[1:])
+        vcards.append(f'<article class="mcard"><h3>{e(col)}</h3><p class="what">{e(LAYA_ROWS[0][1][ci])}</p><dl>{dl}</dl></article>')
     body = []
     for label, vals, best in LAYA_ROWS:
         tds = "".join(f'<td class="{"best" if best == i else ""}">{e(v)}</td>' for i, v in enumerate(vals))
@@ -122,7 +134,8 @@ def benchmarks_html() -> str:
   <h2>1. Defences on the attack suite</h2>
   <p class="cap">{r['n_tasks']} legitimate tasks, {r['n_attacks']} attacks and {r['n_variants']} reworded variants (310 attack runs), seed {r['seed']}.
   Attacker: a simulated agent that follows injected instructions.</p>
-  <div class="scroll"><table>
+  <div class="cards">{dcards}</div>
+  <div class="scroll wide"><table>
     <thead><tr><th scope="col">Defence</th><th scope="col">Attacks that got through</th><th scope="col">User's task still finished</th>
     <th scope="col">Legit calls wrongly blocked</th><th scope="col">False alerts</th><th scope="col">Check time per call</th></tr></thead>
     <tbody>{rows}</tbody>
@@ -132,7 +145,8 @@ def benchmarks_html() -> str:
   <div class="scroll"><table class="kv"><tbody>{live}</tbody></table></div>
 
   <h2>3. Our fine-tuned versions of Laya</h2>
-  <div class="scroll"><table class="ver">
+  <div class="cards">{"".join(vcards)}</div>
+  <div class="scroll wide"><table class="ver">
     <thead><tr><th scope="col">Measure</th>{head}</tr></thead>
     <tbody>{"".join(body)}</tbody>
   </table></div>
@@ -260,7 +274,29 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip.done{border-color:#1f7a45;color:#bbf7d0}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#14301f;border:1px solid #1f7a45;color:#bbf7d0;padding:8px 16px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
-@media (max-width:820px){main{padding:16px 12px 48px}table{font-size:12px}th,td{padding:7px 6px}thead th{font-size:10px;letter-spacing:.4px}.ver tbody th{width:20%}}
+.cards{display:none}
+.mcard{background:var(--p);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;margin:0 0 10px}
+.mcard h3{margin:0 0 4px;font-size:15px}
+.mcard.best h3{color:#bbf7d0}
+.mcard .what{margin:0 0 8px;color:var(--t2);font-size:13px}
+.mcard dl{margin:0}
+.mcard dl>div{display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-top:1px solid var(--bd);font-size:13px}
+.mcard dt{color:var(--t2);flex:1 1 55%}
+.mcard dd{margin:0;text-align:right;flex:1 1 45%;font-weight:600;overflow-wrap:break-word}
+.mcard dd.best{color:#bbf7d0}
+@media (max-width:760px){
+  main{padding:14px 12px 48px}
+  h1{font-size:22px}
+  .tabs{display:flex;width:100%}.tabs button{flex:1;padding:0 8px}
+  .wide{display:none}
+  .cards{display:block}
+  .kv,.kv tbody,.kv tr,.kv th,.kv td{display:block;width:100%}
+  .kv tr{padding:8px 12px;border-bottom:1px solid var(--bd)}.kv tr:last-child{border-bottom:0}
+  .kv th,.kv td{border:0;padding:0}.kv th{color:var(--t2);font-size:12px;margin-bottom:2px}
+  .prompt{font-size:12px}
+  .bar2 .btn,.bar2 input{width:100%}
+  .how{padding:10px 12px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
