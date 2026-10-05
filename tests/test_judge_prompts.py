@@ -21,7 +21,7 @@ PROMPTS = load()
 
 
 def test_file_has_all_prompts():
-    assert len(PROMPTS) == 14
+    assert len(PROMPTS) == 15
 
 
 @pytest.mark.parametrize("n,title,task,prompt", PROMPTS)
