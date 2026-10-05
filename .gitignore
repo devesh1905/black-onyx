@@ -10,3 +10,6 @@ runs/
 # local brand override (see app/ui/brand/README.md)
 app/ui/brand/emblem.*
 app/ui/brand/logo.*
+
+# training work stays private (published only as the final "Laya v4")
+training_private/

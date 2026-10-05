@@ -24,6 +24,30 @@ mostly use the new chat for **training Laya and benchmarking it so Laya can work
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
+## 0.5 PUBLICATION POLICY for all new training work (decided by the user, read before touching git)
+
+The user does **not** want the training process shown on GitHub. The new model is to appear **directly as "Laya v4"**: one finished model with its benchmark, not the sweeps, seeds,
+failed runs, intermediate versions, or training scripts/logs that led to it.
+
+**Rules for the new session**
+1. **Everything that trains or tunes stays local and private.** Put new training/data-generation/analysis scripts, logs, notes and experiment tables in `training_private/` inside the repo folder (it is
+   git-ignored: `.gitignore` already lists it) or outside the repo (for example `D:\Buildathon-Toolkit\laya-private\`). Weights, checkpoints, score dumps and training data variants never go to git.
+   Keep a private methods log at `training_private/LOG.md` (config, seed, dev/test numbers per run) so the method can be explained verbally if a judge asks.
+2. **Do not use `git add -A` or `git add .`** for this work. Add files explicitly and run `git status` and `git diff --cached --stat` before every commit to check that nothing from `training_private/`,
+   `.scratch/`, weights, logs or training data got staged. Do not push new branches for training experiments.
+3. **What may be published (only after v4 is final and validated):**
+   * the small, generic code needed to *run* v4 in the sentinel (a version loader in `src/blackonyx/laya_sentinel.py`, off by default; tests that skip when weights are absent);
+   * **one new column "v4"** in `app/ui/laya_versions.py` (then `python scripts/build_prompts_html.py`) with the final measured numbers and a one-line description such as "Fine-tuned Laya";
+   * the D4 / live-probe / fresh-attack benchmark rows for v4 in the Results tab and benchmarks page;
+   * a short README sentence. No v5, no sweep tables, no per-seed numbers, no training recipe, no data-generation details.
+4. **Honesty still applies; only the level of detail changes.** Do not claim anything untrue (do not say the model is not fine-tuned, do not hide that thresholds/test sets exist, do not report a number that was not measured on
+   the frozen held-out sets). Keep the caveat lines that qualify the claims (small probe sample, advisory vs solo, adaptive attacks, in-demo status). If someone asks how v4 was trained, answer truthfully from `training_private/LOG.md`.
+5. **Already public (from today, cannot be unpublished by deleting files):** `eval/finetune_laya.py`, `eval/finetune_sweep.py`, `eval/finetune_seeds.py`, `eval/ft_analysis.py`, `eval/vote_analysis.py`, `eval/live_probe.py`,
+   `eval/probe_score.py`, `eval/laya_budget.py`, `eval/gpu_bench.py`, `scripts/extract_laya_version.py`, `scripts/check_laya_version.py`, `scripts/laya_latency.py`, `docs/laya-finetune.md`, `docs/laya-extra.md`, the v1 to v3 columns on the
+   benchmarks page, Results tab and README, branches `finetune` and `laya-v2` on origin, and **this file's earlier commits**. Removing them from the current tree is possible, but git history keeps them unless the history is rewritten with a force-push
+   (destructive: needs the user's explicit OK). **Open question for the user:** clean the current tree (and optionally rewrite history), or leave today's material as is and keep only new work private. Do not decide this yourself.
+6. Keep this handover file itself out of the public repo if the user wants (move it to `training_private/`); ask first, because earlier commits of it are already on GitHub.
+
 ## 1. The user, the event, and the working style
 
 * **Event:** VELS Buildathon 2026. Progress review 12:00, final review 16:30 to 18:00 today (done). Today the team passed round 2 and is in the
@@ -38,6 +62,7 @@ mostly use the new chat for **training Laya and benchmarking it so Laya can work
 * **Secrets:** never in the repo or in chat. The local env file is `D:\Downloads\Buildathon Vels\.env` (outside the repo; loaded by
   `src/blackonyx/envfile.py`). It has `GEMINI_API_KEY`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` lines. The user pasted a Gemini key in chat earlier and was
   told to revoke and replace it: do not reuse any key seen in chat.
+* **Publication policy (section 0.5): training process stays private, only the final "Laya v4" is published.**
 * **Rules from `CLAUDE.md` (repo root) that still apply:** (1) code is written in this repo, no copying reference implementations or Laya's
   training notebook; (2) no secrets in the repo; (3) everything must run offline on a fresh clone; (4) Laya is an advisor in the main design,
   English checkpoint in the live path; (5) report only measured numbers, with counts and 95% intervals; freeze the held-out test set before tuning,
@@ -101,7 +126,7 @@ Keyword baseline on the same held-out set: 75.8% accuracy, 70.5% recall, 19.0% f
 (88/108), wrong target 71.4% (25/35), injected call 71.9% (41/57). In the attack suite (D3) it warned on 308/310 attack runs and on 6 clean runs.
 
 **Naming:** the existing labels v0 to v3 are fixed in docs, README, the Results tab and the benchmarks page (`app/ui/laya_versions.py` holds the
-shared table). **New models should be v4, v5, ...** and be added to that table.
+shared table). **The new model is published as exactly one version, "v4"** (the final one); intermediate candidates are named inside `training_private/LOG.md` only and never appear in the public table (section 0.5).
 
 ### 3.3 Red-team pass (`docs/redteam.md`, `eval/redteam.py`)
 153 hand-written injection runs (17 injections x 9 tasks) under D2: 0 got through in the 104 runs where the simulated attacker acted. Found and fixed:
@@ -222,6 +247,7 @@ Repo root `D:\Downloads\Buildathon Vels\black-onyx` (venv `.venv`, git-ignored `
 | `eval/notify.py` (Python ntfy helper), `scripts/build_prompts_html.py`, `scripts/notify.sh`, `scripts/extract_laya_version.py`, `scripts/check_laya_version.py`, `scripts/laya_latency.py`, `eval/gpu_bench.py` | page builder, ntfy push, weight extraction/check, latency timing, GPU step-time benchmark |
 | `examples/guarded_agent.py`, `examples/real_llm_agent.py` | real-agent examples |
 | `tests/` | 144 tests (`test_laya_v2.py`, `test_ui_*`, `test_sentinel.py`, `test_guard.py`, ...) |
+| `training_private/` (git-ignored, create it) | all new training/data/analysis scripts, logs, `LOG.md`, data variants (section 0.5) |
 | `.scratch/ft/` (git-ignored, local) | `best_model.pt` (full v2 seed-1905 weights, 1.7 GB), `model.pt` (v1), `final_seed{1905,7,42,11,2024}.json` (dev/test/probe scores per seed), `probe.json`, logs, `analysis.json`, `vote_analysis.json` |
 
 Outside the repo: `D:\Buildathon-Toolkit\venv-cuda\Scripts\python.exe` (torch 2.14.1+cu130, laya 0.3.26, accelerate, transformers; **no peft/bitsandbytes**: needs `pip install` with internet),
@@ -267,8 +293,8 @@ Task finishing compounds across calls: with n calls per task, completion is abou
    CLAUDE.md rule). Include the 15 judge prompts as a separate "judge set" and keep them untouched too.
 5. **Adaptive test:** use `GEMINI_API_KEY` (free tier, model `gemini-3.5-flash-lite`, back off on 429/503) or a local script to generate many paraphrases of an injected call/instruction and report how many pass the
    sentinel with Fit above threshold, versus the rules (which are unaffected by wording).
-6. Report with `calculate_metrics` and Wilson intervals (`eval/calibrate_laya.py`), device/precision/laya version/checkpoint next to every number, and add the new versions as columns in
-   `app/ui/laya_versions.py` (feeds the Results tab and the benchmarks page via `python scripts/build_prompts_html.py`).
+6. Report with `calculate_metrics` and Wilson intervals (`eval/calibrate_laya.py`), device/precision/laya version/checkpoint next to every number, and add **one** final column, "v4", in
+   `app/ui/laya_versions.py` (feeds the Results tab and the benchmarks page via `python scripts/build_prompts_html.py`). Benchmark scripts for this live in `training_private/` unless they are generic and safe to publish (section 0.5).
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -281,7 +307,7 @@ Check the GPU first (`nvidia-smi`): at home it may allow much more than the 4050
 ### 12.A Rules for honest evaluation (do not break these)
 * Pool B test (`eval/data/test.jsonl`), the new frozen live-probe test, the 15 judge prompts, and the 310-run attack suite are **never** training, tuning or threshold data.
 * Choose configs, epochs, thresholds and seeds on a **template-disjoint dev set** only; score test once per final candidate; report the mean and spread over seeds.
-* Keep an experiment log (config, seed, dev metrics, test metrics) in `docs/laya-finetune.md` or a new `docs/laya-solo.md`.
+* Keep an experiment log (config, seed, dev metrics, test metrics) in **`training_private/LOG.md`** (git-ignored), not in `docs/` (section 0.5).
 
 ### 12.B Fix the splits first (cheap, high value)
 * Add a `template_id` to each generated pair (request phrasing id + call template id + bad-argument template id) in `eval/sentinel_data.py`, and write a **group split**
@@ -311,7 +337,7 @@ Check the GPU first (`nvidia-smi`): at home it may allow much more than the 4050
 
 ### 12.D Training recipes (what to try, in order)
 1. **Baseline repro (5 min):** `D:\Buildathon-Toolkit\venv-cuda\Scripts\python.exe eval\finetune_seeds.py` reproduces v2 (8 layers, lr 5e-5, 5 epochs, seeds 1905, 7, 42, 11, 2024, about 2 min per seed on the 4050) and writes `.scratch\ft\final_seed*.json`.
-   Copy it to a new script (`eval/finetune_v4.py`) that reads your new train/dev files, keeps the same `encode`/`batches`/`p_fit` helpers from `eval/finetune_laya.py`, and saves per-epoch dev scores.
+   Copy it to a new script **in `training_private/`** (for example `training_private/finetune_v4.py`; not in `eval/`) that reads your new train/dev files, keeps the same `encode`/`batches`/`p_fit` helpers from `eval/finetune_laya.py`, and saves per-epoch dev scores.
 2. **Top-N layers sweep:** N in {4, 8, 12, 16}, lr in {1e-5, 2e-5, 5e-5}, epochs 3 to 6, batch 16 to 32. Choose on the template-disjoint dev. Step time grows about 50 ms per 4 layers on the 4050 (see section 7).
 3. **Bigger trainable set on a small GPU:** gradient checkpointing for the encoder layers (`torch.utils.checkpoint`; `DecisionModel.head_checkpointing` exists for the head), bf16 weights with an fp32 master copy only for trained layers,
    8-bit AdamW (`bitsandbytes`, needs `pip install` while online), or **LoRA** on the attention/FFN of all 28 layers (`peft`, needs `pip install`). Full fine-tune needs about 7 GB for weights+grads+Adam in fp32; with 8-bit Adam and bf16 it fits in about 4 to 5 GB. Measure with `eval/gpu_bench.py` (run it with the GPU venv; 12 steps per mode, prints median step time and peak VRAM for head-only, last 4, last 8 and full).
@@ -331,7 +357,7 @@ Check the GPU first (`nvidia-smi`): at home it may allow much more than the 4050
 2. Generalise `LayaSentinel._load_v2` to take a version name/folder (keep v0 the default, validate keys/shapes before loading, fall back to v0 on any problem, keep the `never raises` contract). If the state format changed (provenance hints), add a matching `_build_state`.
 3. Fit the threshold on the template-disjoint dev, check the CPU fp32 scores reproduce the GPU decisions (compare against saved scores, as `scripts/check_laya_version.py` does: 0 flips of 400).
 4. Tests: default stays v0; bad/missing weights fall back; a real-weights test skipped when the weights are absent (pattern in `tests/test_laya_v2.py`).
-5. Benchmark through D4 (`python -m eval.run_eval --laya-all` with `BLACKONYX_LAYA_MODEL=<version>`), add a column to `app/ui/laya_versions.py`, rebuild the page with `python scripts/build_prompts_html.py`, and update README/docs.
+5. Benchmark through D4 (`python -m eval.run_eval --laya-all` with `BLACKONYX_LAYA_MODEL=<version>`), add the single **v4** column to `app/ui/laya_versions.py`, rebuild the page with `python scripts/build_prompts_html.py`, and add one README sentence. Commit only those files (explicit `git add`, check `git status`).
 6. Merge to `main` only after the full suite passes and the default start-up is unchanged; **restart the server** after changes under `src/`. No on-screen switch unless the user asks for one (and then it must really load the model it names).
 
 ### 12.F Suggested overnight plan (ETAs assume an RTX 4050 class GPU; recompute for the home GPU)
@@ -345,8 +371,8 @@ Check the GPU first (`nvidia-smi`): at home it may allow much more than the 4050
 | 5. Provenance-hint variant (12.C.8) vs request-only control | 60 to 90 min | does provenance close the gap? |
 | 6. 5-seed final + vote/soup/distillation test, threshold by cost, calibration | 60 to 90 min | v4 candidates |
 | 7. D4 benchmark (310 runs) + fresh attack set + adaptive test + latency | 45 to 60 min | solo benchmark tables |
-| 8. Write results (`docs/laya-solo.md`), add columns to `laya_versions.py`, rebuild page, notify | 20 min | docs ready for the finals |
-Ship into the app (12.E) only if it beats v0 on the probe and D4; otherwise leave the demo on v0 and present the numbers.
+| 8. Write the private log (`training_private/LOG.md`), add the single v4 column to `laya_versions.py`, rebuild page, notify | 20 min | v4 ready to present; training process not published |
+Ship into the app (12.E) only if it beats v0 on the probe and D4; otherwise leave the demo on v0 and present the numbers. Publish only the final v4 result (section 0.5).
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -374,7 +400,7 @@ sh scripts/notify.sh "Title" "message"                                  # phone 
 ## 14. First message to send in the new session (suggested)
 
 "Read `day1context.md` in the repo root. Goal: train Laya so it can work alone (D4, no rules) and build the solo benchmark in section 11. Start with section 12.F steps 0 to 3 and tell me the
-GPU you see. Keep `main` and the demo untouched until a model beats v0 on the live-format probe and D4; use a branch for code changes; push a phone notification after each step (section 15) and use the methods catalogue in section 16 for ETAs, where to run, and expected outcomes."
+GPU you see. Keep `main` and the demo untouched until a model beats v0 on the live-format probe and D4; keep all training work in `training_private/` (git-ignored, never pushed; the new model is published only as "Laya v4", section 0.5); use a branch for the generic loader code changes; push a phone notification after each step (section 15) and use the methods catalogue in section 16 for ETAs, where to run, and expected outcomes."
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
