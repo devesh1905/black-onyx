@@ -9,7 +9,7 @@ and a readable YAML policy checks each tool argument at the moment of use. The d
 came from, not on what the text says, so rewording an attack does not change the outcome.
 
 Docs: [trust model](docs/trust-model.md) · [event schema](docs/event-schema.md) · [results](docs/results.md) ·
-[Laya measurements](docs/laya-results.md) · [judge prompts](docs/judge-prompts.md) · [simple notes (PDF)](docs/notes/Black-Onyx-Simple-Notes.pdf)
+[Laya measurements](docs/laya-results.md) · [Laya extras](docs/laya-extra.md) · [red-team pass](docs/redteam.md) · [judge prompts](docs/judge-prompts.md) · [simple notes (PDF)](docs/notes/Black-Onyx-Simple-Notes.pdf)
 
 ## Requirements
 
@@ -93,11 +93,16 @@ docs/                        trust model, event schema, results, wireframes, not
 | D0 undefended | 310 / 310 |
 | D1 keyword filter | 281 / 310 |
 | D2 Black Onyx rules | 0 / 310 |
+| D3 rules + Laya (advisory) | 0 / 310 |
+| D4 Laya alone (no rules) | 2 / 310 |
 
 All 8 legitimate tasks still finish under D2, with 0 legitimate calls wrongly blocked and 0 false alerts. The policy
 decision is identical for all 300 variants. The rule check adds about 10 microseconds per tool call on the development
 machine. Laya (English checkpoint, CPU, fp32) reaches 81.0% accuracy, 77.0% recall on non-fitting calls and 15.0% false
-warnings on 400 held-out pairs; its accuracy interval overlaps the keyword baseline, so it stays advisory.
+warnings on 400 held-out pairs; its accuracy interval overlaps the keyword baseline, so it stays advisory. Laya alone (D4) lets 2 attacks through and
+finishes the user's task in only 25% of attack runs, which is why the rules do the blocking. D3 and D4 ran on all 300
+variants. Extra experiments (a fine-tune reaching 90.5% accuracy on the held-out set, a false-warning budget) are in
+`docs/laya-extra.md`; they are not part of the demo build.
 
 ## Honest limits
 
@@ -105,4 +110,7 @@ warnings on 400 held-out pairs; its accuracy interval overlaps the keyword basel
   on this suite; they are not a claim that a real agent is unbreakable.
 - A poisoned page can still make a summary's wording misleading (summaries stay labelled untrusted). Implicit flows
   (branching on tainted data) are out of scope.
+- The guard adapter recovers provenance by matching text against the request and tool output; a red-team pass fixed one
+  real bypass there (`docs/redteam.md`). An allow-listed URL host can still receive data in the URL path, so allow-list
+  only hosts you control.
 - Laya is a second opinion only. It does not meet the accuracy gates we set (see `docs/laya-results.md`).

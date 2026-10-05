@@ -25,6 +25,7 @@ LabeledObject path remains the stronger mechanism; this adapter is the pragmatic
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Mapping, Optional
 
@@ -32,6 +33,15 @@ from . import audit as _audit
 from .labeled import LabeledObject
 from .labels import Label, Source, Trust
 from .policy import Policy
+
+
+def _in_request(needle: str, hay: str) -> bool:
+    """True if `needle` appears in `hay` as a whole token. Plain substring matching would let a truncated address
+    ('priya@corp.co' inside 'priya@corp.com') inherit the user's trust, so the match must end at a token boundary."""
+    if not needle:
+        return False
+    pat = r"(?<![\w@.+-])" + re.escape(needle) + r"(?![\w@-])(?!\.\w)"
+    return re.search(pat, hay, re.I) is not None
 
 
 @dataclass
@@ -80,7 +90,7 @@ class Guard:
     def label_value(self, value: Any) -> Label:
         s = str(value).strip()
         low = s.lower()
-        if len(low) >= self.min_len and low in self.request.lower():
+        if _in_request(s, self.request):
             return Label(Source.USER, Trust.USER)
         for src, vals in self.trusted.items():
             if low in vals:

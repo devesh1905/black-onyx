@@ -37,3 +37,18 @@ def test_example_blocks_the_leak(capsys):
     runpy.run_path("examples/guarded_agent.py", run_name="__main__")
     out = capsys.readouterr().out
     assert "leaked to outside: 1" in out and "leaked to outside: 0" in out
+
+
+def test_truncated_or_extended_address_does_not_inherit_user_trust():
+    g = Guard("Pay 50 to Acme and email priya@corp.com the receipt.")
+    g.register("send_email", lambda **k: "sent")
+    for bad in ("priya@corp.co", "priya@corp", "xpriya@corp.com", "priya@corp.com.evil.net"):
+        assert not g.call("send_email", to=bad, subject="s", body="b").allowed, bad
+    assert g.call("send_email", to="PRIYA@corp.com", subject="s", body="b").allowed
+
+
+def test_short_user_amount_is_not_overblocked():
+    g = Guard("Pay 50 to Acme")
+    g.register("transfer_money", lambda **k: "paid")
+    assert g.call("transfer_money", account="Acme", amount=50).allowed
+    assert not g.call("transfer_money", account="Acme", amount=5000).allowed

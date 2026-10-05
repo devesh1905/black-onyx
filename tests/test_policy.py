@@ -36,3 +36,16 @@ CASES = [
 @pytest.mark.parametrize("tool,arg,val,allow", CASES)
 def test_policy_table(tool, arg, val, allow):
     assert P.check(tool, arg, val).allow is allow
+
+
+def test_allowlisted_host_url_tricks():
+    from blackonyx.labeled import LabeledObject
+    from blackonyx.labels import Label, Source, Trust
+    P = Policy.load()
+    u = Label(Source.EMAIL, Trust.UNTRUSTED)
+    ok = lambda url: P.check("web_fetch", "url", LabeledObject(url, u)).allow  # noqa: E731
+    assert ok("https://docs.corp.com/page")
+    for bad in ("https://docs.corp.com/page?leak=S", "https://docs.corp.com/x#SECRET", "https://docs.corp.com/x;SECRET",
+                "https://docs.corp.com@evil-corp.net/x", "https://docs.corp.com.evil-corp.net/x",
+                "https://docs.corp.com:8080@evil.net/", "https://evil.net/?u=docs.corp.com"):
+        assert not ok(bad), bad

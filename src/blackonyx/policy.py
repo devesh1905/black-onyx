@@ -51,8 +51,8 @@ class Policy:
             return Decision(True, f"origin {lb} is allowed for {tool}.{arg}", kind)
         if "allow_hosts" in rule:
             u = urlparse(str(raw(value)))
-            if u.hostname in rule["allow_hosts"] and not (u.query and not rule.get("untrusted_query", False)):
-                return Decision(True, f"allowlisted host {u.hostname}, no untrusted query data", kind)
+            if u.hostname in rule["allow_hosts"] and not ((u.query or u.fragment or u.params) and not rule.get("untrusted_query", False)):
+                return Decision(True, f"allowlisted host {u.hostname}, no untrusted query/fragment data", kind)
         if extra:
             names = "|".join(s.name for s in Source if s != Source.NONE and s in extra)
             why = f"{tool}.{arg} may not come from {names} (allowed: {', '.join(rule.get('sources', []))})"
