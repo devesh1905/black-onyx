@@ -138,7 +138,7 @@ def howitworks_html() -> str:
   <p class="note" style="margin:0">The only way trust rises. Each is deterministic, logged, and returns data from a trusted table, never the untrusted input.</p>
   <p class="tag" style="margin:8px 0 0">payee_lookup · contact_lookup · doc_resolve · amount_check · mailbox_ref</p></div>
  <div class="panel"><h2>Laya sentinel</h2>
-  <p class="note" style="margin:0">A local model scores whether a call fits the request. It can warn on an allowed call. It never relaxes a rule. Offline, CPU, English checkpoint.</p></div>
+  <p class="note" style="margin:0">A local model gives each call a Fit percentage: how well it matches what the user asked (100% = a clear match, low = unusual for this request). It can warn on an allowed call. It never relaxes a rule. Offline, CPU, English checkpoint.</p></div>
 </div>
 <div class="panel" style="margin-top:12px"><h2>Guarantee</h2>
  <p class="note" style="margin:0">Untrusted data cannot choose a destination or an argument the policy reserves for USER or VERIFIED data, provided the orchestrator, policy file, validators and tool registry are correct.

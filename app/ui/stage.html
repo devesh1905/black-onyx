@@ -63,6 +63,9 @@ button,select,input{font:inherit;color:inherit}
 .row.ok .h b{color:var(--green)}
 .row.ver .h b{color:var(--blue)} .row.rej .h b{color:var(--amber)}
 .unt{color:var(--amber)} .ver{color:var(--blue)}
+.meter{display:inline-block;vertical-align:middle;width:90px;height:6px;border-radius:3px;background:var(--bd2);margin-left:8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--green);border-radius:3px}.meter.low i{background:var(--amber)}
+.fitnum{font-family:var(--mono);font-weight:600}.row.lowfit .fitnum{color:var(--amber)}
 .kv{display:grid;grid-template-columns:54px 1fr;gap:1px 8px;font-size:12px}
 .kv span:nth-child(odd){color:var(--t3)}
 .empty{margin:auto;color:var(--t2);text-align:center;max-width:300px;padding:30px 10px}
@@ -239,6 +242,9 @@ const RULE = {
  'web_fetch.url':'URLs must come from the user or an approved host with no data in the link.',
  'calendar_add.attendees':'Guests must come from the user or contacts.',
  'reply_email.message_id':'Replies must target a real mailbox message.'};
+const fitPct = (sc)=>Math.round(Number(sc)*100);
+const fitWords = (ev)=> ev.score==null ? 'No opinion' : (ev.warn ? 'Looks unusual for this request' : 'Looks like what you asked');
+const fitMeter = (ev)=> ev.score==null ? '' : `<span class="meter ${ev.warn?'low':''}" role="img" aria-label="fit ${fitPct(ev.score)} percent"><i style="width:${fitPct(ev.score)}%"></i></span>`;
 const originWords = (srcs)=> (srcs||[]).map(s=>ORIGIN[s]||s).join(' + ') || 'external text';
 function chainInfo(chain){
   const m = String(chain||'').match(/^(?:[a-z_]+\()?(\w+) <-/); const arg = m?m[1]:'';
@@ -318,8 +324,8 @@ EVENTS.forEach((ev,i)=>{
     break; }
   case 'laya_score': {
     const c = ensureCall(ev.call_id, '?', i); c.laya = ev;
-    fx[i].push({t:'badge',id:c.id,text:ev.score==null?'Laya –':'fit '+Number(ev.score).toFixed(2),warn:!!ev.warn});
-    rows[i] = row(ev,'', `Laya <i>${esc(c.tool)}</i>`, ev.score==null?'no opinion (advisory)':`fit ${Number(ev.score).toFixed(2)} · ${ev.warn?'low':'ok'} · advisory`, false, 'sparkle');
+    fx[i].push({t:'badge',id:c.id,text:ev.score==null?'Laya –':'Fit '+fitPct(ev.score)+'%',warn:!!ev.warn});
+    rows[i] = row(ev,ev.warn?'lowfit':'', `<span title="Fit % = how well this call matches what you asked. Advisory only; the rules decide.">Laya <i>${esc(c.tool)}</i></span>`, ev.score==null?'No opinion (advisory)':`<b class="fitnum">Fit ${fitPct(ev.score)}%</b> ${fitMeter(ev)}<div class="s" style="margin-top:2px">${fitWords(ev)} <span style="color:var(--t3)">· advisory</span></div>`, false, 'sparkle');
     break; }
   case 'alert': {
     const c = ensureCall(ev.call_id, ev.tool, i); c.alert=ev;
@@ -612,7 +618,7 @@ function openDrawer(id){
     const rules = n.checks.filter(c=>c.decision==='deny').map(c=>RULE[n.tool+'.'+c.arg]).filter(Boolean);
     if(rules.length) h+=`<p class="sum" style="margin-top:12px">Policy: ${esc(rules[0])}</p>`;
   }
-  if(n.laya){ const sc=n.laya.score; h+=`<p class="sum" style="margin-top:12px">Laya (advisory): ${sc==null?'no opinion':'fit '+Number(sc).toFixed(2)+(n.laya.warn?', low':', ok')} · ${Math.round(n.laya.ms||0)} ms. The rules decide.</p>`; }
+  if(n.laya){ const L=n.laya; h+=`<div class="sum" style="margin-top:12px"><b class="fitnum">${L.score==null?'Laya: no opinion':'Laya fit '+fitPct(L.score)+'%'}</b> ${fitMeter(L)}<br>${fitWords(L)}. This is how well the call matches your request (raw score ${L.score==null?'–':Number(L.score).toFixed(2)}, ${Math.round(L.ms||0)} ms). Advisory only; the rules decide.</div>`; }
   $('dbody').innerHTML=h; $('drawer').classList.add('open');
 }
 function closeDrawer(){ $('drawer').classList.remove('open'); Object.values(nodeEls).forEach(g=>g.classList.remove('sel')); }
