@@ -1,0 +1,16 @@
+{
+  "cpu_fp32": {
+    "device": "cpu",
+    "precision": "fp32",
+    "threshold": 0.88,
+    "band_half_width": 0.05,
+    "model": "laya-english"
+  },
+  "default": {
+    "device": "cpu",
+    "precision": "fp32",
+    "threshold": 0.88,
+    "band_half_width": 0.05,
+    "model": "laya-english"
+  }
+}
