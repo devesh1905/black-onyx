@@ -72,3 +72,21 @@ Live-format probe (45 runtime states), unanimous vote: false warnings 17.2% (5/2
 `read_inbox` calls with no arguments, which no training example covers, and one is a `transfer_money` call with an unfamiliar account format.
 The one missed injection was a `send_email` to an archive address. So the test-set gain is real but the live gain is smaller until the
 training data covers runtime-style calls (option E).
+
+## 5. Using v2 in the app (opt-in, off by default)
+
+The fine-tuned single model (v2: top 8 layers, seed 1905, lr 5e-5) can be switched on without touching the default path:
+
+* Weights: `D:\Buildathon-Toolkit\laya-ft\v2.pt` (497 MB: the changed top layers, head and scorer only) and `v2.json` (threshold 0.981, fitted on dev).
+  They are not in the repository.
+* Switch: set `BLACKONYX_LAYA_MODEL=v2` (for example as a line in the `.env` file next to the repo, or in the shell) and restart the app.
+  `BLACKONYX_LAYA_V2_DIR` points at a different weights folder.
+* Safe by design: with the variable unset, nothing changes. If the weights are missing or do not match the model, the sentinel keeps the
+  original checkpoint (v0) and records the reason in `LayaSentinel._v2_error`. The weights are validated before the model is touched.
+* Check on this laptop (CPU, fp32, through the sentinel): the 400 held-out test states give 90.8% accuracy, 98.5% recall and 17.0% false
+  warnings, with 0 decision flips against the GPU run used for fitting, at a median of about 259 ms per call.
+* Caveat: the dev-fitted threshold (0.981) is extreme because dev is saturated, so v2 is sensitive near that value. It also still shows
+  28.3% false warnings on the 45-state live-format check, so v0 stays the default for the demo.
+
+The sidebar also has a **Fine-tuned Laya (v2)** switch. It appears only when D3 or D4 is selected and the v2 weights exist, it is off by default
+(on only if `BLACKONYX_LAYA_MODEL=v2`), and switching reloads the model. If v2 cannot be loaded, the run uses the original Laya and the sidebar says so.

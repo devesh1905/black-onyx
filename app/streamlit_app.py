@@ -5,6 +5,7 @@ Reads only the engine's event log (docs/event-schema.md). Fully offline.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any, List, Optional
@@ -159,19 +160,26 @@ def _preset(defence: str, task: str, attack: str) -> None:
     st.session_state.update(defence_sel=defence, task_sel=task, attack_sel=attack, inject_txt="", pending_run=True)
 
 
+V2_DIR = Path(os.environ.get("BLACKONYX_LAYA_V2_DIR", r"D:\Buildathon-Toolkit\laya-ft"))
+V2_AVAILABLE = (V2_DIR / "v2.pt").exists() and (V2_DIR / "v2.json").exists()
+
+
 @st.cache_resource(show_spinner=False)
-def get_sentinel():
-    """Laya loads once (about 10 s). Any problem falls back to NullSentinel so a run never fails."""
+def get_sentinel(version: str = "v0"):
+    """Laya loads once per version (about 10 s). Any problem falls back to NullSentinel so a run never fails.
+    version "v2" asks for the fine-tuned top layers; if they cannot be loaded the original model is used and says so."""
     try:
         from blackonyx.laya_sentinel import LayaSentinel
-        s = LayaSentinel()
-        return s, "Laya (English, CPU fp32)"
+        s = LayaSentinel(model_version=version)
+        if version == "v2" and s.version != "v2":
+            return s, f"Laya v0 (English, CPU fp32); v2 not loaded: {(s._v2_error or 'unknown')[:80]}"
+        return s, ("Laya v2 fine-tuned (English, CPU fp32)" if s.version == "v2" else "Laya (English, CPU fp32)")
     except Exception as e:  # noqa: BLE001
         from blackonyx.sentinel import NullSentinel
         return NullSentinel(), f"NullSentinel (Laya unavailable: {type(e).__name__})"
 
 
-def execute(defence: str, task: str, attack: str, inject: str) -> tuple[list[dict[str, Any]], str]:
+def execute(defence: str, task: str, attack: str, inject: str, laya_version: str = "v0") -> tuple[list[dict[str, Any]], str]:
     source = "engine"
     if inject.strip():
         attack = "None"  # pasted text takes priority over a preset attack
@@ -179,8 +187,12 @@ def execute(defence: str, task: str, attack: str, inject: str) -> tuple[list[dic
         from blackonyx.runner import run_scenario
         sentinel = None
         if defence in ("D3", "D4"):
+            if st.session_state.get("laya_loaded") not in (None, laya_version):
+                get_sentinel.clear()           # free the other copy of the model before loading this one
             with st.spinner("Loading the local Laya sentinel (first time only, offline)…"):
-                sentinel, source = get_sentinel()
+                sentinel, source = get_sentinel(laya_version)
+            st.session_state["laya_loaded"] = laya_version
+            st.session_state["laya_status"] = source
         ev = run_scenario(task_id=task, attack_id=None if attack == "None" else attack, defence=defence,
                           injected_text=inject.strip() or None, sentinel=sentinel)
         return ev, source
@@ -211,6 +223,13 @@ with st.sidebar:
     with st.container(border=True):
         autoplay = st.toggle("Animate playback", value=True)
         phone = st.toggle("Phone alert on block", value=True, help="Pushes a short message (tool and policy reason only) to the ntfy topic when a call is blocked. Silent if offline.")
+        laya_v2 = False
+        if V2_AVAILABLE and defence_id in ("D3", "D4"):
+            laya_v2 = st.toggle("Fine-tuned Laya (v2)", value=os.environ.get("BLACKONYX_LAYA_MODEL", "").lower() == "v2", key="laya_v2_sw",
+                                help="Uses the fine-tuned model (top 8 layers, 90.8% accuracy on the held-out set) instead of the original. "
+                                     "Advisory only; the rules still decide. Switching reloads the model (about 10 s).")
+            if laya_v2 and "v2 not loaded" in st.session_state.get("laya_status", ""):
+                st.caption("v2 could not be loaded; using the original Laya.")
         run_clicked = st.button("Run scenario", type="primary", use_container_width=True, icon=":material/play_arrow:")
 
     st.markdown('<div class="sec">Test cases</div>', unsafe_allow_html=True)
@@ -224,7 +243,7 @@ with st.sidebar:
 # ---------------------------------------------------------------- run
 if run_clicked or st.session_state.pop("pending_run", False) or "events" not in st.session_state:
     eff_task = task_id
-    ev, src = execute(defence_id, eff_task, attack_id, inject_text)
+    ev, src = execute(defence_id, eff_task, attack_id, inject_text, "v2" if laya_v2 else "v0")
     if phone and run_clicked:  # only the Run scenario button; never on page load, refresh or preset buttons
         from app.phone_alerts import send_block_alerts
         send_block_alerts(ev)
