@@ -54,10 +54,19 @@ def get_sentinel(use_laya: bool):
         return NullSentinel(), "NullSentinel (Laya unavailable)"
 
 
-def evaluate(n_variants: int, use_laya: bool = False, seed: int = 1905) -> dict:
+def evaluate(n_variants: int, use_laya: bool = False, seed: int = 1905, laya_step: int = 10, on_progress=None) -> dict:
     sentinel, sname = get_sentinel(use_laya)
     defences = DEFENCES + (["D4"] if use_laya else [])
     variants = all_variants(n_variants, seed)
+    # progress counts only the slow Laya defences; the rule-only ones finish in seconds
+    total = sum(len(LEGIT_TASKS) + len(ATTACKS) + len(variants[::laya_step]) for d in defences if d in ("D3", "D4") and use_laya)
+    done = 0
+
+    def tick() -> None:
+        nonlocal done
+        done += 1
+        if on_progress and total:
+            on_progress(done, total)
     out: dict = {"seed": seed, "sentinel": sname, "n_variants_per_attack": n_variants, "defences": {}}
     for d in defences:
         s = sentinel
@@ -68,19 +77,25 @@ def evaluate(n_variants: int, use_laya: bool = False, seed: int = 1905) -> dict:
                                  "denied": r.legit_denied, "warns": len(r.laya_warns), "leaked": r.leaked})
             rec["gate_ms"] += r.gate_ms
             rec["laya_ms"] += r.laya_ms
+            if d in ("D3", "D4"):
+                tick()
         for a in ATTACKS:
             r = run(None, a, d, sentinel=s)
             rec["base"].append({"attack": a, "leaked": r.leaked, "ok": r.task_ok, "alerts": r.alerts,
                                 "warns": len(r.laya_warns)})
             rec["gate_ms"] += r.gate_ms
             rec["laya_ms"] += r.laya_ms
+            if d in ("D3", "D4"):
+                tick()
         # the slow Laya defences run a deterministic subset of the variants (every 10th); counts are reported per defence
-        for v in (variants[::10] if d in ("D3", "D4") and use_laya else variants):
+        for v in (variants[::laya_step] if d in ("D3", "D4") and use_laya else variants):
             r = run(None, v.attack_id, d, sentinel=s, variant_text=v.text)
             rec["variants"].append({"vid": v.vid, "attack": v.attack_id, "lang": v.lang, "leaked": r.leaked,
                                     "ok": r.task_ok, "alerts": r.alerts, "warns": len(r.laya_warns)})
             rec["gate_ms"] += r.gate_ms
             rec["laya_ms"] += r.laya_ms
+            if d in ("D3", "D4"):
+                tick()
         out["defences"][d] = rec
     return out
 
@@ -198,17 +213,40 @@ def export_json(res: dict, m: dict, path: Path, h: str) -> None:
     path.write_text(json.dumps(out, indent=1), encoding="utf-8")
 
 
+def progress_reporter(notify: bool):
+    """Prints a line at every 20% and, if asked, pushes it to ntfy via scripts/notify.sh."""
+    import subprocess
+    import time
+    state = {"next": 20, "t0": time.time()}
+
+    def cb(done: int, total: int) -> None:
+        pct = 100 * done // total
+        if pct >= state["next"] and state["next"] <= 100:
+            lvl = state["next"]
+            state["next"] += 20
+            el = time.time() - state["t0"]
+            eta = el / done * (total - done)
+            msg = f"Laya eval {lvl}% ({done}/{total} runs), {el/60:.0f} min elapsed, ~{eta/60:.0f} min left"
+            print(msg, flush=True)
+            if notify:
+                subprocess.run(["sh", str(ROOT / "scripts" / "notify.sh"), "Black Onyx Laya run", msg], check=False)
+    return cb
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=60, help="variants per text attack")
     ap.add_argument("--laya", action="store_true")
+    ap.add_argument("--notify", action="store_true", help="push progress to ntfy at every 20%%")
+    ap.add_argument("--laya-all", action="store_true", help="run D3/D4 on every variant, not every 10th")
     ap.add_argument("--out", default=str(ROOT / "docs" / "results.md"))
     ap.add_argument("--check-repro", action="store_true", help="run twice and compare hashes")
     a = ap.parse_args()
-    res = evaluate(a.n, a.laya)
+    res = evaluate(a.n, a.laya or a.laya_all, laya_step=1 if a.laya_all else 10,
+                   on_progress=progress_reporter(a.notify) if (a.laya or a.laya_all) else None)
     h = repro_hash(res)
     if a.check_repro:
-        h2 = repro_hash(evaluate(a.n, a.laya))
+        h2 = repro_hash(evaluate(a.n, a.laya or a.laya_all, laya_step=1 if a.laya_all else 10))
         print(f"reproducibility: {h} vs {h2} -> {'IDENTICAL' if h == h2 else 'DIFFERENT'}")
     m = metrics(res)
     write_report(res, m, Path(a.out), h)
