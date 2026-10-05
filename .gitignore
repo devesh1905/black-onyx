@@ -9,3 +9,4 @@ runs/
 
 # local brand override (see app/ui/brand/README.md)
 app/ui/brand/emblem.*
+app/ui/brand/logo.*

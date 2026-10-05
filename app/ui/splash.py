@@ -18,10 +18,10 @@ _HERE = Path(__file__).resolve().parent
 BRAND_DIR = _HERE / "brand"
 
 
-def custom_emblem() -> Optional[str]:
-    """Data URI of a user-supplied emblem (env BLACKONYX_EMBLEM or app/ui/brand/emblem.*), else None."""
-    cands = [Path(os.environ["BLACKONYX_EMBLEM"])] if os.environ.get("BLACKONYX_EMBLEM") else []
-    cands += [BRAND_DIR / f"emblem.{e}" for e in ("png", "webp", "jpg", "jpeg", "svg")]
+def _custom_image(stem: str, env: str, limit: int = 1100) -> Optional[str]:
+    """Data URI of a user-supplied image (env var, or app/ui/brand/<stem>.png|webp|jpg|svg), else None."""
+    cands = [Path(os.environ[env])] if os.environ.get(env) else []
+    cands += [BRAND_DIR / f"{stem}.{e}" for e in ("png", "webp", "jpg", "jpeg", "svg")]
     for p in cands:
         try:
             if not p.is_file():
@@ -31,7 +31,7 @@ def custom_emblem() -> Optional[str]:
             try:  # shrink big rasters so the page stays light
                 from PIL import Image
                 im = Image.open(p)
-                im.thumbnail((1100, 1100))
+                im.thumbnail((limit, limit))
                 buf = io.BytesIO()
                 im.save(buf, "PNG", optimize=True)
                 return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
@@ -41,6 +41,16 @@ def custom_emblem() -> Optional[str]:
         except OSError:
             continue
     return None
+
+
+def custom_emblem() -> Optional[str]:
+    """Splash emblem override: app/ui/brand/emblem.* or env BLACKONYX_EMBLEM."""
+    return _custom_image("emblem", "BLACKONYX_EMBLEM")
+
+
+def custom_logo() -> Optional[str]:
+    """Home-screen (sidebar) logo override: app/ui/brand/logo.* or env BLACKONYX_LOGO."""
+    return _custom_image("logo", "BLACKONYX_LOGO", limit=256)
 
 
 CH = {  # colour-matrix rows that keep one channel only (screen-blending the three rebuilds the original)

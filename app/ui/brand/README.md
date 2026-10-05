@@ -1,4 +1,13 @@
-# Brand override slot
+# Brand override slots
+
+Two independent slots. Both are optional and git-ignored.
+
+| Slot | Used for | File names | Env var |
+|---|---|---|---|
+| Splash emblem | the 1.5 s boot splash | `emblem.png/.webp/.jpg/.svg` | `BLACKONYX_EMBLEM` |
+| Home logo | the logo at the top of the sidebar on the home screen | `logo.png/.webp/.jpg/.svg` | `BLACKONYX_LOGO` |
+
+Details for the splash emblem:
 
 To use your own emblem image for the splash screen and the sidebar logo, put a file here named one of:
 
