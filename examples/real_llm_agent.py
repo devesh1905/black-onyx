@@ -164,9 +164,9 @@ class Anthropic:
 class Gemini:
     """Gemini generateContent with function calling. Key from GEMINI_API_KEY (free tier is enough)."""
 
-    def __init__(self, model: str = "gemini-2.5-flash", client: Any = None, api_key: str = "", **_: Any):
+    def __init__(self, model: str = "gemini-3.8-flash", client: Any = None, api_key: str = "", **_: Any):
         import httpx
-        self.model = model if model.startswith("gemini") else "gemini-2.5-flash"
+        self.model = model if model.startswith("gemini") else "gemini-3.8-flash"
         self.client = client or httpx.Client(timeout=120)
         self.headers = {"x-goog-api-key": api_key or os.environ.get("GEMINI_API_KEY", "")}
         self.contents: list[dict] = []
@@ -193,8 +193,13 @@ class Gemini:
             decls.append(d)
         body = {"systemInstruction": {"parts": [{"text": SYSTEM}]}, "contents": self.contents,
                 "tools": [{"functionDeclarations": decls}], "generationConfig": {"temperature": 0}}
-        r = self.client.post(f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
-                             json=body, headers=self.headers)
+        import time
+        for attempt in range(4):             # the free tier answers 429/503 under load: back off and retry
+            r = self.client.post(f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
+                                 json=body, headers=self.headers)
+            if r.status_code not in (429, 500, 503) or attempt == 3:
+                break
+            time.sleep(2 * (attempt + 1))
         r.raise_for_status()
         cand = r.json()["candidates"][0].get("content") or {"role": "model", "parts": []}
         self.contents.append(cand)           # returned verbatim (keeps any thought signatures)
