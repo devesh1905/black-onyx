@@ -193,7 +193,7 @@ select.btn option{background:#0D121A;color:#E6EAF0}
       <div><dt>{{ic:alert:13}} Harmful calls</dt><dd id="v-leak">00</dd></div>
       <div><dt>{{ic:list:13}} Events</dt><dd id="v-ev">00</dd></div>
       <div><dt>{{ic:timer:13}} Rule check</dt><dd id="v-ms" class="dim">&mdash;</dd></div>
-      <div><dt>{{ic:sparkle:13}} Laya (advisory)</dt><dd id="v-laya" class="dim">off</dd></div>
+      <div><dt>{{ic:sparkle:13}} <span id="laya-lbl">Laya (advisory)</span></dt><dd id="v-laya" class="dim">off</dd></div>
     </dl>
   </section>
 
@@ -268,7 +268,11 @@ function chainInfo(chain){
   const tail = String(chain||'').split(' <- ').pop().replace(/\)$/,''); const srcs = tail.split(',').map(x=>x.trim()).filter(x=>ORIGIN[x]);
   return {arg, srcs};
 }
+const isD4 = ()=> ((EVENTS[0]||{}).defence||'')==='D4';
+const noLayaOpinion = ()=> { const l=EVENTS.filter(e=>e.type==='laya_score'); return l.length>0 && l.every(e=>e.score==null); };
+const isSentinelAlert = (ev)=> /^sentinel says/.test(ev.reason||'');
 function plainAlert(ev, off){
+  if(isSentinelAlert(ev)) return `Laya alone judged that <b>${esc(ACTION[ev.tool]||ev.tool)}</b> does not look like what you asked, so the call was stopped. No rules were applied, and Laya can be wrong: this call may be legitimate.`;
   const ci = chainInfo(ev.chain); const act = ACTION[ev.tool]||ev.tool; const arg = ARGP[ci.arg]||'value';
   const src = `<b>${esc(originWords(ci.srcs))}</b>, which is untrusted`;
   if(off) return `The agent tried to <b>${esc(act)}</b>, which was not in the plan made from your request. The ${esc(arg)} came from ${src}, so the call was refused.`;
@@ -587,14 +591,16 @@ function decisionRows(alertsSeen, leaksSeen){
     const ci=chainInfo(ev.chain);
     h+=`<div class="why"><div class="why-h"><span class="bdg">${ic('shield-x',14)}BLOCKED</span><span class="act">${esc(d.requested)}</span>${d.off?'<span class="offp">not in the plan</span>':''}</div>`
      + `<p class="why-s">${plainAlert(ev, d.off)}</p>`
-     + `<dl class="why-f"><div><dt>Source</dt><dd>${esc(originWords(ci.srcs))}</dd></div><div><dt>Trust</dt><dd class="unt">UNTRUSTED</dd></div>`
-     + `<div><dt>Value</dt><dd class="mono">${esc(nodeValueText(c))}</dd></div><div><dt>Policy</dt><dd>${esc(RULE[ev.tool+'.'+ci.arg]||d.policy)}</dd></div></dl>${layaLine(c)}</div>`; });
+     + (isSentinelAlert(ev)
+        ? `<dl class="why-f"><div><dt>Decided by</dt><dd>Laya alone</dd></div><div><dt>Fit</dt><dd>${c&&c.laya&&c.laya.score!=null?fitPct(c.laya.score)+'%':'n/a'}</dd></div><div><dt>Policy</dt><dd>None applied (Laya alone, no rules)</dd></div></dl></div>`
+        : `<dl class="why-f"><div><dt>Source</dt><dd>${esc(originWords(ci.srcs))}</dd></div><div><dt>Trust</dt><dd class="unt">UNTRUSTED</dd></div>`
+     + `<div><dt>Value</dt><dd class="mono">${esc(nodeValueText(c))}</dd></div><div><dt>Policy</dt><dd>${esc(RULE[ev.tool+'.'+ci.arg]||d.policy)}</dd></div></dl>${layaLine(c)}</div>`); });
   if(leaksSeen.length) h+='<div class="lbl why-t">Why it got through</div>';
   leaksSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const ck=c&&c.checks.find(x=>x.trust!=='USER');
     h+=`<div class="why"><div class="why-h"><span class="bdg">${ic('alert',14)}EXECUTED</span><span class="act">${esc(short(ev.description,60))}</span></div>`
-     + `<p class="why-s">No policy was applied, so the agent followed an instruction hidden in untrusted content.</p>`
+     + `<p class="why-s">${isD4() ? (noLayaOpinion() ? 'Laya alone was the only check and it had no opinion (the model was not available), so nothing was blocked.' : 'Laya alone was the only check and it did not flag this call, so the agent followed an instruction hidden in untrusted content.') : 'No policy was applied, so the agent followed an instruction hidden in untrusted content.'}</p>`
      + `<dl class="why-f"><div><dt>Source</dt><dd>${esc(ck?originWords(ck.sources):'outside text')}</dd></div><div><dt>Trust</dt><dd class="unt">UNTRUSTED</dd></div>`
-     + `<div><dt>Value</dt><dd class="mono">${esc(nodeValueText(c))}</dd></div><div><dt>Policy</dt><dd>None applied (undefended)</dd></div></dl>${layaLine(c)}</div>`; });
+     + `<div><dt>Value</dt><dd class="mono">${esc(nodeValueText(c))}</dd></div><div><dt>Policy</dt><dd>${isD4() ? 'None applied (Laya alone, no rules)' : 'None applied (undefended)'}</dd></div></dl>${layaLine(c)}</div>`; });
   return h;
 }
 function setResIcon(name){ const e=$('r-ico'); if(e) e.innerHTML=ic(name,22); }
@@ -603,9 +609,9 @@ function setResult(n, leaks, alertsN, done){
   const def=(EVENTS[0]||{}).defence||'';
   if(!EVENTS.length){ setResIcon('shield'); $('r-kick').textContent='Ready'; $('r-title').textContent='No run yet'; $('r-sub').textContent='Choose a scenario and run it.'; return; }
   const task = done&&summary ? (summary.task_ok?'Legitimate task completed.':'Legitimate task did not complete.') : '';
-  if(leaks){ setResIcon('alert'); R.classList.add('hijack'); $('r-kick').textContent='No enforcement'; $('r-title').textContent=`${leaks} harmful action${leaks>1?'s':''} executed`; $('r-sub').textContent=`Instructions inside untrusted content were followed. ${task}`; }
-  else if(alertsN){ setResIcon('shield-x'); R.classList.add('block'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=`${alertsN} unsafe call${alertsN>1?'s':''} blocked`; $('r-sub').textContent=task||'Enforcing…'; }
-  else if(done){ setResIcon('shield-check'); R.classList.add('clean'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=noteText?'Nothing was attempted':'No violations'; $('r-sub').textContent=noteText?(task+' Your pasted text triggered no action; see the note in the timeline.'):(task+' No unsafe call was attempted.'); }
+  if(leaks){ setResIcon('alert'); R.classList.add('hijack'); $('r-kick').textContent=isD4()?'Laya alone, no rules':'No enforcement'; $('r-title').textContent=`${leaks} harmful action${leaks>1?'s':''} executed`; $('r-sub').textContent=isD4()?`Laya was the only check and did not stop ${leaks>1?'these calls':'this call'}${noLayaOpinion()?' (it had no opinion: model not available)':''}. ${task}`:`Instructions inside untrusted content were followed. ${task}`; }
+  else if(alertsN){ setResIcon('shield-x'); R.classList.add('block'); $('r-kick').textContent=isD4()?'Laya alone, no rules':'Policy enforcement'; $('r-title').textContent=isD4()?`${alertsN} call${alertsN>1?'s':''} stopped by Laya`:`${alertsN} unsafe call${alertsN>1?'s':''} blocked`; $('r-sub').textContent=task||'Enforcing…'; }
+  else if(done){ setResIcon('shield-check'); R.classList.add('clean'); $('r-kick').textContent=isD4()?'Laya alone, no rules':'Policy enforcement'; $('r-title').textContent=noteText?'Nothing was attempted':'No violations'; $('r-sub').textContent=noteText?(task+' Your pasted text triggered no action; see the note in the timeline.'):(task+' No unsafe call was attempted.'); }
   else { setResIcon('loader'); $('r-kick').textContent=def||'Running'; $('r-title').textContent=n?'Agent running':'Ready'; $('r-sub').textContent='Reading tool output…'; }
 }
 function renderTo(n, animate){
@@ -627,7 +633,8 @@ function renderTo(n, animate){
   cur=n; $('scrub').value=n; $('pos').textContent=`${n} / ${EVENTS.length}`; $('feed').scrollTop=$('feed').scrollHeight;
   $('v-alert').textContent=pad2(aSeen.length); $('v-leak').textContent=pad2(lSeen.length); $('v-leak').className=lSeen.length?'red':''; $('v-ev').textContent=pad2(n);
   $('gcount').textContent = nodes.size? `${nodes.size} nodes`:''; $('m-ev2').textContent = EVENTS.length? `${n}/${EVENTS.length}`:'';
-  const gated=['D2','D3','D4'].includes((EVENTS[0]||{}).defence);
+  const gated=['D2','D3'].includes((EVENTS[0]||{}).defence);
+  if($('laya-lbl')) $('laya-lbl').textContent = isD4() ? 'Laya (decides)' : 'Laya (advisory)';
   if(done && gated && summary.gate_ms!=null){ $('v-ms').textContent=Math.max(1,Math.round(summary.gate_ms*1000))+' µs'; $('v-ms').className=''; } else { $('v-ms').textContent='—'; $('v-ms').className='dim'; }
   const lm=EVENTS.slice(0,n).filter(e=>e.type==='laya_score').map(e=>e.ms).sort((a,b)=>a-b);
   if(lm.length){ const med=lm[Math.floor(lm.length/2)]; $('v-laya').textContent=(med>=1000?(med/1000).toFixed(1)+' s':Math.round(med)+' ms'); $('v-laya').className=''; } else { $('v-laya').textContent=['D3','D4'].includes((EVENTS[0]||{}).defence)?'—':'off'; $('v-laya').className='dim'; }

@@ -166,18 +166,27 @@ V2_AVAILABLE = (V2_DIR / "v2.pt").exists() and (V2_DIR / "v2.json").exists()
 
 
 @st.cache_resource(show_spinner=False)
+def _load_sentinel(version: str = "v0"):
+    """Laya loads once per version (about 10 s). Raises if the model did not load, so a failure is never cached."""
+    from blackonyx.laya_sentinel import LayaSentinel
+    s = LayaSentinel(model_version=version)
+    if s.agent is None:
+        raise RuntimeError(f"model did not load: {(s._load_error or 'unknown')[:80]}")
+    if version == "v2" and s.version != "v2":
+        return s, f"Laya v0 (English, CPU fp32); v2 not loaded: {(s._v2_error or 'unknown')[:80]}"
+    return s, ("Laya v2 fine-tuned (English, CPU fp32)" if s.version == "v2" else "Laya (English, CPU fp32)")
+
+
 def get_sentinel(version: str = "v0"):
-    """Laya loads once per version (about 10 s). Any problem falls back to NullSentinel so a run never fails.
-    version "v2" asks for the fine-tuned top layers; if they cannot be loaded the original model is used and says so."""
+    """Any problem falls back to NullSentinel so a run never fails; the next run tries to load Laya again."""
     try:
-        from blackonyx.laya_sentinel import LayaSentinel
-        s = LayaSentinel(model_version=version)
-        if version == "v2" and s.version != "v2":
-            return s, f"Laya v0 (English, CPU fp32); v2 not loaded: {(s._v2_error or 'unknown')[:80]}"
-        return s, ("Laya v2 fine-tuned (English, CPU fp32)" if s.version == "v2" else "Laya (English, CPU fp32)")
+        return _load_sentinel(version)
     except Exception as e:  # noqa: BLE001
         from blackonyx.sentinel import NullSentinel
-        return NullSentinel(), f"NullSentinel (Laya unavailable: {type(e).__name__})"
+        return NullSentinel(), f"NullSentinel (Laya unavailable: {str(e)[:90]})"
+
+
+get_sentinel.clear = _load_sentinel.clear   # type: ignore[attr-defined]
 
 
 def execute(defence: str, task: str, attack: str, inject: str, laya_version: str = "v0") -> tuple[list[dict[str, Any]], str]:
