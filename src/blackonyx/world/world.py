@@ -81,7 +81,7 @@ class World:
         out = []
         for kw, path in self.doc_index.items():
             if kw in q or q in kw:
-                out.append({"path": path, "snippet": self.files.get(path, "")[:120]})
+                out.append({"path": path, "snippet": self.files.get(path, "")[:400]})
         return out
 
     # ---- helpers ----------------------------------------------------------------

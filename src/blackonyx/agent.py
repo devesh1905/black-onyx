@@ -57,7 +57,7 @@ class Directive:
 def _sentences(text: LabeledObject) -> list[LabeledObject]:
     s = str(raw(text))
     out = []
-    for m in re.finditer(r"[^\n]+?(?:(?<=[a-zA-Z0-9\"'\)])\.(?=\s|$)|[!?\n]|$)", s):
+    for m in re.finditer(r"[^\n]+?(?:(?<=[a-zA-Z0-9\"'\)])\.(?=\s|$)|[!?](?=\s|$)|\n|$)", s):
         seg = m.group(0).strip()
         if seg:
             out.append(derive(seg, "extract_sentence", text))
@@ -103,7 +103,7 @@ def parse_directives(texts: list[LabeledObject]) -> list[Directive]:
             low = s.lower()
             email = EMAIL_RE.search(s)
             url = URL_RE.search(s)
-            path = _find_path(s)
+            path = _find_path(URL_RE.sub(" ", s))
             acct = re.search(r"ACC-\d{3,}", s)
             if acct and re.search(PAY_VERBS, low) and re.search(r"(chang|new|instead|updat|revis|now|puthu|mattr)", low):
                 amt = re.search(r"(?<!\w)(\d[\d,]{2,})(?!\w)", s.replace(acct.group(0), ""))

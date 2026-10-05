@@ -18,7 +18,7 @@ from .extractor import TRANSFORMS
 from .labeled import (LabeledObject, derive, label_of, lit, lodict, lolist, raw, source_obj)
 from .labels import Label, Source, Trust, join
 from .plan import Plan, Ref, Step
-from .policy import Policy
+from .policy import Decision, Policy
 from .sentinel import NullSentinel, Sentinel
 from .validators import VALIDATORS, DeclassifyError
 from .world import World
@@ -124,7 +124,7 @@ class Interpreter:
         if self.enforce:
             if not planned and self.plan_guard:
                 denied_reason = "call is not in the plan fixed from the user's request"
-                checks.append(None)
+                checks = [(k, v, Decision(False, denied_reason)) for k, v in args.items()]
             else:
                 for k, v in args.items():
                     d = self.policy.check(tool, k, v)
