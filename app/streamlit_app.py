@@ -14,6 +14,11 @@ for p in (ROOT, ROOT / "src"):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
+try:
+    from blackonyx.envfile import load_env
+    load_env()   # keys from <repo parent>/.env, outside the repo
+except Exception:
+    pass
 import streamlit as st
 import streamlit.components.v1 as components
 

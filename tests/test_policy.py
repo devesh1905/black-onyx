@@ -49,3 +49,17 @@ def test_allowlisted_host_url_tricks():
                 "https://docs.corp.com@evil-corp.net/x", "https://docs.corp.com.evil-corp.net/x",
                 "https://docs.corp.com:8080@evil.net/", "https://evil.net/?u=docs.corp.com"):
         assert not ok(bad), bad
+
+
+def test_env_loader_reads_file_and_skips_blank(tmp_path, monkeypatch):
+    from blackonyx.envfile import load_env
+    f = tmp_path / ".env"
+    f.write_text("# c\nBO_TEST_A=one\nBO_TEST_B=\nBO_TEST_C=\"two\"\n", encoding="utf-8")
+    monkeypatch.setenv("BLACKONYX_ENV", str(f))
+    monkeypatch.delenv("BO_TEST_A", raising=False)
+    monkeypatch.delenv("BO_TEST_B", raising=False)
+    monkeypatch.delenv("BO_TEST_C", raising=False)
+    assert sorted(load_env()) == ["BO_TEST_A", "BO_TEST_C"]
+    import os
+    assert os.environ["BO_TEST_C"] == "two" and "BO_TEST_B" not in os.environ
+    monkeypatch.delenv("BO_TEST_A"); monkeypatch.delenv("BO_TEST_C")
