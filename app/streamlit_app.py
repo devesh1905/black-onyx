@@ -220,7 +220,7 @@ with st.sidebar:
 if run_clicked or st.session_state.pop("pending_run", False) or "events" not in st.session_state:
     eff_task = task_id
     ev, src = execute(defence_id, eff_task, attack_id, inject_text)
-    if phone:
+    if phone and run_clicked:  # only the Run scenario button; never on page load, refresh or preset buttons
         from app.phone_alerts import send_block_alerts
         send_block_alerts(ev)
     st.session_state.update(events=ev, runner_source=src, last_defence=defence_id, run_id=st.session_state.get("run_id", 0) + 1)
