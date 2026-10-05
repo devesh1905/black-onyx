@@ -25,19 +25,18 @@ TASKS = {
 }
 
 # ---- Laya versions: one column each. (label, values, index of the best value or None)
-LAYA_COLS = ["v0", "v1", "v2", "v2 + keyword stack", "v3"]
+LAYA_COLS = ["v0", "v1", "v2", "v2+kw", "v3"]
 LAYA_ROWS = [
-    ("What it is", ["Original checkpoint (live on the site)", "Top 4 layers, 3 epochs", "Top 8 layers, lr 5e-5 (mean of 5 seeds)",
-                    "v2 plus the keyword score (mean of 3 seeds)", "5-seed unanimous vote of v2"], None),
+    ("What it is", ["Original", "4 layers", "8 layers", "8 + kw", "5-seed vote"], None),
     ("Accuracy", ["81.0%", "90.5%", "90.9%", "92.9%", "95.2%"], 4),
-    ("Recall on bad calls", ["77.0%", "96.0%", "98.6%", "98.5%", "98.0%"], 2),
-    ("False warnings on good calls", ["15.0%", "15.0%", "16.7%", "12.7%", "7.5%"], 4),
-    ("AUC (ranking quality)", ["0.857", "0.947", "0.984*", "n/a", "n/a"], 2),
-    ("Live-format check: false warnings", ["31.0%", "not measured", "28.3%", "not measured", "17.2%"], 4),
-    ("Live-format check: injected calls caught", ["68.8%", "not measured", "95.0%", "not measured", "93.8%"], 2),
-    ("Latency per call, CPU", ["288 ms", "288 ms", "288 ms", "288 ms", "1,146 ms"], 0),
-    ("Latency per call, GPU (RTX 4050)", ["32 ms", "32 ms", "32 ms", "32 ms", "161 ms"], 0),
-    ("In the demo", ["Yes", "No", "No", "No", "No: needs a shared-trunk build; weights not saved"], None),
+    ("Recall (bad calls)", ["77.0%", "96.0%", "98.6%", "98.5%", "98.0%"], 2),
+    ("False warnings", ["15.0%", "15.0%", "16.7%", "12.7%", "7.5%"], 4),
+    ("AUC", ["0.857", "0.947", "0.984*", "n/a", "n/a"], 2),
+    ("Live check: false warnings", ["31.0%", "n/m", "28.3%", "n/m", "17.2%"], 4),
+    ("Live check: calls caught", ["68.8%", "n/m", "95.0%", "n/m", "93.8%"], 2),
+    ("Latency, CPU", ["288 ms", "288 ms", "288 ms", "288 ms", "1.15 s"], 0),
+    ("Latency, GPU", ["32 ms", "32 ms", "32 ms", "32 ms", "161 ms"], 0),
+    ("In the demo", ["Yes", "No", "No", "No", "No"], None),
 ]
 LAYA_LIVE = [
     ("Held-out call-fit set (400 pairs: 200 fit, 200 not)", "81.0% accuracy, 77.0% recall on bad calls, 15.0% false warnings, AUC 0.857"),
@@ -48,6 +47,10 @@ LAYA_LIVE = [
     ("Role", "advisory only: it shows Fit % and a warning; the rules make every block decision"),
 ]
 LAYA_NOTES = [
+    "Columns: v0 = original checkpoint (live on the site); v1 = top 4 layers, 3 epochs; v2 = top 8 layers, lr 5e-5 (mean of 5 seeds); "
+    "v2+kw = v2 plus the keyword score (mean of 3 seeds); v3 = five-seed unanimous vote of v2. n/m = not measured. "
+    "Live check = the 45-state runtime-format check. GPU = RTX 4050.",
+    "Only v0 is in the demo. v3 would need a shared-trunk build, and its weights were not saved.",
     "All versions are scored on the same frozen held-out set of 400 call-fit pairs (different templates from the 1,600 training pairs). "
     "The test set was never used for tuning; every choice (layers, learning rate, epoch, threshold) was made on dev.",
     "v2 and v3 use five seeds (1905, 7, 42, 11, 2024). v3 warns only when all five models agree. Intervals at N=200 are wide: "
@@ -76,12 +79,12 @@ def e(s: str) -> str:
     return html.escape(s)
 
 
-def defence_rows() -> tuple[str, str, dict]:
+def defence_rows() -> tuple[str, dict]:
     r = json.loads(RESULTS.read_text(encoding="utf-8"))
     d = r["defences"]
     names = {"D0": "D0 Undefended", "D1": "D1 Keyword filter", "D2": "D2 Black Onyx rules",
              "D3": "D3 Rules + Laya (advisory)", "D4": "D4 Laya alone, no rules"}
-    out, cards = [], []
+    out = []
     for k in ("D0", "D1", "D2", "D3", "D4"):
         x = d[k]
         a, u, o = x["asr_all"], x["uua"], x["overblock"]
@@ -90,36 +93,24 @@ def defence_rows() -> tuple[str, str, dict]:
         if k in ("D0", "D1"):
             speed = "no model"
         elif k == "D2":
-            speed = f"rules {gate_us:.0f} µs"
+            speed = f"{gate_us:.0f} µs"
         elif k == "D3":
-            speed = f"rules {gate_us:.0f} µs + Laya {laya_ms:.0f} ms (advisory)"
+            speed = f"{gate_us:.0f} µs + {laya_ms:.0f} ms"
         else:
-            speed = f"Laya {laya_ms:.0f} ms"
-        bound = f" (95% upper bound {100 * a['hi']:.1f}%)" if a["k"] == 0 else ""
+            speed = f"{laya_ms:.0f} ms"
+        bound = ""
         pct = 100 * a["k"] / a["n"]
         cls = " best" if k in ("D2", "D3") else ""
         out.append(
             f'<tr class="{cls.strip()}"><th scope="row">{e(names[k])}</th>'
             f'<td><div class="bar"><i style="width:{max(pct, 0.4):.1f}%"></i></div>{a["k"]}/{a["n"]} ({pct:.1f}%){e(bound)}</td>'
             f'<td>{100 * u["k"] / u["n"]:.1f}%</td><td>{o["k"]}/{o["n"]}</td><td>{x["false_alerts"]}</td><td>{e(speed)}</td></tr>')
-        facts = [("Attacks that got through", f'{a["k"]}/{a["n"]} ({pct:.1f}%){bound}'),
-                 ("User's task still finished", f'{100 * u["k"] / u["n"]:.1f}%'),
-                 ("Legit calls wrongly blocked", f'{o["k"]}/{o["n"]}'), ("False alerts", str(x["false_alerts"])),
-                 ("Check time per call", speed)]
-        dl = "".join(f"<div><dt>{e(lab)}</dt><dd>{e(val)}</dd></div>" for lab, val in facts)
-        cards.append(f'<article class="mcard{cls}"><h3>{e(names[k])}</h3>'
-                     f'<div class="bar"><i style="width:{max(pct, 0.4):.1f}%"></i></div><dl>{dl}</dl></article>')
-    return "\n".join(out), "".join(cards), r
+    return "\n".join(out), r
 
 
 def benchmarks_html() -> str:
-    rows, dcards, r = defence_rows()
+    rows, r = defence_rows()
     head = "".join(f'<th scope="col">{e(c)}</th>' for c in LAYA_COLS)
-    vcards = []
-    for ci, col in enumerate(LAYA_COLS):
-        dl = "".join(f'<div><dt>{e(label)}</dt><dd class="{"best" if best == ci else ""}">{e(vals[ci])}</dd></div>'
-                     for label, vals, best in LAYA_ROWS[1:])
-        vcards.append(f'<article class="mcard"><h3>{e(col)}</h3><p class="what">{e(LAYA_ROWS[0][1][ci])}</p><dl>{dl}</dl></article>')
     body = []
     for label, vals, best in LAYA_ROWS:
         tds = "".join(f'<td class="{"best" if best == i else ""}">{e(v)}</td>' for i, v in enumerate(vals))
@@ -134,19 +125,19 @@ def benchmarks_html() -> str:
   <h2>1. Defences on the attack suite</h2>
   <p class="cap">{r['n_tasks']} legitimate tasks, {r['n_attacks']} attacks and {r['n_variants']} reworded variants (310 attack runs), seed {r['seed']}.
   Attacker: a simulated agent that follows injected instructions.</p>
-  <div class="cards">{dcards}</div>
-  <div class="scroll wide"><table>
-    <thead><tr><th scope="col">Defence</th><th scope="col">Attacks that got through</th><th scope="col">User's task still finished</th>
-    <th scope="col">Legit calls wrongly blocked</th><th scope="col">False alerts</th><th scope="col">Check time per call</th></tr></thead>
+  <div class="scroll"><table class="def">
+    <thead><tr><th scope="col">Defence</th><th scope="col">Attacks through</th><th scope="col">Task finished</th>
+    <th scope="col">Legit blocked</th><th scope="col">False alerts</th><th scope="col">Check time</th></tr></thead>
     <tbody>{rows}</tbody>
   </table></div>
 
+  <p class="cap">Check time: D2 is the rule check; D3 is the rule check plus Laya (advisory); D4 is Laya alone. D2 and D3 attacks through:
+  0 of 310, 95% upper bound 1.2%. Legit blocked = legitimate calls wrongly blocked.</p>
   <h2>2. The Laya in the live demo (v0)</h2>
   <div class="scroll"><table class="kv"><tbody>{live}</tbody></table></div>
 
   <h2>3. Our fine-tuned versions of Laya</h2>
-  <div class="cards">{"".join(vcards)}</div>
-  <div class="scroll wide"><table class="ver">
+  <div class="scroll"><table class="ver">
     <thead><tr><th scope="col">Measure</th>{head}</tr></thead>
     <tbody>{"".join(body)}</tbody>
   </table></div>
@@ -274,25 +265,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip.done{border-color:#1f7a45;color:#bbf7d0}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#14301f;border:1px solid #1f7a45;color:#bbf7d0;padding:8px 16px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
-.cards{display:none}
-.mcard{background:var(--p);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;margin:0 0 10px}
-.mcard h3{margin:0 0 4px;font-size:15px}
-.mcard.best h3{color:#bbf7d0}
-.mcard .what{margin:0 0 8px;color:var(--t2);font-size:13px}
-.mcard dl{margin:0}
-.mcard dl>div{display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-top:1px solid var(--bd);font-size:13px}
-.mcard dt{color:var(--t2);flex:1 1 55%}
-.mcard dd{margin:0;text-align:right;flex:1 1 45%;font-weight:600;overflow-wrap:break-word}
-.mcard dd.best{color:#bbf7d0}
 @media (max-width:760px){
-  main{padding:14px 12px 48px}
+  main{padding:14px 10px 48px}
   h1{font-size:22px}
+  .tabpane>h2{font-size:15px}
   .tabs{display:flex;width:100%}.tabs button{flex:1;padding:0 8px}
-  .wide{display:none}
-  .cards{display:block}
-  .kv,.kv tbody,.kv tr,.kv th,.kv td{display:block;width:100%}
-  .kv tr{padding:8px 12px;border-bottom:1px solid var(--bd)}.kv tr:last-child{border-bottom:0}
-  .kv th,.kv td{border:0;padding:0}.kv th{color:var(--t2);font-size:12px;margin-bottom:2px}
+  table{font-size:11px;table-layout:fixed}
+  th,td{padding:6px 3px;overflow-wrap:break-word;hyphens:manual}
+  thead th{font-size:8.5px;letter-spacing:0;text-transform:none;font-weight:700}
+  .def thead th:nth-child(1){width:26%}.def thead th:nth-child(2){width:19%}.def thead th:nth-child(3){width:14%}
+  .def thead th:nth-child(4){width:13%}.def thead th:nth-child(5){width:12%}.def thead th:nth-child(6){width:16%}
+  .ver thead th:first-child{width:28%}
+  .kv th{width:36%}
+  .bar{margin-bottom:3px}
   .prompt{font-size:12px}
   .bar2 .btn,.bar2 input{width:100%}
   .how{padding:10px 12px}
