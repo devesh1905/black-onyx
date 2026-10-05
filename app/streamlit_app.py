@@ -19,7 +19,7 @@ import streamlit.components.v1 as components
 
 from app.fake_events import fake_run
 from app.ui import DEFENCE_NAMES, render_stage
-from app.ui.splash import custom_logo, splash_html
+from app.ui.splash import _uri, custom_logo, splash_html
 from app.ui.panels import howitworks_html, load_results, results_html
 
 st.set_page_config(page_title="Black Onyx", page_icon="◆", layout="wide", initial_sidebar_state="expanded")
@@ -75,6 +75,24 @@ if _custom:  # user-supplied logo replaces the built-in mark on the home screen 
 if not st.session_state.get("splash_done"):
     st.session_state["splash_done"] = True
     st.markdown(splash_html(), unsafe_allow_html=True)
+
+# sidebar open/close buttons: our emblem instead of the stock chevrons, turning one facet on hover and a quarter-turn on press
+_toggle_uri = custom_logo() or (_uri((ROOT / "app" / "ui" / "logo_mark.svg").read_text(encoding="utf-8")) if LOGO_MARK else "")
+if _toggle_uri:
+    st.markdown("""
+<style>
+[data-testid="stSidebarCollapseButton"] button,[data-testid="stExpandSidebarButton"],[data-testid="stSidebarCollapsedControl"] button{position:relative;width:38px;height:38px;border-radius:6px;display:grid;place-items:center;background:transparent!important}
+[data-testid="stSidebarCollapseButton"] button>*,[data-testid="stExpandSidebarButton"]>*,[data-testid="stSidebarCollapsedControl"] button>*{display:none!important}
+[data-testid="stSidebarCollapseButton"] button::before,[data-testid="stExpandSidebarButton"]::before,[data-testid="stSidebarCollapsedControl"] button::before{
+  content:"";display:block;width:28px;height:28px;background:url("@@URI@@") center/contain no-repeat;
+  transition:transform .38s cubic-bezier(.2,.7,.2,1),filter .3s;animation:bo-turn .45s cubic-bezier(.2,.7,.2,1) both}
+[data-testid="stSidebarCollapseButton"] button:hover::before,[data-testid="stExpandSidebarButton"]:hover::before,[data-testid="stSidebarCollapsedControl"] button:hover::before{transform:rotate(22.5deg) scale(1.1);filter:drop-shadow(0 0 6px rgba(190,205,225,.5))}
+[data-testid="stSidebarCollapseButton"] button:active::before,[data-testid="stExpandSidebarButton"]:active::before,[data-testid="stSidebarCollapsedControl"] button:active::before{transform:rotate(45deg) scale(.92)}
+[data-testid="stSidebarCollapseButton"] button:focus-visible,[data-testid="stExpandSidebarButton"]:focus-visible{outline:2px solid #4F8CFF;outline-offset:2px}
+@keyframes bo-turn{from{transform:rotate(-90deg) scale(.55);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){[data-testid="stSidebarCollapseButton"] button::before,[data-testid="stExpandSidebarButton"]::before{animation:none;transition:none}}
+</style>
+""".replace("@@URI@@", _toggle_uri), unsafe_allow_html=True)
 
 DEFENCES = {
     "D0": "D0 · Undefended",

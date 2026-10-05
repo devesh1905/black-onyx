@@ -151,7 +151,7 @@ def _timed(css: str) -> str:
     """Stretch every duration/delay by SPLASH_SCALE (env BLACKONYX_SPLASH_SCALE, default 1.8) and add a hold before the fade-out."""
     import re
     k = float(os.environ.get("BLACKONYX_SPLASH_SCALE", "1.8"))
-    out_at = 1.14 * k + 1.1                      # the finished wordmark stays on screen for about a second
+    out_at = 1.14 * k + 0.1                      # short hold on the finished wordmark, then fade (about 2.8 s total)
     keep = css.replace("@OUT@", "@@OUT@@")
     scaled = re.sub(r"(?<![\w.%-])(\d*\.\d+|\d+)s\b", lambda m: f"{float(m.group(1)) * k:.3f}s", keep)
     return scaled.replace("@@OUT@@s", f"{out_at:.2f}s")
