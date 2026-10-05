@@ -65,6 +65,7 @@ class LayaSentinel:
         threshold_config_path: Optional[str | Path] = None,
         device: str = "cpu",
         use_paraphrase: bool = False,
+        model_version: Optional[str] = None,
     ):
         self.device = device
         self.use_paraphrase = use_paraphrase
@@ -74,6 +75,9 @@ class LayaSentinel:
         self.band_half_width = 0.05
         self.agent: Any = None
         self._load_error: Optional[str] = None
+        self.version = "v0"                     # v0 = original checkpoint; v2 = fine-tuned (opt-in, see _load_v2)
+        self._v2: Optional[dict[str, Any]] = None
+        self._v2_error: Optional[str] = None
 
         # Load threshold configuration
         self._load_threshold_config(threshold_config_path)
@@ -96,6 +100,11 @@ class LayaSentinel:
             self._load_error = str(exc)
             self.agent = None
 
+        # Opt-in fine-tuned model. Off unless asked for; any problem leaves the original model in place.
+        want = (model_version or os.environ.get("BLACKONYX_LAYA_MODEL", "")).strip().lower()
+        if want == "v2" and self.agent is not None:
+            self._load_v2()
+
     def _load_threshold_config(self, config_path: Optional[str | Path]) -> None:
         """Load calibrated threshold from JSON config."""
         path = Path(config_path) if config_path else Path(__file__).parent / "laya_thresholds.json"
@@ -112,6 +121,51 @@ class LayaSentinel:
             except Exception:
                 self.threshold = 0.50
 
+    def _load_v2(self) -> None:
+        """Load the fine-tuned top layers (v2) on top of the original model. Validates everything before touching
+        the model, so a failure leaves the original checkpoint exactly as it was."""
+        try:
+            import torch  # type: ignore
+            d = Path(os.environ.get("BLACKONYX_LAYA_V2_DIR", r"D:\Buildathon-Toolkit\laya-ft"))
+            meta = json.loads((d / "v2.json").read_text(encoding="utf-8"))
+            sd = torch.load(d / "v2.pt", map_location="cpu")
+            model = self.agent.model
+            have = model.state_dict()
+            for k, v in sd.items():
+                if k not in have or tuple(have[k].shape) != tuple(v.shape):
+                    raise ValueError(f"v2 weights do not match the model at '{k}'")
+            model.load_state_dict(sd, strict=False)
+            model.eval()
+            internal = {"g": self.agent._to_internal({"type": "noul", "instructions": GENERIC_QUESTION})}
+            self._v2 = {"threshold": float(meta["threshold"]), "internal": internal, "meta": meta}
+            self.version = "v2"
+        except Exception as exc:
+            self._v2 = None
+            self._v2_error = str(exc)
+
+    def _build_state(self, task: str, tool: str, args: Mapping[str, Any]) -> str:
+        arg_items = []
+        for k, v in args.items():
+            v_str = str(v)
+            if len(v_str) > 60:
+                v_str = v_str[:57] + "..."
+            arg_items.append(f"{k}={v_str}")
+        args_str = ", ".join(arg_items)[:120]
+        truncated_task = str(task).strip()[:160]
+        return "\n".join([f"User request: {truncated_task}", f"Tool: {tool}", f"Args: {args_str}"])[:290]
+
+    def _score_v2(self, task: str, tool: str, args: Mapping[str, Any], t0: float) -> SentinelResult:
+        import torch  # type: ignore
+        from laya.common import collate_items  # type: ignore
+        state = self._build_state(task, tool, args)
+        item = self.agent._encode_state(state, ["g"], self._v2["internal"])[0]
+        b = collate_items([[item]], self.agent.tok.pad_token_id)
+        with torch.no_grad():
+            out = self.agent.model(b["input_ids"], b["attention_mask"], b["marker_pos"], b["marker_mask"], b["qtype"])
+        p = float(torch.softmax(out[0].float()[:, :2], -1)[0, 1])
+        ms = (time.perf_counter() - t0) * 1000
+        return SentinelResult(score=round(p, 4), ms=round(ms, 2), warn=p < self._v2["threshold"])
+
     def score(self, task: str, tool: str, args: Mapping[str, Any]) -> SentinelResult:
         """Score whether a tool call fits the user task. Never raises."""
         t0 = time.perf_counter()
@@ -120,6 +174,9 @@ class LayaSentinel:
             return SentinelResult(score=None, ms=round(ms, 2), warn=None)
 
         try:
+            if self._v2 is not None:
+                return self._score_v2(task, tool, args, t0)
+
             # 1. Truncate argument values to keep state compact (< 300 chars)
             arg_items = []
             for k, v in args.items():
