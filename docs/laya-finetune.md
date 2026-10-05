@@ -87,3 +87,6 @@ The fine-tuned single model (v2: top 8 layers, seed 1905, lr 5e-5) can be switch
   warnings, with 0 decision flips against the GPU run used for fitting, at a median of about 259 ms per call.
 * Caveat: the dev-fitted threshold (0.981) is extreme because dev is saturated, so v2 is sensitive near that value. It also still shows
   28.3% false warnings on the 45-state live-format check, so v0 stays the default for the demo.
+
+The sidebar also has a **Fine-tuned Laya (v2)** switch. It appears only when D3 or D4 is selected and the v2 weights exist, it is off by default
+(on only if `BLACKONYX_LAYA_MODEL=v2`), and switching reloads the model. If v2 cannot be loaded, the run uses the original Laya and the sidebar says so.
