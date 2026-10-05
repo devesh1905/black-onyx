@@ -1,11 +1,9 @@
 laya[onnx]==0.3.26
-streamlit
-pyvis
-onnxruntime
+streamlit==1.65.0
+pyvis==0.3.2
+onnxruntime==1.30.0
+PyYAML==6.0.3
+pillow==12.3.0
+rich==15.0.0
 pytest==9.1.1
 hypothesis==6.168.3
-PyYAML==6.0.3
-rich==15.0.0
-matplotlib==3.11.1
-pydantic==2.13.3
-python-dotenv==1.0.1
