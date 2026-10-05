@@ -53,7 +53,10 @@ def run(task_id: str, attack_id: Optional[str] = None, defence: str = "D2", inje
             ip = Interpreter(world, defence, policy=policy, sentinel=sentinel, audit=audit, **interp_kw)
             ip.run(plan_for(t))
             ip_last = ip
-    final = tasks[-1]
+        final = tasks[-1]
+        audit.emit("summary", task_id=final, attack_id=attack_id, defence=defence, task_ok=CHECKS[final](world),
+                   leaked=bool(world.leaks()), alerts=sum(1 for e in audit.events if e["type"] == "alert"),
+                   gate_ms=round(sum(ip_last.gate_ms) / max(1, len(ip_last.gate_ms)), 4))
     res = RunResult(events=audit.events, world=world, task_id=final, attack_id=attack_id, defence=defence,
                     task_ok=CHECKS[final](world), leaked=bool(world.leaks()), alerts=ip_last.alerts,
                     gate_ms=ip_last.gate_ms, laya_ms=ip_last.laya_ms, legit_sensitive=ip_last.legit_sensitive,

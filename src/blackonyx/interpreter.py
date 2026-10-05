@@ -192,7 +192,8 @@ class Interpreter:
             self.world.labelstore[plain["path"]] = content.label
         for e in self.world.effects[n_before:]:
             e["call_id"] = call_id
-            self.emit("effect", call_id=call_id, kind=e["kind"], description=e["description"])
+            self.emit("effect", call_id=call_id, kind=e["kind"], description=e["description"],
+                      leak=self.world.is_leak(e))
         res = self._wrap(tool, plain, out)
         self.emit("tool_result", call_id=call_id, tool=tool, value_id=res.vid, sources=res.label.source_names(),
                   trust=res.label.trust.name, preview=str(raw(res))[:80])
