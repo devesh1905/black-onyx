@@ -74,7 +74,8 @@ def evaluate(n_variants: int, use_laya: bool = False, seed: int = 1905) -> dict:
                                 "warns": len(r.laya_warns)})
             rec["gate_ms"] += r.gate_ms
             rec["laya_ms"] += r.laya_ms
-        for v in variants:
+        # the slow Laya defences run a deterministic subset of the variants (every 10th); counts are reported per defence
+        for v in (variants[::10] if d in ("D3", "D4") and use_laya else variants):
             r = run(None, v.attack_id, d, sentinel=s, variant_text=v.text)
             rec["variants"].append({"vid": v.vid, "attack": v.attack_id, "lang": v.lang, "leaked": r.leaked,
                                     "ok": r.task_ok, "alerts": r.alerts, "warns": len(r.laya_warns)})

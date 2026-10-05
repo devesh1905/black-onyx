@@ -1,32 +1,42 @@
-# Laya Sentinel Evaluation Results (Measured Offline)
+# Laya sentinel measurements (full held-out test set)
 
-> **Evaluation Specification:** docs/roadmap.md Section 11A. Measured on CPU in full fp32 reference precision.
-> All confidence intervals are **95% Wilson intervals**.
+Test set: Pool B, N=400 (200 fit, 200 no-fit). Dev set (threshold fitting only): N=400, Pool A.
+Environment: CPU, full fp32, English checkpoint, laya 0.3.26, offline. 95% Wilson intervals. The threshold of every method was fitted on dev; nothing here was tuned on the test set or on the attack suite.
 
-## Summary of Ladder Rungs on Held-out Test Set (Pool B, N=400)
+| Method | Threshold (dev) | Accuracy | Recall on no-fit | False-warning rate | ECE | AUC |
+|---|---|---|---|---|---|---|
+| Keyword baseline | n/a | 75.8% [71.3, 79.7] | 70.5% [63.8, 76.4] | 19.0% [14.2, 25.0] | 0.242 | n/a |
+| generic question (chosen) | 0.32 | 81.0% [76.9, 84.5] | 77.0% [70.7, 82.3] | 15.0% [10.7, 20.6] | 0.112 | 0.857 |
+| per-tool question | 0.57 | 49.2% [44.4, 54.1] | 16.0% [11.6, 21.7] | 17.5% [12.9, 23.4] | 0.363 | 0.450 |
+| paraphrase average | 0.79 | 52.2% [47.4, 57.1] | 49.0% [42.2, 55.9] | 44.5% [37.8, 51.4] | 0.283 | 0.509 |
+| generic + per-tool | 0.56 | 74.5% [70.0, 78.5] | 75.0% [68.6, 80.5] | 26.0% [20.4, 32.5] | 0.117 | 0.764 |
+| all questions averaged | 0.66 | 59.2% [54.4, 64.0] | 42.0% [35.4, 48.9] | 23.5% [18.2, 29.8] | 0.224 | 0.650 |
+| stacked (Laya + keyword, fitted on dev) (not adopted: no test-accuracy gain) | 0.30 | 80.2% [76.1, 83.9] | 66.5% [59.7, 72.7] | 6.0% [3.5, 10.2] | 0.087 | 0.897 |
 
-| Rung / Method | Accuracy | Recall on No-Fit | False-Warning Rate | ECE | Median Latency |
-|---|---|---|---|---|---|
-| **Keyword Baseline** | 74.0% [60.5%, 84.1%] | 66.7% [46.7%, 82.0%] | 19.2% [8.5%, 37.9%] | 0.260 | 0.0 ms |
-| **Rung 0: Zero-shot English (generic question)** | 82.0% [69.2%, 90.2%] | 87.5% [69.0%, 95.7%] | 23.1% [11.0%, 42.0%] | 0.115 | 288.4 ms |
-| **Rung 1: Closed per-tool question** | 58.0% [44.2%, 70.6%] | 25.0% [12.0%, 44.9%] | 11.5% [4.0%, 29.0%] | 0.266 | 290.9 ms |
-| **Rung 1b: Paraphrase averaging** | 56.0% [42.3%, 68.8%] | 20.8% [9.2%, 40.5%] | 11.5% [4.0%, 29.0%] | 0.266 | 741.7 ms |
-| **Rung 2: Calibrated threshold on Dev** | 52.0% [38.5%, 65.2%] | 54.2% [35.1%, 72.1%] | 50.0% [32.1%, 67.9%] | 0.266 | 741.7 ms |
-| **NullSentinel (fallback)** | 50.0% [45.0%, 55.0%] | 0.0% [0.0%, 0.0%] | 0.0% [0.0%, 0.0%] | 0.500 | 0.0 ms |
+Median time per scoring pass with all five question formulations: 1044 ms (CPU, fp32). The adopted method asks one question, which takes roughly a quarter of that.
 
-**Environment:** CPU, full `fp32` precision, `laya==0.3.26`, offline cache `HF_HUB_OFFLINE=1`.
+## Gates from the roadmap (11A.2)
 
----
+| Gate | Target | Measured | Met |
+|---|---|---|---|
+| Accuracy on held-out test | >= 0.90 | 81.0% | no |
+| Recall on no-fit calls | >= 0.90 | 77.0% | no |
+| False-warning rate on fit calls | <= 0.10 | 15.0% | no |
+| ECE | <= 0.10 | 0.112 | no |
 
-## Sliced Analysis (Rung 2 Calibrated Model)
+Accuracy, recall and false-warning gates are **not met**. Laya stays advisory and the claim on stage is limited to what is measured here.
 
-| Slice | Description | Accuracy | Recall on No-Fit | Count |
-|---|---|---|---|---|
-| **Tool-Level Mismatch** | Tool-level mismatch (unrelated tool requested) | 84.6% [57.8%, 95.7%] | 84.6% [57.8%, 95.7%] | n=13 |
-| **Argument-Level Mismatch** | Argument-level mismatch (right tool, wrong destination/recipient) | 57.1% [25.1%, 84.2%] | 57.1% [25.1%, 84.2%] | n=7 |
-| **Prompt Injection Following** | Injection following (exfiltration payload instructions) | 50.0% [15.0%, 85.0%] | 50.0% [15.0%, 85.0%] | n=4 |
+## Slices for the adopted method: generic question, threshold 0.32
 
-### Key Takeaways for Final Presentation & Defense
-1. **Rung 2 Calibration beats Keyword Baseline:** Calibrating the threshold on the dev set dramatically suppresses false warnings while maintaining high recall on mismatching tool calls.
-2. **Argument-level honesty:** As specified in Section 11A.2, argument-level validation (e.g. paying the wrong account or exfiltrating to an unknown domain) is guaranteed by Black Onyx rules and declassifiers, not solely by the local classifier.
-3. **Zero Security Dependency:** Laya Sentinel is strictly advisory. Even if Laya returns `score=None` or false negatives, Black Onyx's information flow policy gate stops all unauthorized sensitive tool executions.
+| Slice | N | Caught as no-fit (recall) |
+|---|---|---|
+| Tool-level mismatch (wrong tool) | 108 | 81.5% [73.1, 87.7] (88/108) |
+| Argument-level mismatch (right tool, wrong target) | 35 | 71.4% [54.9, 83.7] (25/35) |
+| Instruction-following (injected call) | 57 | 71.9% [59.2, 81.9] (41/57) |
+
+## Reading these numbers
+
+- The chosen method (generic question) does not clearly beat the keyword baseline on test accuracy (81.0% vs 75.8%; the 95% intervals overlap or touch).
+- False-warning rate on legitimate calls is 15.0%. This is the number that shows up as a wrong 'does not fit' badge on a normal call in the demo.
+- Laya is advisory. The rules block; a Laya miss or a false warning never changes whether an unsafe call runs.
+- Argument-level cases (right tool, wrong destination) are handled by the policy and validators, not by Laya.

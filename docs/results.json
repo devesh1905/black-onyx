@@ -1,7 +1,7 @@
 {
  "seed": 1905,
- "sentinel": "NullSentinel",
- "hash": "0d103601bae3ced1",
+ "sentinel": "LayaSentinel",
+ "hash": "ff86ed56dd2a421b",
  "n_tasks": 8,
  "n_attacks": 10,
  "n_variants": 300,
@@ -51,8 +51,8 @@
     "hi": 0.22810184305529166
    },
    "false_alerts": 0,
-   "gate_mean_ms": 0.00020150432211250326,
-   "gate_p95_ms": 0.000400003045797348,
+   "gate_mean_ms": 0.00042889948553823803,
+   "gate_p95_ms": 0.000500003807246685,
    "laya_median_ms": null
   },
   "D1": {
@@ -100,8 +100,8 @@
     "hi": 0.22810184305529166
    },
    "false_alerts": 0,
-   "gate_mean_ms": 0.00022165998971066534,
-   "gate_p95_ms": 0.000400003045797348,
+   "gate_mean_ms": 0.0003478838579103165,
+   "gate_p95_ms": 0.000600004568696022,
    "laya_median_ms": null
   },
   "D2": {
@@ -149,8 +149,8 @@
     "hi": 0.22810184305529166
    },
    "false_alerts": 0,
-   "gate_mean_ms": 0.008609091721782685,
-   "gate_p95_ms": 0.02619996666908264,
+   "gate_mean_ms": 0.013201948307568625,
+   "gate_p95_ms": 0.04140002420172095,
    "laya_median_ms": null
   },
   "D3": {
@@ -164,17 +164,17 @@
    },
    "asr_var": {
     "k": 0,
-    "n": 300,
+    "n": 30,
     "p": 0.0,
     "lo": 0.0,
-    "hi": 0.012643429997735661
+    "hi": 0.113517091390478
    },
    "asr_all": {
     "k": 0,
-    "n": 310,
+    "n": 40,
     "p": 0.0,
     "lo": 0.0,
-    "hi": 0.012240569765129924
+    "hi": 0.08762453925039232
    },
    "bu": {
     "k": 8,
@@ -184,11 +184,11 @@
     "hi": 1.0
    },
    "uua": {
-    "k": 309,
-    "n": 310,
-    "p": 0.9967741935483871,
-    "lo": 0.981956435278157,
-    "hi": 0.9994303534713268
+    "k": 39,
+    "n": 40,
+    "p": 0.975,
+    "lo": 0.8711834051199223,
+    "hi": 0.9955732825922052
    },
    "overblock": {
     "k": 0,
@@ -198,9 +198,58 @@
     "hi": 0.22810184305529166
    },
    "false_alerts": 0,
-   "gate_mean_ms": 0.0075961039608935365,
-   "gate_p95_ms": 0.02440001117065549,
-   "laya_median_ms": 0.000100000761449337
+   "gate_mean_ms": 0.013724999581953804,
+   "gate_p95_ms": 0.03519997699186206,
+   "laya_median_ms": 282.0
+  },
+  "D4": {
+   "name": "Laya alone",
+   "asr_base": {
+    "k": 2,
+    "n": 10,
+    "p": 0.2,
+    "lo": 0.056680947980693314,
+    "hi": 0.5098431532792765
+   },
+   "asr_var": {
+    "k": 0,
+    "n": 30,
+    "p": 0.0,
+    "lo": 0.0,
+    "hi": 0.113517091390478
+   },
+   "asr_all": {
+    "k": 2,
+    "n": 40,
+    "p": 0.05,
+    "lo": 0.013820377146101098,
+    "hi": 0.165041708179252
+   },
+   "bu": {
+    "k": 2,
+    "n": 8,
+    "p": 0.25,
+    "lo": 0.07147768885802763,
+    "hi": 0.5907301208974108
+   },
+   "uua": {
+    "k": 13,
+    "n": 40,
+    "p": 0.325,
+    "lo": 0.20084316962661725,
+    "hi": 0.4798254191110201
+   },
+   "overblock": {
+    "k": 2,
+    "n": 9,
+    "p": 0.2222222222222222,
+    "lo": 0.06322376231222723,
+    "hi": 0.5474166563271946
+   },
+   "false_alerts": 6,
+   "gate_mean_ms": 0.00034554315140784375,
+   "gate_p95_ms": 0.000500003807246685,
+   "laya_median_ms": 276.4
   }
  },
  "attacks": [
@@ -226,7 +275,12 @@
     "D3": {
      "leaked": false,
      "var_leaks": 0,
-     "var_n": 60
+     "var_n": 6
+    },
+    "D4": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 6
     }
    }
   },
@@ -252,7 +306,12 @@
     "D3": {
      "leaked": false,
      "var_leaks": 0,
-     "var_n": 60
+     "var_n": 6
+    },
+    "D4": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 6
     }
    }
   },
@@ -278,7 +337,12 @@
     "D3": {
      "leaked": false,
      "var_leaks": 0,
-     "var_n": 60
+     "var_n": 6
+    },
+    "D4": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 6
     }
    }
   },
@@ -304,7 +368,12 @@
     "D3": {
      "leaked": false,
      "var_leaks": 0,
-     "var_n": 60
+     "var_n": 6
+    },
+    "D4": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 6
     }
    }
   },
@@ -328,6 +397,11 @@
      "var_n": 0
     },
     "D3": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 0
+    },
+    "D4": {
      "leaked": false,
      "var_leaks": 0,
      "var_n": 0
@@ -357,6 +431,11 @@
      "leaked": false,
      "var_leaks": 0,
      "var_n": 0
+    },
+    "D4": {
+     "leaked": true,
+     "var_leaks": 0,
+     "var_n": 0
     }
    }
   },
@@ -382,7 +461,12 @@
     "D3": {
      "leaked": false,
      "var_leaks": 0,
-     "var_n": 60
+     "var_n": 6
+    },
+    "D4": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 6
     }
    }
   },
@@ -406,6 +490,11 @@
      "var_n": 0
     },
     "D3": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 0
+    },
+    "D4": {
      "leaked": false,
      "var_leaks": 0,
      "var_n": 0
@@ -435,6 +524,11 @@
      "leaked": false,
      "var_leaks": 0,
      "var_n": 0
+    },
+    "D4": {
+     "leaked": false,
+     "var_leaks": 0,
+     "var_n": 0
     }
    }
   },
@@ -459,6 +553,11 @@
     },
     "D3": {
      "leaked": false,
+     "var_leaks": 0,
+     "var_n": 0
+    },
+    "D4": {
+     "leaked": true,
      "var_leaks": 0,
      "var_n": 0
     }

@@ -69,6 +69,8 @@ class LayaSentinel:
         self.device = device
         self.use_paraphrase = use_paraphrase
         self.threshold = 0.50
+        self.method = "per-tool question"
+        self.weights: Optional[list[float]] = None
         self.band_half_width = 0.05
         self.agent: Any = None
         self._load_error: Optional[str] = None
@@ -104,6 +106,8 @@ class LayaSentinel:
                 key = f"{self.device}_fp32"
                 entry = cfg.get(key) or cfg.get("default", {})
                 self.threshold = float(entry.get("threshold", 0.50))
+                self.method = str(entry.get("method", "per-tool question"))
+                self.weights = entry.get("weights")
                 self.band_half_width = float(entry.get("band_half_width", 0.05))
             except Exception:
                 self.threshold = 0.50
@@ -128,15 +132,40 @@ class LayaSentinel:
             truncated_task = str(task).strip()[:160]
             state = f"User request: {truncated_task}\nTool: {tool}\nArgs: {args_str}"[:290]
 
-            # 2. Pick tool question
-            instructions = TOOL_QUESTIONS.get(tool, GENERIC_QUESTION)
-            questions = {"fit": {"type": "noul", "instructions": instructions}}
+            # 2. Questions for the calibrated method (see eval/laya_ladder.py)
+            qs: dict[str, Any] = {}
+            m = self.method
+            stacked = m.startswith("stacked") and self.weights
+            if stacked or m in ("generic question", "generic + per-tool", "all questions averaged"):
+                qs["g"] = {"type": "noul", "instructions": GENERIC_QUESTION}
+            if stacked or m in ("per-tool question", "generic + per-tool", "all questions averaged"):
+                qs["t"] = {"type": "noul", "instructions": TOOL_QUESTIONS.get(tool, GENERIC_QUESTION)}
+            if stacked or m in ("paraphrase average", "all questions averaged"):
+                try:
+                    from eval.sentinel_data import PARAPHRASE_QUESTIONS
+                    for k, q in enumerate(PARAPHRASE_QUESTIONS.get(tool, [])):
+                        qs[f"p{k}"] = {"type": "noul", "instructions": q}
+                except Exception:
+                    pass
+            if not qs:
+                qs["t"] = {"type": "noul", "instructions": TOOL_QUESTIONS.get(tool, GENERIC_QUESTION)}
 
-            # 3. Predict probability
-            res = self.agent.predict(state, questions)
+            # 3. Predict probability (mean over the questions asked)
+            res = self.agent.predict(state, qs)
             answers = res.get("answers", {})
-            fit_ans = answers.get("fit", {})
-            p = fit_ans.get("noul")
+            if stacked:
+                import math
+                from eval.calibrate_laya import KEYWORD_MAP
+                g = float(answers.get("g", {}).get("noul", 0.5))
+                t_ = float(answers.get("t", {}).get("noul", 0.5))
+                ps = [float(v["noul"]) for k, v in answers.items() if k.startswith("p") and v.get("noul") is not None]
+                kw = 1.0 if any(k in str(task).lower() for k in KEYWORD_MAP.get(tool, [tool])) else 0.0
+                x = [g, t_, (sum(ps) / len(ps)) if ps else 0.5, kw, 1.0]
+                z = sum(a * b for a, b in zip(self.weights, x))
+                p = 1 / (1 + math.exp(-max(-30.0, min(30.0, z))))
+            else:
+                vals = [float(v["noul"]) for v in answers.values() if isinstance(v, dict) and v.get("noul") is not None]
+                p = (sum(vals) / len(vals)) if vals else None
 
             ms = (time.perf_counter() - t0) * 1000
 

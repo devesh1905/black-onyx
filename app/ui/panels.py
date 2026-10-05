@@ -69,6 +69,11 @@ def _page(body: str) -> str:
 def results_html(r: dict[str, Any]) -> str:
     d = r["defences"]
     sent = html.escape(str(r.get("sentinel", "")))
+    if str(r.get("sentinel", "")).startswith("Laya"):
+        laya_note = ("D3 and D4 used the real Laya sentinel on a deterministic subset of the variants (every 10th, so 30 instead of 300) because it takes about 0.3 s per call. "
+                     "D4 (Laya alone, no rules) also blocks legitimate work, which is why the rules do the blocking.")
+    else:
+        laya_note = f"D3 in this table ran with <b>{sent}</b>, so it equals D2; the live demo uses the real Laya sentinel."
     d2, bu, ob = d["D2"], d["D2"]["bu"], d["D2"]["overblock"]
     metrics = []
     for key, label in (("D0", "Undefended"), ("D1", "Keyword filter"), ("D2", "Black Onyx rules")):
@@ -95,7 +100,7 @@ def results_html(r: dict[str, Any]) -> str:
 <div class="metrics">{''.join(metrics)}</div>
 <div class="panel"><h2>Outcome by attack and defence</h2>
 <div style="overflow:auto"><table class="atk"><tr><th>Attack</th>{heads}</tr>{''.join(rows)}</table></div>
-<p class="note" style="margin:10px 0 0">* base attack blocked, some rewordings were not. D3 in this table ran with <b>{sent}</b>, so it equals D2; the live demo uses the real Laya sentinel.</p></div>
+<p class="note" style="margin:10px 0 0">* base attack blocked, some rewordings were not. {laya_note}</p></div>
 <div class="two">
  <div class="panel"><h2>Invariance under rewording</h2><div class="mono" style="font-size:22px;font-weight:600">{_pct(inv)}</div>
   <p class="note" style="margin:4px 0 0">{_ci(inv)}. Variants whose policy decision equals the base attack's decision (D2).</p></div>

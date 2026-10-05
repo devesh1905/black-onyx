@@ -2,15 +2,17 @@
   "cpu_fp32": {
     "device": "cpu",
     "precision": "fp32",
-    "threshold": 0.88,
-    "band_half_width": 0.05,
-    "model": "laya-english"
+    "threshold": 0.32,
+    "band_half_width": 0.0,
+    "model": "laya-english",
+    "method": "generic question"
   },
   "default": {
     "device": "cpu",
     "precision": "fp32",
-    "threshold": 0.88,
-    "band_half_width": 0.05,
-    "model": "laya-english"
+    "threshold": 0.32,
+    "band_half_width": 0.0,
+    "model": "laya-english",
+    "method": "generic question"
   }
 }
