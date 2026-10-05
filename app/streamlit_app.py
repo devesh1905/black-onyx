@@ -29,9 +29,11 @@ st.markdown("""
 html,body,.stApp,[data-testid="stAppViewContainer"]{background:var(--bg)!important;color:var(--tx);font-family:Inter,'Segoe UI',system-ui,sans-serif;font-size:13px}
 [data-testid="stHeader"],.stAppHeader{background:transparent!important;pointer-events:none}
 [data-testid="stHeader"] *,.stAppHeader *{pointer-events:auto}
-#MainMenu,footer,[data-testid="stToolbar"],[data-testid="stDecoration"]{display:none!important}
+#MainMenu,footer,[data-testid="stDecoration"],[data-testid="stToolbarActions"],[data-testid="stMainMenu"],[data-testid="stAppDeployButton"]{display:none!important}
+[data-testid="stExpandSidebarButton"],[data-testid="stSidebarCollapsedControl"],[data-testid="collapsedControl"]{display:flex!important;visibility:visible!important}
 .block-container{padding:12px 20px 8px!important;max-width:1700px}
-[data-testid="stSidebar"]{background:var(--p)!important;border-right:1px solid var(--bd);min-width:280px!important;max-width:280px!important}
+[data-testid="stSidebar"]{background:var(--p)!important;border-right:1px solid var(--bd)}
+[data-testid="stSidebar"][aria-expanded="true"]{min-width:280px!important;max-width:280px!important}
 [data-testid="stSidebar"] .block-container{padding:16px 16px!important}
 [data-testid="stSidebar"] label p{font-size:11px!important;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)!important}
 div[data-baseweb="select"]>div,textarea,input{background:var(--bg)!important;border:1px solid var(--bd2)!important;border-radius:4px!important;color:var(--tx)!important;min-height:38px;font-size:13px}
@@ -55,7 +57,7 @@ hr{border-color:var(--bd)!important;margin:14px 0!important}
 .brand b{font-size:16px;font-weight:700;letter-spacing:2.4px}
 .brand b.wm{background:linear-gradient(180deg,#fff,#aeb7c3 60%,#7b8593);-webkit-background-clip:text;background-clip:text;color:transparent}.brand small{display:block;color:var(--t3);font-size:11.5px}
 .sec{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin:16px 0 6px}
-@media (max-width:900px){[data-testid="stSidebar"]{min-width:260px!important}.block-container{padding:10px!important}}
+@media (max-width:900px){[data-testid="stSidebar"][aria-expanded="true"]{min-width:260px!important}.block-container{padding:10px!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 """, unsafe_allow_html=True)
