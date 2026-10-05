@@ -26,7 +26,7 @@ st.set_page_config(page_title="Black Onyx", page_icon="◆", layout="wide", init
 
 st.markdown("""
 <style>
-:root{--bg:#070A0F;--p:#0D121A;--p2:#111823;--bd:#1B2532;--bd2:#263243;--tx:#E6EAF0;--t2:#8C96A6;--t3:#5C6675;--blue:#4F8CFF}
+:root{--bg:#070A0F;--p:#0D121A;--p2:#111823;--bd:#1B2532;--bd2:#263243;--tx:#E6EAF0;--t2:#9AA5B5;--t3:#7A8696;--blue:#4F8CFF}
 html,body,.stApp,[data-testid="stAppViewContainer"]{background:var(--bg)!important;color:var(--tx);font-family:Inter,'Segoe UI',system-ui,sans-serif;font-size:13px}
 [data-testid="stHeader"],.stAppHeader{background:transparent!important;pointer-events:none}
 [data-testid="stHeader"] *,.stAppHeader *{pointer-events:auto}
@@ -51,10 +51,15 @@ textarea{font-family:Consolas,'Cascadia Mono',monospace!important;font-size:12px
 .stButton>button[kind="primary"]:hover{background:#6aa0ff;border-color:#6aa0ff;color:#06101f}
 .stButton>button[kind="secondary"]{justify-content:flex-start;text-align:left}
 .stButton>button[kind="secondary"] div,.stButton>button[kind="secondary"] p{justify-content:flex-start!important;text-align:left!important;width:100%}
-.stTabs [data-baseweb="tab-list"]{gap:4px;border-bottom:1px solid var(--bd)}
-.stTabs [data-baseweb="tab"]{height:40px;padding:0 14px;color:var(--t2);font-weight:500;background:transparent}
-.stTabs [aria-selected="true"]{color:var(--tx)!important}
-.stTabs [data-baseweb="tab-highlight"]{background:var(--blue)!important;height:2px}
+.stTabs [data-baseweb="tab-list"]{display:inline-flex;gap:2px;padding:3px;background:var(--p);border:1px solid var(--bd);border-radius:6px;margin-bottom:6px}
+.stTabs [data-baseweb="tab"]{height:38px;padding:0 18px;color:var(--t2);font-weight:600;font-size:14px;background:transparent;border-radius:4px}
+.stTabs [aria-selected="true"]{color:#fff!important;background:var(--p2)}
+.stTabs [data-baseweb="tab-highlight"]{background:var(--blue)!important;height:2px;border-radius:2px}
+.stTabs [data-baseweb="tab-border"]{display:none}
+.evalstrip{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:2px 0 8px}
+.evalstrip div{background:var(--p2);border:1px solid var(--bd);border-radius:4px;padding:8px 16px;min-width:150px}
+.evalstrip b{display:block;font:600 20px/1.15 Consolas,"Cascadia Mono",monospace}.evalstrip span{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.evalstrip .note{background:transparent;border:0;color:var(--t2);font-size:12.5px;flex:1;min-width:220px;align-self:center;padding:0 4px}
 [data-testid="stCode"] pre,[data-testid="stCode"] code{white-space:pre-wrap!important;word-break:break-word!important;font-size:12px!important}
 [data-testid="stExpander"]{border:1px solid var(--bd)!important;border-radius:6px!important;background:var(--p)}
 hr{border-color:var(--bd)!important;margin:14px 0!important}
@@ -182,7 +187,7 @@ def execute(defence: str, task: str, attack: str, inject: str) -> tuple[list[dic
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
     st.markdown(f"""
-<div class="brand">{LOGO_MARK}<div><b class="wm">BLACK ONYX</b><small>Provenance firewall for AI agents</small></div></div>
+<div class="brand">{LOGO_MARK}<div><b class="wm">BLACK ONYX</b><small style="letter-spacing:2.2px;text-transform:uppercase;font-weight:600;color:var(--t2)">Provenance firewall</small><small>Security layer for tool-using AI agents</small></div></div>
 """, unsafe_allow_html=True)
 
     st.markdown('<div class="sec">Scenario</div>', unsafe_allow_html=True)
@@ -190,19 +195,19 @@ with st.sidebar:
     attack_id = st.selectbox("Attack", list(ATTACKS), format_func=ATTACKS.get, key="attack_sel")
     typed = bool(st.session_state.get("inject_txt", "").strip())
     has_attack = attack_id != "None" and not typed
-    task_id = st.selectbox("Task", list(TASKS), format_func=TASKS.get, key="task_sel", disabled=has_attack)
-    if has_attack:
-        st.caption(f"{attack_id} runs on its own host task: {HOST[attack_id]}")
-    elif typed and attack_id != "None":
+    task_id = st.selectbox("Task", list(TASKS), format_func=TASKS.get, key="task_sel", disabled=has_attack,
+                           help="A preset attack runs on its own host task, so this is locked while one is selected.")
+    if typed and attack_id != "None":
         st.caption("Custom attack takes priority over the attack selection.")
 
     st.markdown('<div class="sec">Custom attack</div>', unsafe_allow_html=True)
     inject_text = st.text_area("Paste an injection", key="inject_txt", height=96, label_visibility="collapsed",
                                placeholder="Paste an injection. It is planted where the chosen task will read it (email, web page or document).")
-    autoplay = st.toggle("Animate playback", value=True)
-    run_clicked = st.button("Run scenario", type="primary", use_container_width=True, icon=":material/play_arrow:")
+    with st.container(border=True):
+        autoplay = st.toggle("Animate playback", value=True)
+        run_clicked = st.button("Run scenario", type="primary", use_container_width=True, icon=":material/play_arrow:")
 
-    st.markdown('<div class="sec">Demo scenarios</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec">Test cases</div>', unsafe_allow_html=True)
     st.button("Agent is hijacked", use_container_width=True, on_click=_preset, args=("D0", "L1", "A1"), icon=":material/warning:")
     st.button("Black Onyx contains it", use_container_width=True, on_click=_preset, args=("D2", "L1", "A1"), icon=":material/shield:")
     st.button("Reworded attack, keyword filter", use_container_width=True, on_click=_preset, args=("D1", "L1", "A2"), icon=":material/filter_alt:")
@@ -223,7 +228,17 @@ shown_defence = st.session_state.get("last_defence", defence_id)
 tab_live, tab_results, tab_how = st.tabs([":material/play_circle: Run", ":material/bar_chart: Results", ":material/menu_book: Explain"])
 
 with tab_live:
-    components.html(render_stage(events, autoplay=autoplay, defence=shown_defence), height=860, scrolling=False)
+    components.html(render_stage(events, autoplay=autoplay, defence=shown_defence), height=900, scrolling=False)
+    _res = load_results()
+    if _res:
+        _d2 = _res["defences"]["D2"]
+        _b = _d2["asr_all"]; _u = _d2["bu"]
+        st.markdown(
+            f'<div class="evalstrip"><div><b>{_b["n"] - _b["k"]}/{_b["n"]}</b><span>attack runs blocked</span></div>'
+            f'<div><b>{_u["k"]}/{_u["n"]}</b><span>legitimate tasks completed</span></div>'
+            f'<div><b>{_b["k"]}</b><span>policy bypasses</span></div>'
+            f'<div class="note">Measured on this suite with a simulated attacker (rules only, D2). See the Results tab for every number and interval.</div></div>',
+            unsafe_allow_html=True)
     prompts = load_prompts()
     if prompts:
         with st.expander(f"Prompt library ({len(prompts)} custom attacks)"):

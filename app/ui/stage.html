@@ -7,7 +7,7 @@
 <style>
 :root{
   --bg:#070A0F; --p:#0D121A; --p2:#111823; --bd:#1B2532; --bd2:#263243;
-  --tx:#E6EAF0; --t2:#8C96A6; --t3:#5C6675;
+  --tx:#E6EAF0; --t2:#9AA5B5; --t3:#7A8696;
   --blue:#4F8CFF; --green:#35D07F; --amber:#E7A33D; --red:#F05D67;
   --font:Inter,'Segoe UI',system-ui,-apple-system,sans-serif; --mono:Consolas,'Cascadia Mono',ui-monospace,monospace;
 }
@@ -26,14 +26,13 @@ button,select,input{font:inherit;color:inherit}
 .live{color:var(--green)}
 /* ---- result ---- */
 .result{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding:14px 16px;background:var(--p);border:1px solid var(--bd);border-radius:6px}
-.result .title{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:600;letter-spacing:-.2px;margin-top:2px}
+.result .title{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:600;letter-spacing:-.2px;margin-top:2px}
 .result .sq{width:10px;height:10px;border-radius:2px;background:var(--t3);flex:none}
 .result.block .sq{background:var(--red)} .result.hijack .sq{background:var(--red)} .result.clean .sq{background:var(--green)}
 .result.hijack .title{color:var(--red)}
 .result .sub{color:var(--t2);margin-top:2px}
-.metrics{display:flex;margin:0}
-.metrics div{padding:0 22px;border-left:1px solid var(--bd)}
-.metrics div:first-child{border-left:0;padding-left:0}
+.metrics{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.metrics div{padding:8px 16px;background:var(--p2);border:1px solid var(--bd);border-radius:4px;min-width:108px;flex:1 1 108px}
 .metrics dt{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
 .metrics dd{margin:2px 0 0;font:600 20px/1.1 var(--mono);font-variant-numeric:tabular-nums}
 .metrics dd.red{color:var(--red)} .metrics dd.dim{color:var(--t2)}
@@ -73,7 +72,7 @@ button,select,input{font:inherit;color:inherit}
 .graphwrap{position:relative;flex:1;min-height:0}
 #svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #svg.dragging{cursor:grabbing}
-.key{position:absolute;left:14px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--t2)}
+.key{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--t2);background:rgba(13,18,26,.9);border:1px solid var(--bd);border-radius:4px;padding:6px 10px}
 .key i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
 .tip{display:inline-grid;place-items:center;width:18px;height:18px;border:1px solid var(--bd2);border-radius:50%;font-size:11px;color:var(--t2);cursor:help;margin-left:4px}
 .node{cursor:pointer;opacity:0;pointer-events:none;outline:none}
@@ -81,7 +80,7 @@ button,select,input{font:inherit;color:inherit}
 .node.enter{animation:pop .3s ease-out both}
 .node rect.body{fill:var(--p2);stroke:var(--bd2);stroke-width:1.2;transition:stroke .25s}
 .node text{fill:var(--tx);font-family:var(--font);pointer-events:none}
-.node .l1{font-size:12.5px;font-weight:600}.node .l2{font-size:10.5px;fill:var(--t2);font-family:var(--mono)}
+.node .l1{font-size:13.5px;font-weight:600}.node .l2{font-size:11px;fill:var(--t2);font-family:var(--mono)}
 .node.value.t-UNTRUSTED rect.body{stroke:var(--amber)}
 .node.verified rect.body,.node.value.t-VERIFIED rect.body{stroke:var(--blue)}
 .node.call.running rect.body{stroke:var(--blue)}
@@ -146,6 +145,24 @@ select.btn option{background:#0D121A;color:#E6EAF0}
 .drawer td{padding:6px 6px 6px 0;border-top:1px solid var(--bd);vertical-align:top}
 .chain{font:11.5px var(--mono);color:var(--t2)}
 .red{color:var(--red)} .green{color:var(--green)}
+
+.why{padding:10px 16px 12px;border-top:1px solid var(--bd)}
+.why:first-child{border-top:0}
+.why-t{padding:10px 16px 0;margin:0}
+.why-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bdg{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:4px;font-weight:700;letter-spacing:.6px;font-size:12px;background:#3a1519;color:#ff8a93;border:1px solid #7a2a31;white-space:nowrap}
+.bdg.sm{padding:1px 7px;font-size:11px;vertical-align:1px}
+.why-h .act{font:600 15px var(--mono)} .why-h .offp{color:var(--t2);font-size:12px}
+.why-s{margin:5px 0 9px;font-size:13.5px;line-height:1.5}
+.why-f{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 18px;margin:0}
+.why-f dt{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.why-f dd{margin:2px 0 0;overflow-wrap:anywhere}
+.why-l{margin-top:8px;font-size:12.5px;color:var(--t2);display:flex;gap:8px;align-items:center}
+.why-l .ic{color:#a78bfa}
+@media (max-width:760px){.why-f{grid-template-columns:1fr 1fr}}
+.row .h i{font-family:var(--mono);font-size:12.5px}
+.fw{display:none}.node.call.blocked .fw{display:block}
+#gfocus.on{border-color:var(--red);color:var(--red)}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes shock{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
@@ -153,7 +170,7 @@ select.btn option{background:#0D121A;color:#E6EAF0}
   .app{height:auto;min-height:100vh}
   .main{grid-template-columns:1fr;grid-template-rows:auto auto}
   .tl{max-height:320px}.graphwrap{min-height:380px}
-  .metrics div{padding:0 12px}.key{display:none}
+  .metrics div{padding:6px 10px;min-width:0}.key{display:none}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
@@ -180,7 +197,6 @@ select.btn option{background:#0D121A;color:#E6EAF0}
   </section>
 
   <section class="decision" id="decision" hidden aria-label="Policy decisions">
-    <div class="dt h lbl"><span>Requested</span><span>Cause</span><span>Policy</span><span>Decision</span></div>
     <div id="dec-rows"></div>
   </section>
 
@@ -191,7 +207,7 @@ select.btn option{background:#0D121A;color:#E6EAF0}
     </section>
     <section class="panel" id="gpanel" aria-label="Provenance graph">
       <header><span class="lbl">Provenance <span class="tip" title="Click a node to inspect it. Scroll to zoom, drag to pan.">i</span></span>
-        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn gb" id="greset" title="Reset node positions" aria-label="Reset layout">{{ic:rotate-ccw:15}}</button><button class="btn gb" id="gmax" title="Expand the graph (Esc to close)" aria-label="Expand graph">{{ic:maximize:15}}</button><button class="btn gb" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view" title="Fit to view">{{ic:scan:15}}</button></span></header>
+        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn gb" id="gfocus" title="Focus the violation" aria-label="Focus the violation">{{ic:target:15}}</button><button class="btn gb" id="greset" title="Reset node positions" aria-label="Reset layout">{{ic:rotate-ccw:15}}</button><button class="btn gb" id="gmax" title="Expand the graph (Esc to close)" aria-label="Expand graph">{{ic:maximize:15}}</button><button class="btn gb" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view" title="Fit to view">{{ic:scan:15}}</button></span></header>
       <div class="graphwrap" id="gwrap">
         <svg id="svg" role="img" aria-label="Provenance graph. Tab to a node and press Enter to inspect it."></svg>
         <div class="key"><span><i style="background:var(--bd2)"></i>Trusted</span><span><i style="background:var(--amber)"></i>Untrusted</span><span><i style="background:var(--blue)"></i>Verified</span><span><i style="background:var(--green)"></i>Completed</span><span><i style="background:var(--red)"></i>Blocked</span></div>
@@ -251,6 +267,12 @@ function chainInfo(chain){
   const tail = String(chain||'').split(' <- ').pop().replace(/\)$/,''); const srcs = tail.split(',').map(x=>x.trim()).filter(x=>ORIGIN[x]);
   return {arg, srcs};
 }
+function plainAlert(ev, off){
+  const ci = chainInfo(ev.chain); const act = ACTION[ev.tool]||ev.tool; const arg = ARGP[ci.arg]||'value';
+  const src = `<b>${esc(originWords(ci.srcs))}</b>, which is untrusted`;
+  if(off) return `The agent tried to <b>${esc(act)}</b>, which was not in the plan made from your request. The ${esc(arg)} came from ${src}, so the call was refused before it ran.`;
+  return `The agent was about to <b>${esc(act)}</b>, but the ${esc(arg)} came from ${src}. So the call was stopped.`;
+}
 const isRead = (t)=>['read_inbox','read_file','web_fetch','search_docs'].includes(t);
 
 /* ---------- 1. build graph + per-event reveal script ---------- */
@@ -262,7 +284,7 @@ function addEdge(e, i){ e.order = ++seqN; edges.push(e); fx[i].push({t:'edge',id
 function ensureCall(cid, tool, i){
   if(callNodes[cid]) return nodes.get(callNodes[cid]);
   const planned = !String(cid).startsWith('x');
-  const n = addNode({id:'call:'+cid,kind:'call',label:tool,sub:planned?cid:cid+' · off-plan',cid,tool,offplan:!planned,state:'planned'}, i);
+  const n = addNode({id:'call:'+cid,kind:'call',label:tool,sub:planned?'':'not in plan',cid,tool,offplan:!planned,state:'planned'}, i);
   callNodes[cid] = n.id; return n;
 }
 function resolve(vid, sources){
@@ -291,7 +313,7 @@ EVENTS.forEach((ev,i)=>{
     valNode[ev.value_id] = n.id; results.push(n.id);
     addEdge({from:c.id,to:n.id,kind:'flow',trust:ev.trust}, i);
     fx[i].push({t:'state',id:c.id,state:c.state==='blocked'?'blocked':'done'});
-    rows[i] = row(ev,'', esc(ev.tool), trustHtml(ev.trust, ev.sources), false, TOOL_IC[ev.tool]||'file');
+    rows[i] = row(ev,'', `<span class="mono">${esc(ev.tool)}</span>`, trustHtml(ev.trust, ev.sources), false, TOOL_IC[ev.tool]||'file');
     break; }
   case 'op': {
     const n = addNode({id:'val:'+ev.output,kind:'value',label:ev.op,sub:short(ev.preview,22),trust:ev.trust,sources:ev.sources,full:ev.preview,vid:ev.output}, i);
@@ -334,7 +356,7 @@ EVENTS.forEach((ev,i)=>{
     const cause = `${ARGP[ci.arg]||'value'} derived from ${originWords(ci.srcs)} · UNTRUSTED`;
     const pol = off ? 'Call is not in the plan fixed from the request.' : (RULE[ev.tool+'.'+ci.arg]||ev.reason);
     c.decision = {requested:ev.tool, cause, policy: off?`${pol} ${RULE[ev.tool+'.'+ci.arg]||''}`:pol, off};
-    rows[i] = row(ev,'blocked', `Blocked <i style="color:var(--tx)">${esc(ev.tool)}</i>`, `<div class="kv"><span>Cause</span><span>${esc(cause)}</span><span>Policy</span><span>${esc(pol)}</span></div><div class="s m" style="margin-top:4px">${esc(ev.chain)}</div>`, false, 'shield-x');
+    rows[i] = row(ev,'blocked', `<span class="bdg sm">BLOCKED</span> <i style="color:var(--tx)">${esc(ev.tool)}</i>`, `<div class="kv"><span>Cause</span><span>${esc(cause)}</span><span>Policy</span><span>${esc(pol)}</span></div><div class="s m" style="margin-top:4px">${esc(ev.chain)}</div>`, false, 'shield-x');
     break; }
   case 'effect': {
     const c = ensureCall(ev.call_id, '?', i);
@@ -349,7 +371,7 @@ EVENTS.forEach((ev,i)=>{
 });
 
 /* ---------- 2. layout ---------- */
-const NW = 176, NH = 46, GX = 38, GY = 18;
+const NW = 196, NH = 54, GX = 38, GY = 18;
 function layout(dir){
   const preds = {}; edges.forEach(e=>{(preds[e.to]=preds[e.to]||[]).push(e.from);});
   const depth = {}; const list = [...nodes.values()].sort((a,b)=>a.order-b.order);
@@ -398,12 +420,30 @@ function updateEdge(i){
   ee.p.setAttribute('d',g.d); ee.a.setAttribute('points',g.pts);
   if(ee.lab){ ee.lab.setAttribute('x',g.lx); ee.lab.setAttribute('y',g.ly); }
 }
+let stickyFocus=null;
+function dimExcept(keep, edgeOn){
+  Object.entries(nodeEls).forEach(([nid,g])=>g.classList.toggle('dim',!keep.has(nid)));
+  edges.forEach((e,i)=>{ const ee=edgeEls[i]; if(!ee) return; const on=edgeOn(e);
+    [ee.p,ee.a,ee.lab].forEach(x=>{ if(x){ x.classList.toggle('dim',!on); x.classList.toggle('hl',on); } }); });
+}
 function focusNode(id){
   const keep=new Set([id]);
   edges.forEach(e=>{ if(e.from===id||e.to===id){ keep.add(e.from); keep.add(e.to); } });
-  Object.entries(nodeEls).forEach(([nid,g])=>g.classList.toggle('dim',!keep.has(nid)));
-  edges.forEach((e,i)=>{ const ee=edgeEls[i]; if(!ee) return; const on=(e.from===id||e.to===id);
-    [ee.p,ee.a,ee.lab].forEach(x=>{ if(x){ x.classList.toggle('dim',!on); x.classList.toggle('hl',on); } }); });
+  dimExcept(keep, e=>(e.from===id||e.to===id));
+}
+function lineage(id){
+  const up=new Set([id]); const q=[id];
+  while(q.length){ const x=q.pop(); edges.forEach(e=>{ if(e.to===x && e.kind!=='seq' && !up.has(e.from)){ up.add(e.from); q.push(e.from); } }); }
+  return up;
+}
+function focusViolation(){
+  if(stickyFocus){ stickyFocus=null; clearFocus(); $('gfocus').classList.remove('on'); userView=false; fitView(visibleIds,true); return; }
+  const vis=[...nodes.values()].filter(n=>visibleIds.has(n.id));
+  const bad = vis.find(n=>n.kind==='call'&&n.alert) || vis.find(n=>n.kind==='effect'&&n.leak);
+  if(!bad) return;
+  const keep=lineage(bad.id); stickyFocus=bad.id;
+  dimExcept(keep, e=>keep.has(e.from)&&keep.has(e.to)&&e.kind!=='seq'); $('gfocus').classList.add('on');
+  userView=true; fitView(keep,true);
 }
 function clearFocus(){
   Object.values(nodeEls).forEach(g=>g.classList.remove('dim'));
@@ -435,8 +475,11 @@ function drawGraph(){
     el('rect',{class:'body',x:0,y:0,width:NW,height:NH,rx:4},g);
     const nIc = n.kind==='user'?'user':n.kind==='verified'?'badge-check':n.kind==='rejected'?'alert':n.kind==='effect'?(n.leak?'alert':'check'):n.kind==='call'?(TOOL_IC[n.tool]||'braces'):(n.label.indexOf(' result')>0?(TOOL_IC[n.label.split(' ')[0]]||'file'):'braces');
     g.insertAdjacentHTML('beforeend', `<svg class="nic" x="10" y="${NH/2-8}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[nIc]||ICONS.info}</svg>`);
-    const t1=el('text',{x:34,y:n.sub?19:NH/2+4,class:'l1'},g); t1.textContent=short(n.label,19);
-    if(n.sub){ const t2=el('text',{x:34,y:34,class:'l2'},g); t2.textContent=short(n.sub,22); }
+    const subtxt = n.kind==='call' ? (n.offplan?'not in plan':(n.desc&&n.desc!==n.label?short(n.desc,28):'')) : n.sub;
+    const t1=el('text',{x:34,y:subtxt?22:NH/2+5,class:'l1'},g); t1.textContent=short(n.label,22);
+    if(subtxt){ const t2=el('text',{x:34,y:40,class:'l2'},g); t2.textContent=short(subtxt,28); }
+    const tt=el('title',{},g); tt.textContent=[n.label, n.full||subtxt||'', n.kind==='call'?('step '+n.cid):''].filter(Boolean).join(' — ');
+    if(n.kind==='call') g.insertAdjacentHTML('beforeend', `<g class="fw" transform="translate(${NW-4},2)"><circle r="11" fill="#3a1519" stroke="#F05D67" stroke-width="1.5"/><svg x="-7" y="-7" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff8a93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS['shield-x']}</svg></g>`);
     // drag to move; a press without movement is a click that opens the inspector
     g.addEventListener('pointerdown',ev=>{ if(ev.button!==0) return; ev.stopPropagation(); cancelAnimationFrame(vbAnim);
       nodeDrag={id:n.id,x:ev.clientX,y:ev.clientY,l:n.l,t:n.t,moved:false}; try{ g.setPointerCapture(ev.pointerId); }catch(_){} });
@@ -448,7 +491,7 @@ function drawGraph(){
       edges.forEach((e,i)=>{ if(e.from===n.id||e.to===n.id) updateEdge(i); }); });
     const endNode=(ev)=>{ const was=nodeDrag; nodeDrag=null; g.classList.remove('drag'); if(was&&was.id===n.id&&!was.moved&&ev.type==='pointerup') openDrawer(n.id); };
     g.addEventListener('pointerup',endNode); g.addEventListener('pointercancel',endNode);
-    g.addEventListener('pointerenter',()=>{ if(!nodeDrag) focusNode(n.id); }); g.addEventListener('pointerleave',()=>{ if(!nodeDrag) clearFocus(); });
+    g.addEventListener('pointerenter',()=>{ if(!nodeDrag&&!stickyFocus) focusNode(n.id); }); g.addEventListener('pointerleave',()=>{ if(!nodeDrag&&!stickyFocus) clearFocus(); });
     g.addEventListener('focus',()=>focusNode(n.id)); g.addEventListener('blur',clearFocus);
     g.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openDrawer(n.id);} });
     nodeEls[n.id]=g;
@@ -486,6 +529,7 @@ const endDrag=()=>{drag=null;svg.classList.remove('dragging');};
 svg.addEventListener('pointerup',endDrag); svg.addEventListener('pointercancel',endDrag);
 svg.addEventListener('dblclick',()=>{ userView=false; fitView(visibleIds,true); });
 $('fit').onclick=()=>{ userView=false; fitView(visibleIds,true); };
+$('gfocus').onclick=focusViolation;
 $('greset').onclick=()=>{ const keep=cur; drawGraph(); userView=false; renderTo(keep,false); };
 const gpanel=$('gpanel');
 let feSaved=null;
@@ -524,13 +568,32 @@ function applyFx(list, animate){
     if(f.t==='badge' && g){ badgeEl(g,f.text,f.warn); }
   });
 }
+function nodeValueText(c){
+  const ck = c && (c.checks.find(x=>x.decision==='deny') || c.checks.find(x=>x.trust!=='USER'));
+  if(!ck) return '—';
+  const nid = ck.vid && valNode[ck.vid]; const nd = nid && nodes.get(nid);
+  return (nd && nd.full) ? short(nd.full,70) : '—';
+}
+function layaLine(c){
+  if(!c || !c.laya) return '';
+  const L=c.laya; if(L.score==null) return '';
+  return `<div class="why-l">${ic('sparkle',14)}<span><b>Laya (advisory):</b> Fit ${fitPct(L.score)}%, ${fitWords(L).toLowerCase()}. Policy authority stays with Black Onyx.</span></div>`;
+}
 function decisionRows(alertsSeen, leaksSeen){
   let h='';
+  if(alertsSeen.length) h+='<div class="lbl why-t">Why it was blocked</div>';
   alertsSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const d=c&&c.decision; if(!d) return;
-    h+=`<div class="dt"><span class="c mono">${esc(d.requested)}</span><span class="c">${esc(d.cause)}</span><span class="c">${esc(d.policy)}</span><span class="dec b">${ic('shield-x',14)}BLOCKED${d.off?'<span class="offp">off-plan</span>':''}</span></div>`; });
+    const ci=chainInfo(ev.chain);
+    h+=`<div class="why"><div class="why-h"><span class="bdg">${ic('shield-x',14)}BLOCKED</span><span class="act">${esc(d.requested)}</span>${d.off?'<span class="offp">not in the plan</span>':''}</div>`
+     + `<p class="why-s">${plainAlert(ev, d.off)}</p>`
+     + `<dl class="why-f"><div><dt>Source</dt><dd>${esc(originWords(ci.srcs))}</dd></div><div><dt>Trust</dt><dd class="unt">UNTRUSTED</dd></div>`
+     + `<div><dt>Value</dt><dd class="mono">${esc(nodeValueText(c))}</dd></div><div><dt>Policy</dt><dd>${esc(RULE[ev.tool+'.'+ci.arg]||d.policy)}</dd></div></dl>${layaLine(c)}</div>`; });
+  if(leaksSeen.length) h+='<div class="lbl why-t">Why it got through</div>';
   leaksSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const ck=c&&c.checks.find(x=>x.trust!=='USER');
-    const cause = ck? `${ARGP[ck.arg]||'value'} derived from ${originWords(ck.sources)} · UNTRUSTED`:'instruction in untrusted content';
-    h+=`<div class="dt"><span class="c">${esc(ev.description)}</span><span class="c">${esc(cause)}</span><span class="c">None applied (undefended)</span><span class="dec x">${ic('alert',14)}EXECUTED</span></div>`; });
+    h+=`<div class="why"><div class="why-h"><span class="bdg">${ic('alert',14)}EXECUTED</span><span class="act">${esc(short(ev.description,60))}</span></div>`
+     + `<p class="why-s">No policy was applied, so the agent followed an instruction hidden in untrusted content.</p>`
+     + `<dl class="why-f"><div><dt>Source</dt><dd>${esc(ck?originWords(ck.sources):'outside text')}</dd></div><div><dt>Trust</dt><dd class="unt">UNTRUSTED</dd></div>`
+     + `<div><dt>Value</dt><dd class="mono">${esc(nodeValueText(c))}</dd></div><div><dt>Policy</dt><dd>None applied (undefended)</dd></div></dl>${layaLine(c)}</div>`; });
   return h;
 }
 function setResIcon(name){ const e=$('r-ico'); if(e) e.innerHTML=ic(name,22); }
@@ -546,6 +609,7 @@ function setResult(n, leaks, alertsN, done){
 }
 function renderTo(n, animate){
   n = Math.max(0,Math.min(EVENTS.length,n));
+  if(stickyFocus){ stickyFocus=null; $('gfocus').classList.remove('on'); }
   resetVisual(); $('feed').innerHTML='';
   const aSeen=[], lSeen=[]; visibleIds=new Set();
   for(let k=0;k<n;k++){
