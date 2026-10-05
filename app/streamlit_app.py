@@ -51,13 +51,19 @@ textarea{font-family:Consolas,'Cascadia Mono',monospace!important;font-size:12px
 [data-testid="stCode"] pre,[data-testid="stCode"] code{white-space:pre-wrap!important;word-break:break-word!important;font-size:12px!important}
 [data-testid="stExpander"]{border:1px solid var(--bd)!important;border-radius:6px!important;background:var(--p)}
 hr{border-color:var(--bd)!important;margin:14px 0!important}
-.brand{display:flex;gap:10px;align-items:center;margin-bottom:2px}
-.brand b{font-size:16px;font-weight:600;letter-spacing:.2px}.brand small{display:block;color:var(--t3);font-size:11.5px}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:2px}
+.brand b{font-size:16px;font-weight:700;letter-spacing:2.4px}
+.brand b.wm{background:linear-gradient(180deg,#fff,#aeb7c3 60%,#7b8593);-webkit-background-clip:text;background-clip:text;color:transparent}.brand small{display:block;color:var(--t3);font-size:11.5px}
 .sec{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin:16px 0 6px}
 @media (max-width:900px){[data-testid="stSidebar"]{min-width:260px!important}.block-container{padding:10px!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 """, unsafe_allow_html=True)
+
+try:
+    LOGO_MARK = (ROOT / "app" / "ui" / "logo_mark.svg").read_text(encoding="utf-8").replace('width="120" height="120"', 'width="46" height="46"')
+except OSError:
+    LOGO_MARK = ""
 
 DEFENCES = {
     "D0": "D0 · Undefended",
@@ -142,9 +148,8 @@ def execute(defence: str, task: str, attack: str, inject: str) -> tuple[list[dic
 
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
-    st.markdown("""
-<div class="brand"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 2 26 8.5v13L15 28 4 21.5v-13z" fill="none" stroke="#E6EAF0" stroke-width="1.6"/><path d="M15 2v26" stroke="#E6EAF0" stroke-width="1.6"/></svg>
-<div><b>Black Onyx</b><small>Provenance firewall for AI agents</small></div></div>
+    st.markdown(f"""
+<div class="brand">{LOGO_MARK}<div><b class="wm">BLACK ONYX</b><small>Provenance firewall for AI agents</small></div></div>
 """, unsafe_allow_html=True)
 
     st.markdown('<div class="sec">Scenario</div>', unsafe_allow_html=True)
