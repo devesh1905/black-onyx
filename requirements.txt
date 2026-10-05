@@ -1,0 +1,11 @@
+laya[onnx]==0.3.26
+streamlit
+pyvis
+onnxruntime
+pytest==9.1.1
+hypothesis==6.168.3
+PyYAML==6.0.3
+rich==15.0.0
+matplotlib==3.11.1
+pydantic==2.13.3
+python-dotenv==1.0.1

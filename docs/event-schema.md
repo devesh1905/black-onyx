@@ -27,3 +27,13 @@ Value ids look like `v1`, `v2`; call ids look like `c1`, `c2`.
 
 Colours (same as slide 3): green = USER, blue = VERIFIED, orange = UNTRUSTED, red flash = blocked.
 A `call_check` with decision "deny" is always followed by an `alert` for the same `call_id`.
+
+## Engine notes (added by the engine track)
+- `declassify` also carries `ok` (bool). `ok: false` means the validator rejected the input; `output` is then the
+  input value id and `trust` stays `UNTRUSTED` (no edge to a blue node; show it grey/orange with a "rejected" tag).
+- Out-of-plan calls get call ids `x1, x2...` (planned ones are `c1, c2...`). They always produce a `call_check`
+  with decision `deny` and an `alert`.
+- A `request` event is emitted once per task; an attack like A6 runs two tasks in one log (two `request` events).
+- `blackonyx.runner.run_scenario(task_id, attack_id, defence, injected_text=None)` returns the event list. When
+  `attack_id` is set, the attack's own host task is run (A1/A2/A8/A9 on L1, A3 on L5, A4 on L4, A5 on L8,
+  A6 on L5 then L9, A7 on L2, A10 on L3) and `task_id` is ignored. `injected_text` is added as a new unread email.
