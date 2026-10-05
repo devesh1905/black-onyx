@@ -20,8 +20,13 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow-x:hidden;background:transparent;color:var(--text);font-family:var(--font);font-size:15px;line-height:1.45}
 button{font:inherit;color:inherit}
-.app{width:100%;max-width:100vw;height:100vh;min-height:620px;display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:2px 2px 6px}
+.app{width:100%;max-width:100vw;height:100vh;min-height:620px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:10px;padding:2px 2px 6px}
 /* ---------- top strip ---------- */
+.story{border:1px solid var(--line);border-left:4px solid var(--accent);background:#0b1426;border-radius:12px;padding:8px 14px;font-size:14.5px;line-height:1.5;display:flex;gap:12px;align-items:baseline}
+.story .sk{flex:none;font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--cyan);font-weight:700}
+.story.hijack{border-left-color:var(--block)} .story.safe{border-left-color:var(--user)}
+.plain{border:1px solid #1f4e79;border-left:4px solid var(--cyan);background:#0a1a2d;border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:14px;line-height:1.55}
+.plain b.k{display:block;font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--cyan);margin-bottom:3px}
 .main>*,.strip>*,.tiles>*{min-width:0}
 .strip{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
 .verdict{flex:1 1 280px;min-height:64px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:14px;padding:10px 16px;position:relative;overflow:hidden;transition:background .35s var(--ease-out),border-color .35s var(--ease-out)}
@@ -77,11 +82,11 @@ button{font:inherit;color:inherit}
 /* ---------- graph ---------- */
 .graphwrap{position:relative;flex:1;min-height:0;background:
   radial-gradient(circle at 1px 1px,#16213a 1px,transparent 0) 0 0/22px 22px}
-svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 svg.dragging{cursor:grabbing}
-.legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mute);background:rgba(7,10,18,.78);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
+.legend{position:absolute;left:12px;bottom:10px;max-width:60%;display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mute);background:rgba(7,10,18,.78);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.hint{position:absolute;right:12px;top:10px;font-size:12px;color:var(--faint)}
+.hint{position:absolute;right:12px;top:8px;font-size:12px;color:var(--faint);pointer-events:none}
 .node{cursor:pointer;opacity:0;pointer-events:none;outline:none}
 .node.show{opacity:1;pointer-events:auto}
 .node.enter{animation:pop .36s var(--ease-out) both}
@@ -127,7 +132,8 @@ svg.dragging{cursor:grabbing}
 .btn.primary{background:var(--accent);border-color:#3b82f6;font-weight:700;padding:0 14px}
 .scrub{flex:1;accent-color:#3b82f6;height:44px;cursor:pointer;min-width:60px}
 .pos{font-variant-numeric:tabular-nums;color:var(--mute);font-size:13px;min-width:74px;text-align:right}
-select.btn{padding:0 8px;appearance:none;text-align:center}
+select.btn{padding:0 10px;appearance:none;text-align:center;color:var(--text);background:var(--surface2);font-weight:600}
+select.btn option{background:#0d1424;color:#e6eefc}
 /* ---------- drawer ---------- */
 .drawer{position:absolute;top:0;right:0;bottom:0;width:min(380px,92%);background:#0b1220;border-left:1px solid var(--line2);transform:translateX(102%);transition:transform .28s var(--ease-out);z-index:10;display:flex;flex-direction:column;box-shadow:-18px 0 40px rgba(0,0,0,.45)}
 .drawer.open{transform:none}
@@ -176,12 +182,14 @@ select.btn{padding:0 8px;appearance:none;text-align:center}
       <div><h2 id="vtitle">Ready</h2><p id="vsub">Pick a scenario and press Run.</p></div>
     </div>
     <div class="tiles">
-      <div class="tile" id="t-task"><b id="v-task">&ndash;</b><span>Your task</span></div>
-      <div class="tile" id="t-leak"><b id="v-leak">0</b><span>Leaks</span></div>
-      <div class="tile" id="t-alert"><b id="v-alert">0</b><span>Alerts</span></div>
-      <div class="tile" id="t-ms"><b id="v-ms">&ndash;</b><span>Rule check</span></div>
+      <div class="tile" id="t-task" title="Did the thing you asked for still get done correctly?"><b id="v-task">&ndash;</b><span>Your task</span></div>
+      <div class="tile" id="t-leak" title="Real harmful effects that happened: data sent outside, money to a stranger, and so on."><b id="v-leak">0</b><span>Harm done</span></div>
+      <div class="tile" id="t-alert" title="Unsafe calls that Black Onyx stopped before they ran."><b id="v-alert">0</b><span>Blocked</span></div>
+      <div class="tile" id="t-ms" title="Time the rule check added to each tool call."><b id="v-ms">&ndash;</b><span>Check time</span></div>
     </div>
   </div>
+
+  <div class="story" id="story" aria-live="polite"><span class="sk">In plain words</span><span id="storytxt"></span></div>
 
   <div class="main" style="position:relative">
     <section class="panel" aria-label="Agent activity">
@@ -198,6 +206,7 @@ select.btn{padding:0 8px;appearance:none;text-align:center}
           <span><i style="background:var(--unt)"></i>Untrusted</span>
           <span><i style="background:var(--block)"></i>Blocked</span>
           <span><i style="background:var(--laya)"></i>Laya</span>
+          <span style="flex-basis:100%;color:var(--faint)">Orange line = untrusted data flowing &middot; red dashed = blocked</span>
         </div>
         <div class="hint" id="hint">Click a node for details &middot; scroll to zoom &middot; drag to pan</div>
       </div>
@@ -230,6 +239,63 @@ const esc = (s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&l
 const short = (s,n)=>{s=String(s==null?'':s).replace(/\s+/g,' ');return s.length>n?s.slice(0,n-1)+'…':s;};
 const TOOL_ICON = {read_inbox:'✉',send_email:'✉',reply_email:'↩',transfer_money:'₹',read_file:'▤',write_file:'✎',web_fetch:'◎',calendar_add:'▦',search_docs:'⌕'};
 const EFF_ICON = {email_sent:'✉',money_moved:'₹',http_request:'◎',file_written:'✎',file_read:'▤',calendar_added:'▦'};
+
+/* =============== plain-language helpers =============== */
+const ACTION = {send_email:'send an email',reply_email:'reply to an email',transfer_money:'send money',read_file:'open a file',write_file:'save a file',web_fetch:'visit a web address',calendar_add:'add a calendar guest',read_inbox:'read your inbox',search_docs:'search your documents'};
+const ARGP = {to:'the recipient',account:'the bank account',amount:'the amount',path:'the file',url:'the web address',attendees:'the guest',message_id:'the message',content:'the content'};
+const ORIGIN = {EMAIL:'an email',WEB:'a web page',FILE:'a file',TOOL_OTHER:'a tool result',DOC_INDEX:'the document index',CONTACTS:'your contacts',PAYEE_LIST:'the payee list',USER:'you'};
+const RULE = {
+ 'send_email.to':'An email may only go to you or to someone in your contacts.',
+ 'transfer_money.account':'Money may only go to an account you named or one on the trusted payee list.',
+ 'transfer_money.amount':'An amount must come from you, or be no more than what the ledger says is owed.',
+ 'read_file.path':'A file may only be opened if you named it, or it came from the trusted document index.',
+ 'write_file.path':'Files may only be saved where you said.',
+ 'web_fetch.url':'A web address must come from you, or be an approved site with no data added to the link.',
+ 'calendar_add.attendees':'Calendar guests may only be you or your contacts.',
+ 'reply_email.message_id':'A reply must target a real message in your mailbox.'};
+const originWords = (srcs)=> (srcs||[]).map(s=>ORIGIN[s]||s).join(' and ') || 'outside text';
+function chainInfo(chain){
+  // "to <- extract_email(email#7) <- EMAIL, UNTRUSTED"  or  "read_file(path <- ... )"
+  const m = String(chain||'').match(/^(?:[a-z_]+\()?(\w+) <-/); const arg = m?m[1]:'';
+  const tail = String(chain||'').split(' <- ').pop().replace(/\)$/,''); const srcs = tail.split(',').map(x=>x.trim()).filter(x=>ORIGIN[x]);
+  return {arg, srcs};
+}
+function plainAlert(ev, offplan){
+  const ci = chainInfo(ev.chain); const act = ACTION[ev.tool]||ev.tool; const arg = ARGP[ci.arg]||'a value';
+  const rule = RULE[ev.tool+'.'+ci.arg];
+  if(offplan) return `While reading, the agent found text telling it to <b>${esc(act)}</b>, something you never asked for. That call was not in the plan made from your request, so it was refused. (${esc(arg)} came from ${esc(originWords(ci.srcs))}, which is untrusted.)`;
+  return `The agent was about to <b>${esc(act)}</b>, but ${esc(arg)} came from <b>${esc(originWords(ci.srcs))}</b>, which cannot be trusted. ${rule?esc(rule):''} So it was stopped.`;
+}
+function plainNode(n){
+  if(n.kind==='user') return 'This is your request, the only thing the agent is allowed to take orders from.';
+  if(n.kind==='call'){
+    const act = ACTION[n.tool]||n.tool;
+    if(n.alert) return plainAlert(n.alert, n.offplan);
+    if(n.offplan) return `The agent tried to <b>${esc(act)}</b> but it was not part of the plan, so Black Onyx would refuse it.`;
+    const untrustedData = (n.checks||[]).some(c=>c.trust==='UNTRUSTED' && /data argument/.test(c.reason));
+    return `This is a step from your request: <b>${esc(act)}</b>. Every value that chooses a destination or action came from you or a trusted source, so it ran.${untrustedData?' Untrusted text was only used as content (data), which is allowed.':''}`;
+  }
+  if(n.kind==='verified') return `This value was looked up in a trusted table (${esc(originWords(n.sources))}) instead of being copied from untrusted text, so it is safe to use as a destination.`;
+  if(n.kind==='rejected') return 'A check tried to confirm this value in a trusted table and could not. It stays untrusted, so it cannot be used as a destination.';
+  if(n.kind==='effect') return n.leak? `This really happened in the (mock) world: ${esc(n.full)}. Nothing stopped it.` : 'This is the intended result of your request.';
+  if(n.kind==='value'){
+    if(n.trust==='UNTRUSTED') return `This is data that came from <b>${esc(originWords(n.sources))}</b>. The agent may read and summarise it, but it can never decide where anything is sent, which file is opened or which account is paid.`;
+    return 'This value came from you or a trusted source.';
+  }
+  return '';
+}
+const PLAN_NOTE = 'The agent writes its plan from your request alone, before it reads anything.';
+function storyText(n, leaks, alertsN, done, firstAlert, leakList){
+  if(!EVENTS.length) return 'Pick a scenario on the left and press Run. This panel explains, step by step, what is happening.';
+  const req = String((EVENTS[0]||{}).text||'your request').replace(/[.!\s]+$/,'');
+  let t = `You asked: <b>“${esc(short(req,70))}”</b>. `;
+  if(n<2) return t+PLAN_NOTE;
+  if(leaks){ const a = leakList.length? leakList.map(x=>esc(x.description)).join('; then '):'an unsafe action'; return t+`While reading, the agent met text telling it to do something else, and it simply obeyed: <b>${a}</b>. Nothing checked where that instruction came from.`; }
+  if(alertsN && firstAlert){ const ci=chainInfo(firstAlert.chain); const act=ACTION[firstAlert.tool]||firstAlert.tool;
+    return t+`While reading, the agent met hidden text telling it to <b>${esc(act)}</b>. Black Onyx saw that ${esc(ARGP[ci.arg]||'the target')} came from <b>${esc(originWords(ci.srcs))}</b>, which is untrusted, so it blocked the call.${done&&summary?(summary.task_ok?' Your original task still finished.':' Your original task did not finish.'):''}`; }
+  if(done) return t+`Nothing unsafe was attempted and your task ${summary&&summary.task_ok?'finished':'did not finish'}. Untrusted text was read as data only.`;
+  return t+PLAN_NOTE+' It is now reading data.';
+}
 
 /* =============== 1. build a static graph + per-event reveal script =============== */
 const nodes = new Map(), edges = [], fx = EVENTS.map(()=>[]), feedHtml = EVENTS.map(()=>null);
@@ -321,7 +387,7 @@ EVENTS.forEach((ev,i)=>{
     const c = ensureCall(ev.call_id, ev.tool, i); alerts[ev.call_id]=ev; c.alert=ev;
     fx[i].push({t:'state',id:c.id,state:'blocked'},{t:'shock',id:c.id});
     const chain = esc(ev.chain).replace(/(EMAIL|WEB|FILE|TOOL_OTHER)/g,'<span class="t-e">$1</span>').replace(/UNTRUSTED/g,'<span class="t-b">UNTRUSTED</span>');
-    feedHtml[i] = `<div class="card alert" role="alert"><h3>⛔ BLOCKED <span class="chip">${esc(ev.tool)}</span></h3>${esc(ev.reason)}<div class="chain">${chain}</div><small>Origin decided this, not the wording of the text.</small></div>`;
+    feedHtml[i] = `<div class="card alert" role="alert"><h3>⛔ BLOCKED <span class="chip">${esc(ev.tool)}</span></h3><p style="margin:2px 0 4px">${plainAlert(ev, String(ev.call_id).startsWith('x'))}</p><div class="chain" title="Where the blocked value came from, step by step">${chain}</div><small>The chain above is the value's journey. Black Onyx decided from where it came from, not from what the text said.</small></div>`;
     break; }
   case 'effect': {
     const c = ensureCall(ev.call_id, '?', i);
@@ -339,16 +405,25 @@ EVENTS.forEach((ev,i)=>{
 /* =============== 2. layout =============== */
 const NW = 160, NH = 52, GX = 40, GY = 20;
 const layers = {};
-function layout(){
+function layout(dir){
   const preds = {}; edges.forEach(e=>{(preds[e.to]=preds[e.to]||[]).push(e.from);});
   const depth = {}; const list = [...nodes.values()].sort((a,b)=>a.order-b.order);
   for(let pass=0;pass<8;pass++) list.forEach(n=>{ depth[n.id]=Math.max(0,...(preds[n.id]||[]).map(p=>(depth[p]??0)+1),depth[n.id]||0); });
+  const layers = {};
   list.forEach(n=>{ n.layer=depth[n.id]||0; (layers[n.layer]=layers[n.layer]||[]).push(n); });
   const maxPer = Math.max(1,...Object.values(layers).map(a=>a.length));
+  const TB = dir==='TB';
   Object.entries(layers).forEach(([l,arr])=>{
     arr.sort((a,b)=>a.order-b.order);
-    arr.forEach((n,k)=>{ n.x = Number(l)*(NW+GX); n.y = (k-(arr.length-1)/2)*(NH+GY)+ (maxPer-1)*(NH+GY)/2; });
+    arr.forEach((n,k)=>{
+      if(TB){ n.l = (k-(arr.length-1)/2)*(NW+34) + (maxPer-1)*(NW+34)/2; n.t = Number(l)*(NH+46); }
+      else  { n.l = Number(l)*(NW+GX); n.t = (k-(arr.length-1)/2)*(NH+GY) + (maxPer-1)*(NH+GY)/2; }
+    });
   });
+  const all = list;
+  const minX=Math.min(...all.map(n=>n.l))-24, maxX=Math.max(...all.map(n=>n.l))+NW+24;
+  const minY=Math.min(...all.map(n=>n.t))-34, maxY=Math.max(...all.map(n=>n.t))+NH+78;
+  return {minX,maxX,minY,maxY,TB};
 }
 const svg = $('svg');
 function el(tag, attrs, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
@@ -356,31 +431,43 @@ let baseVB=null, vb=null; let gEdges, gNodes; const nodeEls = {}, edgeEls = [];
 function drawGraph(){
   svg.innerHTML='';
   if(!nodes.size) return;
-  layout();
+  // try both directions, keep the one that renders larger in this panel
+  const r = $('gwrap').getBoundingClientRect(); const PW = Math.max(300,r.width||800), PH = Math.max(240,r.height||500);
+  const a = layout('LR'), b = layout('TB');
+  const sc = (x)=>Math.min(PW/(x.maxX-x.minX), PH/(x.maxY-x.minY));
+  const ext = sc(b) > sc(a)*1.15 ? b : layout('LR');   // layout() mutates positions: recompute the winner last
   const defs = el('defs',{},svg);
   ['UNTRUSTED:#fb923c','VERIFIED:#60a5fa','USER:#4ade80','NONE:#5b677a','DENY:#f87171'].forEach(s=>{
     const [k,c]=s.split(':'); const m=el('marker',{id:'ah-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);
     el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m);
   });
   const all=[...nodes.values()];
-  const minX=Math.min(...all.map(n=>n.x))-24, maxX=Math.max(...all.map(n=>n.x))+NW+24;
-  const minY=Math.min(...all.map(n=>n.y))-NH/2-40, maxY=Math.max(...all.map(n=>n.y))+NH/2+40;
-  svg.setAttribute('viewBox',`${minX} ${minY} ${maxX-minX} ${maxY-minY}`);
+  const TB = ext.TB === true;
+  if(TB && ext===b){ layout('TB'); }
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-  baseVB = {x:minX,y:minY,w:maxX-minX,h:maxY-minY}; vb = {...baseVB};
+  baseVB = {x:ext.minX,y:ext.minY,w:ext.maxX-ext.minX,h:ext.maxY-ext.minY}; vb = {...baseVB};
+  svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   gEdges = el('g',{},svg); gNodes = el('g',{},svg);
   edges.forEach((e,idx)=>{
-    const a=nodes.get(e.from), b=nodes.get(e.to); if(!a||!b) return;
-    const x1=a.x+NW, y1=a.y, x2=b.x, y2=b.y, dx=Math.max(30,(x2-x1)/2);
-    const d = x2>x1? `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2-2},${y2}` : `M${a.x+NW/2},${a.y+NH/2} C${a.x+NW/2},${a.y+NH+40} ${b.x+NW/2},${b.y-NH-40} ${b.x+NW/2},${b.y-NH/2-2}`;
+    const na=nodes.get(e.from), nb=nodes.get(e.to); if(!na||!nb) return;
+    let d, mx, my;
+    if(TB){
+      const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(24,(y2-y1)/2);
+      d = y2>y1 ? `M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2-2}` : `M${na.l+NW},${na.t+NH/2} C${na.l+NW+60},${na.t+NH/2} ${nb.l+NW+60},${nb.t+NH/2} ${nb.l+NW+2},${nb.t+NH/2}`;
+      mx=(x1+x2)/2+6; my=(y1+y2)/2;
+    } else {
+      const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(30,(x2-x1)/2);
+      d = x2>x1 ? `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2-2},${y2}` : `M${na.l+NW/2},${na.t+NH} C${na.l+NW/2},${na.t+NH+40} ${nb.l+NW/2},${nb.t-40} ${nb.l+NW/2},${nb.t-2}`;
+      mx=(x1+x2)/2; my=(y1+y2)/2-6;
+    }
     const cls = 'edge c-'+(e.trust||'NONE')+(e.dash||e.kind==='seq'?' dash':'')+(e.deny?' deny':'');
     const p = el('path',{d,class:cls,'marker-end':`url(#ah-${e.deny?'DENY':(e.trust||'NONE')})`},gEdges);
     let lab=null;
-    if(e.label){ lab = el('text',{x:(x1+x2)/2,y:(y1+y2)/2-6,class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
+    if(e.label){ lab = el('text',{x:mx,y:my,class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
     edgeEls[idx]={p,lab};
   });
   all.forEach(n=>{
-    const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.kind==='call'?'planned':''} ${n.leak?'leak':''}`,transform:`translate(${n.x},${n.y-NH/2})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}`},gNodes);
+    const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.kind==='call'?'planned':''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}`},gNodes);
     el('rect',{class:'glow',x:-4,y:-4,width:NW+8,height:NH+8,rx:14},g);
     el('rect',{class:'ring',x:0,y:0,width:NW,height:NH,rx:12},g);
     el('rect',{class:'body',x:0,y:0,width:NW,height:NH,rx:12},g);
@@ -436,12 +523,14 @@ function applyFx(list, animate){
 function renderTo(n, animate){
   n = Math.max(0,Math.min(EVENTS.length,n));
   resetVisual(); $('feed').innerHTML='';
-  let leaks=0, alertsN=0;
+  let leaks=0, alertsN=0, firstAlert=null; const leakList=[];
   for(let k=0;k<n;k++){
     const last = (k===n-1);
     applyFx(fx[k], animate&&last);
     if(feedHtml[k]){ $('feed').insertAdjacentHTML('beforeend', feedHtml[k]); if(!(animate&&last)){ $('feed').lastElementChild.style.animation='none'; } }
-    const e=EVENTS[k]; if(e.type==='effect'&&e.leak) leaks++; if(e.type==='alert') alertsN++;
+    const e=EVENTS[k];
+    if(e.type==='effect'&&e.leak){ leaks++; leakList.push(e); }
+    if(e.type==='alert'){ alertsN++; firstAlert=firstAlert||e; }
   }
   if(!EVENTS.length) $('feed').innerHTML='<div class="empty"><div class="big">&#9670;</div>Pick a scenario in the sidebar and press <b>Run</b>. Then step through what the agent saw, what it tried, and what Black Onyx allowed.</div>';
   const done = n>=EVENTS.length && summary;
@@ -452,7 +541,9 @@ function renderTo(n, animate){
   $('t-leak').className = 'tile'+(leaks?' bad':(n?' good':'')); $('t-alert').className='tile'+(alertsN?' warn':'');
   $('gcount').textContent = nodes.size? `${nodes.size} nodes · ${edges.length} flows`:'';
   setVerdict(leaks, alertsN, done, n);
-  if(done){ $('v-task').textContent = summary.task_ok?'✔ done':'✖ failed'; $('t-task').className='tile '+(summary.task_ok?'good':'bad'); $('v-ms').textContent = (summary.gate_ms!=null? Number(summary.gate_ms).toFixed(3)+' ms':'–'); $('t-ms').className='tile good'; }
+  $('storytxt').innerHTML = storyText(n, leaks, alertsN, !!done, firstAlert, leakList);
+  $('story').className = 'story'+(leaks?' hijack':(done&&alertsN?' safe':''));
+  if(done){ $('v-task').textContent = summary.task_ok?'✔ done':'✖ failed'; $('t-task').className='tile '+(summary.task_ok?'good':'bad'); const gated=['D2','D3','D4'].includes(summary.defence); $('v-ms').textContent = (gated&&summary.gate_ms!=null? Number(summary.gate_ms).toFixed(3)+' ms':'no gate'); $('t-ms').className='tile'+(gated?' good':''); }
   else { $('v-task').textContent = n? '…':'–'; $('t-task').className='tile'; $('v-ms').textContent='–'; $('t-ms').className='tile'; }
 }
 function finalCard(leaks,alertsN){
@@ -504,7 +595,7 @@ function openDrawer(id){
   const n = nodes.get(id); if(!n) return;
   Object.values(nodeEls).forEach(g=>g.classList.remove('sel')); nodeEls[id].classList.add('sel');
   $('dtitle').textContent = n.kind==='call'?`Call: ${n.label}`:n.label;
-  let h='<dl class="kv">';
+  let h=`<div class="plain"><b class="k">In plain words</b>${plainNode(n)}</div><dl class="kv">`;
   h+=`<dt>Kind</dt><dd>${esc({user:'Your request',call:n.offplan?'Off-plan call (not in the plan)':'Planned tool call',value:'Value',verified:'Verified value (declassified)',effect:n.leak?'Real-world effect: LEAK':'Real-world effect',rejected:'Validator rejected input'}[n.kind]||n.kind)}</dd>`;
   if(n.trust) h+=`<dt>Trust</dt><dd><span class="pill ${esc(n.trust)}">${esc(n.trust)}</span></dd>`;
   if(n.sources&&n.sources.length) h+=`<dt>Origin</dt><dd>${n.sources.map(s=>`<span class="pill">${esc(s)}</span>`).join('')}</dd>`;
@@ -514,11 +605,14 @@ function openDrawer(id){
   h+='</dl>';
   if(n.kind==='call'){
     if(n.desc) h+=`<p style="margin:0 0 10px;color:var(--mute)">${esc(n.desc)}</p>`;
-    if(n.alert) h+=`<div class="card alert" style="animation:none;margin-bottom:10px"><h3>⛔ BLOCKED</h3>${esc(n.alert.reason)}<div class="chain">${esc(n.alert.chain)}</div></div>`;
-    h+='<div class="who" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin-bottom:6px">Policy checks per argument</div>';
-    n.checks.forEach(c=>{ h+=`<div class="chk"><b>${esc(c.arg)}</b> <span class="pill ${c.decision==='deny'?'deny':'allow'}">${c.decision==='deny'?'DENIED':'ALLOWED'}</span> <span class="pill ${esc(c.trust)}">${esc(c.trust)}</span><small>${esc(c.reason)}</small></div>`; });
+    if(n.alert) h+=`<div class="card alert" style="animation:none;margin-bottom:10px"><h3>⛔ BLOCKED</h3><div class="chain" title="Where the blocked value came from, step by step">${esc(n.alert.chain)}</div><small>The value's journey, ending in the argument that was refused.</small></div>`;
+    h+='<div class="who" style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin-bottom:6px">Rule check, argument by argument</div>';
+    n.checks.forEach(c=>{
+      const deny = c.decision==='deny'; const rule = RULE[n.tool+'.'+c.arg];
+      const why = deny ? (/not in the plan/.test(c.reason)?'Refused: this call was not in the plan.':(rule||c.reason)) : (/data argument/.test(c.reason)?'Content only (data), so any source is fine.':/undefended/.test(c.reason)?'No rule was applied (undefended).':'Origin is allowed for this argument.');
+      h+=`<div class="chk"><b>${esc(ARGP[c.arg]||c.arg)}</b> <span class="pill ${deny?'deny':'allow'}">${deny?'REFUSED':'OK'}</span> <span class="pill ${esc(c.trust)}">${esc(c.trust)}</span><small>${esc(why)}</small></div>`; });
     if(!n.checks.length) h+='<p style="color:var(--mute)">No arguments were checked (the call was never attempted).</p>';
-    if(n.laya) h+=`<div class="chk" style="border-color:#4c3a8a"><b>Laya fit</b> <span class="pill" style="color:var(--laya);border-color:#4c3a8a">${n.laya.score==null?'no opinion':Number(n.laya.score).toFixed(2)}</span><small>${Math.round(n.laya.ms||0)} ms · advisory only</small></div>`;
+    if(n.laya){ const sc=n.laya.score; const meaning = sc==null?'Laya had no opinion.':(n.laya.warn?'Low score: this call does not look like what you asked for.':'High score: this call looks like what you asked for.'); h+=`<div class="chk" style="border-color:#4c3a8a"><b>Laya second opinion</b> <span class="pill" style="color:var(--laya);border-color:#4c3a8a">${sc==null?'no opinion':Number(sc).toFixed(2)}</span><small>${meaning} Advisory only (${Math.round(n.laya.ms||0)} ms); the rules decide.</small></div>`; }
   }
   $('dbody').innerHTML=h; $('drawer').classList.add('open');
 }
@@ -528,10 +622,15 @@ $('dclose').onclick=closeDrawer;
 /* =============== boot =============== */
 $('defchip').textContent = (OPT.defence?`${OPT.defence} · ${OPT.defenceName||''}`:'');
 $('scrub').max = EVENTS.length;
-drawGraph();
-if(!EVENTS.length){ renderTo(0,false); $('hint').style.display='none'; }
-else if(OPT.autoplay && !REDUCED){ renderTo(0,false); setTimeout(play,300); }
-else { renderTo(EVENTS.length,false); }
+function boot(){
+  drawGraph();
+  if(!EVENTS.length){ renderTo(0,false); $('hint').style.display='none'; }
+  else if(OPT.autoplay && !REDUCED){ renderTo(0,false); setTimeout(play,300); }
+  else { renderTo(EVENTS.length,false); }
+}
+requestAnimationFrame(()=>requestAnimationFrame(boot));
+let rzT=null, lastW=innerWidth;
+addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(Math.abs(innerWidth-lastW)<40) return; lastW=innerWidth; const keep=cur, was=playing; if(was) stop(); drawGraph(); renderTo(keep,false); if(was) play(); },250); });
 </script>
 </body>
 </html>

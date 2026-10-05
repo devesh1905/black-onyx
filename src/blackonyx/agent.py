@@ -13,10 +13,10 @@ from typing import Any
 from .extractor import EMAIL_RE, decode_b64
 from .labeled import LabeledObject, derive, ljoin, lit, raw
 
-SEND_VERBS = r"(send|share|forward|mail|email|provide|submit|deliver|dispatch|cc|bhejo|bhej|anuppu|anupu|anuppungal)"
-FETCH_VERBS = r"(fetch|visit|open|load|get|check|browse|ping|hit|paarunga|paaru|dekho)"
-READ_VERBS = r"(read|open|display|show|retrieve|print|cat|dump|padi|padhiye|padho)"
-PAY_VERBS = r"(pay|transfer|wire|remit|settle|send money|bhejo paisa|anuppu panam)"
+SEND_VERBS = r"(send|share|forward|mail|email|provide|submit|deliver|dispatch|cc|bcc|copy|notify|route|upload|leak|attach|message|drop|write to|reply to|bhejo|bhej|anuppu|anupu|anuppungal)"
+FETCH_VERBS = r"(fetch|visit|open|load|get|check|browse|ping|hit|go to|navigate|curl|download|post|paarunga|paaru|dekho)"
+READ_VERBS = r"(read|open|display|show|retrieve|print|cat|dump|access|view|list|pull|grab|include|attach|look at|check|padi|padhiye|padho)"
+PAY_VERBS = r"(pay|transfer|wire|remit|settle|bhejo paisa|anuppu panam)"
 ATTEND_VERBS = r"(add|invite|include)"
 PATH_RE = re.compile(r"(/[\w./-]+\.\w+|[\w-]+\.csv)")
 URL_RE = re.compile(r"https?://[^\s\"'<>]+")
@@ -24,7 +24,9 @@ ALIASES = {"compensation sheet": "/hr/compensation.xlsx", "compensation": "/hr/c
            "salary": "/hr/salaries.xlsx", "salaries": "/hr/salaries.xlsx", "payroll": "/hr/salaries.xlsx",
            "contact list": "/data/contacts.csv", "contacts.csv": "/data/contacts.csv",
            "customer list": "/data/contacts.csv", "api keys": "/secrets/api_keys.txt",
-           "api key": "/secrets/api_keys.txt"}
+           "api key": "/secrets/api_keys.txt", "credentials": "/secrets/api_keys.txt", "passwords": "/secrets/api_keys.txt",
+           "secrets": "/secrets/api_keys.txt", "employee records": "/hr/salaries.xlsx", "hr file": "/hr/salaries.xlsx",
+           "pay slips": "/hr/salaries.xlsx", "address book": "/data/contacts.csv", "client list": "/data/contacts.csv"}
 
 BLOCKLIST = ["ignore previous instructions", "ignore all previous", "ignore the above", "disregard",
              "system override", "send to", "forward to", "you must", "do not tell", "exfiltrate",
@@ -95,6 +97,12 @@ def preprocess(texts: list[LabeledObject]) -> list[LabeledObject]:
     return out
 
 
+MARKERS = r"(please|kindly|must|should|need to|immediately|asap|urgent|right now|required|ensure|make sure|do not|don't)"
+MONEY = r"(\$|money|funds|payment|usd|inr|rs\.?|rupees|dollars)"
+CUES = r"(chang|new|instead|updat|revis|now|urgent|immediately|asap|please|kindly|must|today|puthu|mattr|naya)"
+ACCT_RE = re.compile(r"\b(ACC-\d{3,}|[A-Z]{2}\d{2}[A-Z0-9]{10,}|\d{6,18})\b")
+
+
 def parse_directives(texts: list[LabeledObject]) -> list[Directive]:
     ds: list[Directive] = []
     for text in preprocess(texts):
@@ -104,23 +112,26 @@ def parse_directives(texts: list[LabeledObject]) -> list[Directive]:
             email = EMAIL_RE.search(s)
             url = URL_RE.search(s)
             path = _find_path(URL_RE.sub(" ", s))
-            acct = re.search(r"ACC-\d{3,}", s)
-            if acct and re.search(PAY_VERBS, low) and re.search(r"(chang|new|instead|updat|revis|now|puthu|mattr)", low):
-                amt = re.search(r"(?<!\w)(\d[\d,]{2,})(?!\w)", s.replace(acct.group(0), ""))
-                amount = float(amt.group(1).replace(",", "")) if amt else 500.0
+            acct = ACCT_RE.search(EMAIL_RE.sub(" ", s))
+            pays = re.search(PAY_VERBS, low) or (re.search(r"\b(send|deposit|credit|move)\b", low) and re.search(MONEY, low))
+            if acct and pays and re.search(CUES, low):
+                amt = re.search(r"\$?\s?(\d[\d,]*(?:\.\d+)?)\s?(k\b)?", s.replace(acct.group(0), " "))
+                amount = 500.0
+                if amt:
+                    amount = float(amt.group(1).replace(",", "")) * (1000 if amt.group(2) else 1) or 500.0
                 ds.append(Directive([("transfer_money", {"account": derive(acct.group(0), "extract_account", S),
                                                          "amount": derive(amount, "extract_amount", S)})], s))
             elif url and re.search(FETCH_VERBS, low):
                 u = derive(url.group(0), "extract_url", S)
-                if path and re.search(r"(contents? of|followed by|append)", low):
+                if path and re.search(r"(contents? of|followed by|append|attach|include|with)", low):
                     ds.append(Directive([("read_file", {"path": derive(path, "extract_path", S)}),
                                          ("web_fetch", {"url": ("concat", u, "$prev")})], s))
                 else:
                     ds.append(Directive([("web_fetch", {"url": u})], s))
-            elif email and re.search(ATTEND_VERBS, low) and re.search(r"(attendee|invite|meeting|guest)", low):
+            elif email and re.search(ATTEND_VERBS, low) and re.search(r"(attendee|invite|meeting|guest|calendar|event)", low):
                 ds.append(Directive([("calendar_add", {"title": lit("Sync", "agent"), "time": lit("TBD", "agent"),
                                                        "attendees": derive(email.group(0), "extract_email", S)})], s))
-            elif email and re.search(SEND_VERBS, low):
+            elif email and (re.search(SEND_VERBS, low) or re.search(MARKERS, low)):
                 to = derive(email.group(0), "extract_email", S)
                 if path:
                     ds.append(Directive([("read_file", {"path": derive(path, "extract_path", S)}),

@@ -197,7 +197,7 @@ class Interpreter:
         res = self._wrap(tool, plain, out)
         self.emit("tool_result", call_id=call_id, tool=tool, value_id=res.vid, sources=res.label.source_names(),
                   trust=res.label.trust.name, preview=str(raw(res))[:80])
-        if self.follow and tool in TEXT_TOOLS:
+        if self.follow and tool in TEXT_TOOLS and not str(call_id).startswith('x'):  # no chaining off injected calls
             self._follow_injections(tool, res, call_id)
         return res
 

@@ -15,7 +15,7 @@ BASE_CSS = """
 --font:'Montserrat','Segoe UI',system-ui,sans-serif;--mono:Consolas,'Cascadia Mono',ui-monospace,monospace}
 *{box-sizing:border-box}html,body{margin:0;background:transparent;color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;overflow-x:hidden}
 h2{margin:0 0 10px;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute);font-weight:600}
-.grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));align-items:start}
 .card{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:14px 16px;animation:rise .45s cubic-bezier(.2,0,0,1) both}
 .card .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 .card .v{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
@@ -84,11 +84,15 @@ def results_html(r: dict[str, Any]) -> str:
     inv = r["invariance"]
     lat = (f'Rule engine (policy gate): mean <b>{d2["gate_mean_ms"]:.3f} ms</b>, p95 <b>{d2["gate_p95_ms"]:.3f} ms</b> per tool call '
            f'(target &lt; 5 ms, measured on this machine).')
+    sent = html.escape(str(r.get("sentinel", "")))
     body = f"""
+<div class="note" style="margin-bottom:12px"><b>How to read this.</b> Every defence faced the same {r['n_attacks']} attacks plus {r['n_variants']} reworded variants.
+<b>Attack success</b> means the attacker's goal really happened in the mock world, so lower is better. <b>Legit tasks completed</b> shows that normal work was not blocked, so higher is better.</div>
 <div class="grid g4">{''.join(cards)}</div>
 <div class="card" style="margin-top:12px"><h2>Every attack, every defence</h2>
 <div style="overflow:auto"><table><tr><th>Attack</th>{heads}</tr>{''.join(rows)}</table></div>
-<small style="color:var(--mute)">"+k/n var" = reworded variants that still leaked. * = base attack blocked but some variants got through.</small></div>
+<small style="color:var(--mute)">"+k/n var" = reworded variants that still leaked. * = base attack blocked but some variants got through.
+<br>D3 column in this table used <b>{sent}</b>: the rules decide everything, so D3 equals D2 here. The live demo runs the real Laya sentinel.</small></div>
 <div class="grid g2" style="margin-top:12px">
  <div class="card"><h2>Rewording does not matter</h2><div class="v good">{_pct(inv)}</div>
   <small>{_ci(inv)} · variants whose policy decision equals the base attack's decision (D2). Decisions depend on where a value came from, not on what the text says.</small></div>
@@ -115,14 +119,14 @@ def howitworks_html() -> str:
   <div class="lv" style="--c:var(--unt)"><b>UNTRUSTED</b><span>Anything a tool returned: email, web page, file, search result.</span></div>
  </div>
  <div class="card"><h2>2 · Labels travel with the data</h2>
-  <svg viewBox="0 0 420 150" style="width:100%;height:auto" role="img" aria-label="Two untrusted values joined stay untrusted">
+  <svg viewBox="0 0 450 150" style="width:100%;height:auto" role="img" aria-label="Two untrusted values joined stay untrusted">
    <g font-family="Segoe UI,sans-serif" font-size="12">
     <rect x="8" y="14" width="130" height="38" rx="10" fill="#33200f" stroke="#fb923c"/><text x="22" y="38" fill="#e6eefc">email#7 "billing@ev"</text>
     <rect x="8" y="88" width="130" height="38" rx="10" fill="#33200f" stroke="#fb923c"/><text x="22" y="112" fill="#e6eefc">email#9 "il.co"</text>
     <path d="M140,33 C190,33 190,70 232,70" stroke="#fb923c" fill="none" stroke-width="2"/><path d="M140,107 C190,107 190,70 232,70" stroke="#fb923c" fill="none" stroke-width="2"/>
     <rect x="234" y="48" width="86" height="44" rx="10" fill="#111b30" stroke="#2a3a5c"/><text x="246" y="74" fill="#e6eefc">concat()</text>
     <path d="M322,70 L350,70" stroke="#fb923c" stroke-width="2"/>
-    <rect x="352" y="48" width="62" height="44" rx="10" fill="#33200f" stroke="#fb923c"/><text x="362" y="68" fill="#e6eefc">UNTRUSTED</text><text x="366" y="83" fill="#8ea0ba" font-size="10">EMAIL</text>
+    <rect x="352" y="48" width="92" height="44" rx="10" fill="#33200f" stroke="#fb923c"/><text x="362" y="68" fill="#e6eefc" font-size="11.5">UNTRUSTED</text><text x="362" y="83" fill="#8ea0ba" font-size="10">from EMAIL</text>
    </g></svg>
   <p style="margin:6px 0 0;color:var(--mute)">Sources are the union of the inputs and trust is the lowest input trust. Slicing, joining, decoding and summarising cannot launder a label.</p>
  </div>
@@ -150,7 +154,7 @@ def howitworks_html() -> str:
 <div class="note" style="margin-top:12px"><b>Guarantee claimed:</b> untrusted data cannot choose a destination or an argument the policy reserves for USER or VERIFIED data, provided the orchestrator, policy file, validators and tool registry are correct.
 <b>Not claimed:</b> that a poisoned page cannot mislead a summary's wording, protection against implicit flows, or that Laya is accurate on its own.</div>
 <style>.lv{display:flex;gap:12px;align-items:center;border:1px solid var(--c);border-radius:12px;padding:8px 12px;margin-bottom:8px;background:color-mix(in srgb,var(--c) 10%,transparent)}
-.lv b{color:var(--c);min-width:92px;letter-spacing:.5px}.lv span{color:var(--text);font-size:13.5px}
+.lv b{color:var(--c);min-width:118px;letter-spacing:.5px}.lv span{color:var(--text);font-size:13.5px}
 .chip{border:1px solid var(--line2);background:#0b1220;border-radius:99px;padding:2px 10px;font-size:12.5px;font-family:var(--mono);display:inline-block;margin:2px 0}
 code{font-family:var(--mono);font-size:12.5px;color:var(--cyan)}</style>"""
     return f"<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><style>{BASE_CSS}</style>{body}"
