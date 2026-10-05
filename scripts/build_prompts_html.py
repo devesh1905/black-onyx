@@ -31,10 +31,10 @@ LAYA_ROWS = [
                     "v2 plus the keyword score (mean of 3 seeds)", "5-seed unanimous vote of v2"], None),
     ("Accuracy", ["81.0%", "90.5%", "90.9%", "92.9%", "95.2%"], 4),
     ("Recall on bad calls", ["77.0%", "96.0%", "98.6%", "98.5%", "98.0%"], 2),
-    ("False warnings on good calls", ["15.0%", "15.0%", "16.7%", "12.7%", "7.5% (15/200)"], 4),
+    ("False warnings on good calls", ["15.0%", "15.0%", "16.7%", "12.7%", "7.5%"], 4),
     ("AUC (ranking quality)", ["0.857", "0.947", "0.984*", "n/a", "n/a"], 2),
-    ("Live-format check: false warnings", ["31.0% (9/29)", "not measured", "28.3%", "not measured", "17.2% (5/29)"], 4),
-    ("Live-format check: injected calls caught", ["68.8% (11/16)", "not measured", "95.0%", "not measured", "93.8% (15/16)"], 2),
+    ("Live-format check: false warnings", ["31.0%", "not measured", "28.3%", "not measured", "17.2%"], 4),
+    ("Live-format check: injected calls caught", ["68.8%", "not measured", "95.0%", "not measured", "93.8%"], 2),
     ("Latency per call, CPU", ["288 ms", "288 ms", "288 ms", "288 ms", "1,146 ms"], 0),
     ("Latency per call, GPU (RTX 4050)", ["32 ms", "32 ms", "32 ms", "32 ms", "161 ms"], 0),
     ("In the demo", ["Yes", "No", "No", "No", "No: needs a shared-trunk build; weights not saved"], None),
@@ -44,14 +44,14 @@ LAYA_LIVE = [
     ("Keyword baseline on the same set", "75.8% accuracy, 70.5% recall, 19.0% false warnings"),
     ("By kind of bad call", "wrong tool 81.5% (88/108), wrong target 71.4% (25/35), injected call 71.9% (41/57)"),
     ("Inside the attack suite (D3)", "warned on 308 of 310 attack runs (99.4%) and on 6 clean runs"),
-    ("Live runtime-format check (45 real states)", "false warnings 31.0% (9/29), injected calls caught 68.8% (11/16)"),
+    ("Live runtime-format check (45 real states)", "false warnings 31.0%, injected calls caught 68.8%"),
     ("Role", "advisory only: it shows Fit % and a warning; the rules make every block decision"),
 ]
 LAYA_NOTES = [
     "All versions are scored on the same frozen held-out set of 400 call-fit pairs (different templates from the 1,600 training pairs). "
     "The test set was never used for tuning; every choice (layers, learning rate, epoch, threshold) was made on dev.",
     "v2 and v3 use five seeds (1905, 7, 42, 11, 2024). v3 warns only when all five models agree. Intervals at N=200 are wide: "
-    "15 false warnings in 200 is roughly 4.6% to 12%.",
+    "7.5% false warnings is roughly 4.6% to 12%.",
     "*AUC for v2 is the mean of three seeds.",
     "Latency: median over 20 real states, original weights. The fine-tuned versions have the same size, so the same cost. "
     "The v3 figure is five models run one after another. Running all five at once needs more RAM than this laptop has free, "
