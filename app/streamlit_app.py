@@ -294,6 +294,8 @@ with tab_results:
             st.rerun()
     else:
         components.html(results_html(res), height=980, scrolling=True)
+        from app.ui.laya_versions import versions_page_html
+        components.html(versions_page_html(), height=880, scrolling=False)
         laya_md = ROOT / "docs" / "laya-results.md"
         if laya_md.exists():
             with st.expander("Laya sentinel measurements (advisory layer, CPU fp32)"):

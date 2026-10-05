@@ -35,3 +35,11 @@ def test_streamlit_app_click_run():
     assert len(events) >= 10
     # Confirm alert was recorded for attack scenario
     assert any(ev.get("type") == "alert" for ev in events)
+
+
+def test_laya_versions_panel_html():
+    from app.ui.laya_versions import LAYA_COLS, versions_page_html
+    h = versions_page_html()
+    for col in LAYA_COLS:
+        assert f">{col}<" in h
+    assert "95.2%" in h and "81.0%" in h and "Only v0 is in the demo" in h
