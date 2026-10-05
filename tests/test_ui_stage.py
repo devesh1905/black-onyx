@@ -30,3 +30,12 @@ def test_results_and_how_panels_render():
     r = load_results()
     assert r and "D2" in r["defences"]
     assert "Limits" in results_html(r) and "Control and data arguments" in howitworks_html()
+
+
+def test_icons_are_inline_and_sized():
+    from app.ui.icons import ICONS, svg
+    ev = run_scenario("L1", "A1", "D2")
+    html = render_stage(ev, autoplay=False)
+    assert "{{ic:" not in html and "/*__ICONS__*/" not in html
+    assert "<svg class=\"ic\"" in html and set(ICONS) >= {"shield-x", "maximize", "play"}
+    assert "width=\"16\"" in svg("play", 16) and "#svg{" in html   # graph rule must not leak onto icon svgs

@@ -178,15 +178,15 @@ with st.sidebar:
     inject_text = st.text_area("Paste an injection", key="inject_txt", height=96, label_visibility="collapsed",
                                placeholder="Paste an injection. It is planted where the chosen task will read it (email, web page or document).")
     autoplay = st.toggle("Animate playback", value=True)
-    run_clicked = st.button("Run scenario", type="primary", use_container_width=True)
+    run_clicked = st.button("Run scenario", type="primary", use_container_width=True, icon=":material/play_arrow:")
 
     st.markdown('<div class="sec">Demo scenarios</div>', unsafe_allow_html=True)
-    st.button("01  Agent is hijacked", use_container_width=True, on_click=_preset, args=("D0", "L1", "A1"))
-    st.button("02  Black Onyx contains it", use_container_width=True, on_click=_preset, args=("D2", "L1", "A1"))
-    st.button("03  Reworded attack, keyword filter", use_container_width=True, on_click=_preset, args=("D1", "L1", "A2"))
-    st.button("04  Multi-hop: split address", use_container_width=True, on_click=_preset, args=("D2", "L1", "A8"))
-    st.button("05  Legitimate payment passes", use_container_width=True, on_click=_preset, args=("D2", "L4", "None"))
-    st.button("06  With Laya second opinion", use_container_width=True, on_click=_preset, args=("D3", "L1", "A1"))
+    st.button("Agent is hijacked", use_container_width=True, on_click=_preset, args=("D0", "L1", "A1"), icon=":material/warning:")
+    st.button("Black Onyx contains it", use_container_width=True, on_click=_preset, args=("D2", "L1", "A1"), icon=":material/shield:")
+    st.button("Reworded attack, keyword filter", use_container_width=True, on_click=_preset, args=("D1", "L1", "A2"), icon=":material/filter_alt:")
+    st.button("Multi-hop: split address", use_container_width=True, on_click=_preset, args=("D2", "L1", "A8"), icon=":material/call_split:")
+    st.button("Legitimate payment passes", use_container_width=True, on_click=_preset, args=("D2", "L4", "None"), icon=":material/payments:")
+    st.button("With Laya second opinion", use_container_width=True, on_click=_preset, args=("D3", "L1", "A1"), icon=":material/psychology:")
 
 # ---------------------------------------------------------------- run
 if run_clicked or st.session_state.pop("pending_run", False) or "events" not in st.session_state:
@@ -198,7 +198,7 @@ events: List[dict[str, Any]] = st.session_state.get("events", [])
 src = st.session_state.get("runner_source", "engine")
 shown_defence = st.session_state.get("last_defence", defence_id)
 
-tab_live, tab_results, tab_how = st.tabs(["Run", "Results", "Explain"])
+tab_live, tab_results, tab_how = st.tabs([":material/play_circle: Run", ":material/bar_chart: Results", ":material/menu_book: Explain"])
 
 with tab_live:
     components.html(render_stage(events, autoplay=autoplay, defence=shown_defence), height=860, scrolling=False)

@@ -68,8 +68,8 @@ button,select,input{font:inherit;color:inherit}
 .empty{margin:auto;color:var(--t2);text-align:center;max-width:300px;padding:30px 10px}
 /* ---- graph ---- */
 .graphwrap{position:relative;flex:1;min-height:0}
-svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
-svg.dragging{cursor:grabbing}
+#svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#svg.dragging{cursor:grabbing}
 .key{position:absolute;left:14px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--t2)}
 .key i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
 .tip{display:inline-grid;place-items:center;width:18px;height:18px;border:1px solid var(--bd2);border-radius:50%;font-size:11px;color:var(--t2);cursor:help;margin-left:4px}
@@ -90,6 +90,14 @@ svg.dragging{cursor:grabbing}
 .node.effect.leak .l1{fill:var(--red)}
 .node.rejected rect.body{stroke:var(--amber);stroke-dasharray:4 3}
 .node:hover rect.body{stroke-width:2}
+.ic{flex:none;vertical-align:-3px}.ico-t{display:inline-flex;align-items:center;gap:6px}
+.metrics dt{display:flex;align-items:center;gap:5px}.metrics dt .ic{opacity:.8}
+.ri{display:inline-grid;place-items:center;color:var(--t3);flex:none}
+.result.block .ri,.result.hijack .ri{color:var(--red)}.result.clean .ri{color:var(--green)}
+.row .h .ic{margin-right:7px;opacity:.9}.row.blocked .h .ic{color:var(--red)}.row.ok .h .ic{color:var(--green)}.row.ver .h .ic{color:var(--blue)}.row.rej .h .ic{color:var(--amber)}
+.dt .dec .ic{margin-right:5px}
+.nic{color:var(--t2)}.node.call.done .nic,.node.effect .nic{color:var(--green)}.node.call.blocked .nic,.node.effect.leak .nic{color:var(--red)}.node.value.t-UNTRUSTED .nic{color:var(--amber)}.node.verified .nic,.node.value.t-VERIFIED .nic{color:var(--blue)}.node.call.running .nic{color:var(--blue)}.node.rejected .nic{color:var(--amber)}
+.btn{gap:7px}.btn .ic{display:block}.btn.primary .ic{fill:currentColor}
 .node{touch-action:none}.node.drag{cursor:grabbing}.node.drag rect.body{stroke:var(--tx);stroke-width:2.2}
 .node.show.dim{opacity:.3}.edge.show.dim,.arr.show.dim{opacity:.12}.elabel.show.dim{opacity:.15}
 .edge.hl{stroke-width:2.1}
@@ -112,7 +120,7 @@ svg.dragging{cursor:grabbing}
 .elabel{font:10.5px var(--mono);fill:var(--red);opacity:0}.elabel.show{opacity:1}
 /* ---- controls ---- */
 .controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0 0}
-.btn{min-width:44px;min-height:40px;padding:0 12px;border:1px solid var(--bd2);border-radius:4px;background:var(--p);cursor:pointer;display:grid;place-items:center;transition:background .12s,border-color .12s}
+.btn{min-width:44px;min-height:40px;padding:0 12px;border:1px solid var(--bd2);border-radius:4px;background:var(--p);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .12s,border-color .12s}
 .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){.btn:hover{background:var(--p2);border-color:var(--t3)}}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#06101f;font-weight:600}
@@ -151,20 +159,20 @@ select.btn option{background:#0D121A;color:#E6EAF0}
 <div class="app" id="app">
   <div class="meta">
     <div><b id="m-def">Black Onyx</b> <span id="m-name"></span></div>
-    <div class="r"><span class="live" id="m-live">&#9679; LIVE</span><span>Offline &middot; 0 cloud calls</span><span id="m-ev"></span></div>
+    <div class="r"><span class="live" id="m-live">&#9679; LIVE</span><span class="ico-t">{{ic:wifi-off:14}} Offline &middot; 0 cloud calls</span><span id="m-ev"></span></div>
   </div>
 
   <section class="result" id="result" aria-live="polite">
     <div>
       <div class="lbl" id="r-kick">Ready</div>
-      <div class="title"><span class="sq"></span><span id="r-title">No run yet</span></div>
+      <div class="title"><span class="ri" id="r-ico">{{ic:shield:22}}</span><span id="r-title">No run yet</span></div>
       <div class="sub" id="r-sub">Choose a scenario and run it.</div>
     </div>
     <dl class="metrics">
-      <div><dt>Blocked</dt><dd id="v-alert">00</dd></div>
-      <div><dt>Harmful calls</dt><dd id="v-leak">00</dd></div>
-      <div><dt>Events</dt><dd id="v-ev">00</dd></div>
-      <div><dt>Policy eval</dt><dd id="v-ms" class="dim">&mdash;</dd></div>
+      <div><dt>{{ic:shield-x:13}} Blocked</dt><dd id="v-alert">00</dd></div>
+      <div><dt>{{ic:alert:13}} Harmful calls</dt><dd id="v-leak">00</dd></div>
+      <div><dt>{{ic:list:13}} Events</dt><dd id="v-ev">00</dd></div>
+      <div><dt>{{ic:timer:13}} Policy eval</dt><dd id="v-ms" class="dim">&mdash;</dd></div>
     </dl>
   </section>
 
@@ -180,13 +188,13 @@ select.btn option{background:#0D121A;color:#E6EAF0}
     </section>
     <section class="panel" id="gpanel" aria-label="Provenance graph">
       <header><span class="lbl">Provenance <span class="tip" title="Click a node to inspect it. Scroll to zoom, drag to pan.">i</span></span>
-        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn gb" id="greset" title="Reset node positions" aria-label="Reset layout">Reset</button><button class="btn gb" id="gmax" title="Expand the graph (Esc to close)" aria-label="Expand graph">Expand</button><button class="btn gb" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view">Fit</button></span></header>
+        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn gb" id="greset" title="Reset node positions" aria-label="Reset layout">{{ic:rotate-ccw:15}}</button><button class="btn gb" id="gmax" title="Expand the graph (Esc to close)" aria-label="Expand graph">{{ic:maximize:15}}</button><button class="btn gb" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view" title="Fit to view">{{ic:scan:15}}</button></span></header>
       <div class="graphwrap" id="gwrap">
         <svg id="svg" role="img" aria-label="Provenance graph. Tab to a node and press Enter to inspect it."></svg>
         <div class="key"><span><i style="background:var(--bd2)"></i>Trusted</span><span><i style="background:var(--amber)"></i>Untrusted</span><span><i style="background:var(--blue)"></i>Verified</span><span><i style="background:var(--green)"></i>Completed</span><span><i style="background:var(--red)"></i>Blocked</span></div>
       </div>
     <aside class="drawer" id="drawer" aria-label="Inspector">
-      <header><h3 id="dtitle">Inspector</h3><button class="btn" id="dclose" aria-label="Close inspector" style="min-height:34px">&#10005;</button></header>
+      <header><h3 id="dtitle">Inspector</h3><button class="btn" id="dclose" aria-label="Close inspector" style="min-height:34px">{{ic:x:16}}</button></header>
       <div class="body" id="dbody"></div>
     </aside>
     </section>
@@ -194,20 +202,23 @@ select.btn option{background:#0D121A;color:#E6EAF0}
   </div>
 
   <div class="controls" role="group" aria-label="Replay controls">
-    <button class="btn" id="b-restart" title="Restart (R)" aria-label="Restart">&#9198;</button>
-    <button class="btn" id="b-prev" title="Step back" aria-label="Step back">&#9664;</button>
-    <button class="btn primary" id="b-play" title="Play / pause (Space)" aria-label="Play">&#9654; Play</button>
-    <button class="btn" id="b-next" title="Step forward" aria-label="Step forward">&#9654;&#9654;</button>
+    <button class="btn" id="b-restart" title="Restart (R)" aria-label="Restart">{{ic:skip-back:16}}</button>
+    <button class="btn" id="b-prev" title="Step back" aria-label="Step back">{{ic:chevron-left:18}}</button>
+    <button class="btn primary" id="b-play" title="Play / pause (Space)" aria-label="Play">{{ic:play:16}}<span>Play</span></button>
+    <button class="btn" id="b-next" title="Step forward" aria-label="Step forward">{{ic:chevron-right:18}}</button>
     <input class="scrub" id="scrub" type="range" min="0" value="0" aria-label="Replay position">
     <span class="pos" id="pos">0 / 0</span>
     <select class="btn" id="speed" aria-label="Playback speed"><option value="0.5">0.5&times;</option><option value="1" selected>1&times;</option><option value="2">2&times;</option><option value="4">4&times;</option></select>
-    <button class="btn" id="b-end" title="Skip to end (E)" aria-label="Skip to end">&#9197;</button>
+    <button class="btn" id="b-end" title="Skip to end (E)" aria-label="Skip to end">{{ic:skip-fwd:16}}</button>
   </div>
 </div>
 
 <script>
 const EVENTS = /*__EVENTS__*/[];
 const OPT = /*__OPT__*/{};
+const ICONS = /*__ICONS__*/{};
+const ic = (n,sz=15)=>`<svg class="ic" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||ICONS.info}</svg>`;
+const TOOL_IC = {read_inbox:'inbox',send_email:'mail',reply_email:'reply',transfer_money:'wallet',read_file:'file',write_file:'pencil',web_fetch:'globe',calendar_add:'calendar',search_docs:'search'};
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id)=>document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -254,18 +265,18 @@ function resolve(vid, sources){
   return results.length? results[results.length-1] : 'req';
 }
 const trustHtml = (t,srcs)=>`${esc(originWords(srcs))} · <span class="${t==='UNTRUSTED'?'unt':t==='VERIFIED'?'ver':''}">${esc(t)}</span>`;
-const row = (ev,cls,h,s,m)=>`<div class="row ${cls||''}"><span class="n">${pad2(ev.seq)}</span><div><div class="h">${h}</div>${s?`<div class="s${m?' m':''}">${s}</div>`:''}</div></div>`;
+const row = (ev,cls,h,s,m,icon)=>`<div class="row ${cls||''}"><span class="n">${pad2(ev.seq)}</span><div><div class="h">${icon?ic(icon,15):''}${h}</div>${s?`<div class="s${m?' m':''}">${s}</div>`:''}</div></div>`;
 
 EVENTS.forEach((ev,i)=>{
   switch(ev.type){
   case 'request':
     addNode({id:'req',kind:'user',label:'User request',sub:short(ev.text,22),full:ev.text,trust:'USER',sources:['USER']}, i);
-    rows[i] = row(ev,'', 'Request', esc(ev.text));
+    rows[i] = row(ev,'', 'Request', esc(ev.text), false, 'user');
     break;
   case 'plan': {
     let prev = 'req';
     (ev.steps||[]).forEach(s=>{ const n = ensureCall(s.call_id, s.tool, i); n.desc = s.desc; addEdge({from:prev,to:n.id,kind:'seq',trust:'NONE'}, i); prev = n.id; });
-    rows[i] = row(ev,'', 'Plan fixed', (ev.steps||[]).map(s=>esc(s.tool)).join(' → '), true);
+    rows[i] = row(ev,'', 'Plan fixed', (ev.steps||[]).map(s=>esc(s.tool)).join(' → '), true, 'list');
     break; }
   case 'tool_result': {
     const c = ensureCall(ev.call_id, ev.tool, i);
@@ -274,7 +285,7 @@ EVENTS.forEach((ev,i)=>{
     valNode[ev.value_id] = n.id; results.push(n.id);
     addEdge({from:c.id,to:n.id,kind:'flow',trust:ev.trust}, i);
     fx[i].push({t:'state',id:c.id,state:c.state==='blocked'?'blocked':'done'});
-    rows[i] = row(ev,'', esc(ev.tool), trustHtml(ev.trust, ev.sources));
+    rows[i] = row(ev,'', esc(ev.tool), trustHtml(ev.trust, ev.sources), false, TOOL_IC[ev.tool]||'file');
     break; }
   case 'op': {
     const n = addNode({id:'val:'+ev.output,kind:'value',label:ev.op,sub:short(ev.preview,22),trust:ev.trust,sources:ev.sources,full:ev.preview,vid:ev.output}, i);
@@ -287,12 +298,12 @@ EVENTS.forEach((ev,i)=>{
     if(ev.ok===false){
       const n = addNode({id:'rej:'+ev.seq,kind:'rejected',label:ev.validator,sub:'rejected',trust:'UNTRUSTED',sources:[],full:ev.rule,rule:ev.rule}, i);
       addEdge({from:inp,to:n.id,kind:'op',trust:'UNTRUSTED',dash:true}, i);
-      rows[i] = row(ev,'rej', `<b>Rejected</b> <i>${esc(ev.validator)}</i>`, esc(ev.rule));
+      rows[i] = row(ev,'rej', `<b>Rejected</b> <i>${esc(ev.validator)}</i>`, esc(ev.rule), false, 'alert');
     } else {
       const n = addNode({id:'val:'+ev.output,kind:'verified',label:ev.validator,sub:short(ev.preview,22),trust:'VERIFIED',sources:ev.sources,full:ev.preview,vid:ev.output,rule:ev.rule}, i);
       valNode[ev.output] = n.id;
       addEdge({from:inp,to:n.id,kind:'declass',trust:'VERIFIED',dash:true}, i);
-      rows[i] = row(ev,'ver', `<b>Verified</b> <i>${esc(ev.validator)}</i>`, `${esc(short(ev.preview,40))} · ${esc(originWords(ev.sources))}`);
+      rows[i] = row(ev,'ver', `<b>Verified</b> <i>${esc(ev.validator)}</i>`, `${esc(short(ev.preview,40))} · ${esc(originWords(ev.sources))}`, false, 'badge-check');
     }
     break; }
   case 'call_check': {
@@ -308,7 +319,7 @@ EVENTS.forEach((ev,i)=>{
   case 'laya_score': {
     const c = ensureCall(ev.call_id, '?', i); c.laya = ev;
     fx[i].push({t:'badge',id:c.id,text:ev.score==null?'Laya –':'fit '+Number(ev.score).toFixed(2),warn:!!ev.warn});
-    rows[i] = row(ev,'', `Laya <i>${esc(c.tool)}</i>`, ev.score==null?'no opinion (advisory)':`fit ${Number(ev.score).toFixed(2)} · ${ev.warn?'low':'ok'} · advisory`);
+    rows[i] = row(ev,'', `Laya <i>${esc(c.tool)}</i>`, ev.score==null?'no opinion (advisory)':`fit ${Number(ev.score).toFixed(2)} · ${ev.warn?'low':'ok'} · advisory`, false, 'sparkle');
     break; }
   case 'alert': {
     const c = ensureCall(ev.call_id, ev.tool, i); c.alert=ev;
@@ -317,21 +328,21 @@ EVENTS.forEach((ev,i)=>{
     const cause = `${ARGP[ci.arg]||'value'} derived from ${originWords(ci.srcs)} · UNTRUSTED`;
     const pol = off ? 'Call is not in the plan fixed from the request.' : (RULE[ev.tool+'.'+ci.arg]||ev.reason);
     c.decision = {requested:ev.tool, cause, policy: off?`${pol} ${RULE[ev.tool+'.'+ci.arg]||''}`:pol, off};
-    rows[i] = row(ev,'blocked', `Blocked <i style="color:var(--tx)">${esc(ev.tool)}</i>`, `<div class="kv"><span>Cause</span><span>${esc(cause)}</span><span>Policy</span><span>${esc(pol)}</span></div><div class="s m" style="margin-top:4px">${esc(ev.chain)}</div>`);
+    rows[i] = row(ev,'blocked', `Blocked <i style="color:var(--tx)">${esc(ev.tool)}</i>`, `<div class="kv"><span>Cause</span><span>${esc(cause)}</span><span>Policy</span><span>${esc(pol)}</span></div><div class="s m" style="margin-top:4px">${esc(ev.chain)}</div>`, false, 'shield-x');
     break; }
   case 'effect': {
     const c = ensureCall(ev.call_id, '?', i);
     const n = addNode({id:'eff:'+ev.seq,kind:'effect',leak:!!ev.leak,label:ev.leak?'Executed (harmful)':'Executed',sub:short(ev.description,24),full:ev.description,trust:ev.leak?'UNTRUSTED':'USER',sources:[]}, i);
     addEdge({from:c.id,to:n.id,kind:'flow',trust:ev.leak?'UNTRUSTED':'USER'}, i);
     fx[i].push({t:'state',id:c.id,state:'done'});
-    rows[i] = row(ev, ev.leak?'harm':'ok', ev.leak?'Executed <i style="color:var(--red)">harmful</i>':'<b>Executed</b>', esc(ev.description));
+    rows[i] = row(ev, ev.leak?'harm':'ok', ev.leak?'Executed <i style="color:var(--red)">harmful</i>':'<b>Executed</b>', esc(ev.description), false, ev.leak?'alert':'check');
     break; }
   case 'summary': summary = ev; break;
   }
 });
 
 /* ---------- 2. layout ---------- */
-const NW = 160, NH = 46, GX = 38, GY = 18;
+const NW = 176, NH = 46, GX = 38, GY = 18;
 function layout(dir){
   const preds = {}; edges.forEach(e=>{(preds[e.to]=preds[e.to]||[]).push(e.from);});
   const depth = {}; const list = [...nodes.values()].sort((a,b)=>a.order-b.order);
@@ -415,8 +426,10 @@ function drawGraph(){
     const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}. Drag to move, click to inspect.`},gNodes);
     el('rect',{class:'ring',x:0,y:0,width:NW,height:NH,rx:4},g);
     el('rect',{class:'body',x:0,y:0,width:NW,height:NH,rx:4},g);
-    const t1=el('text',{x:12,y:n.sub?19:NH/2+4,class:'l1'},g); t1.textContent=short(n.label,20);
-    if(n.sub){ const t2=el('text',{x:12,y:34,class:'l2'},g); t2.textContent=short(n.sub,24); }
+    const nIc = n.kind==='user'?'user':n.kind==='verified'?'badge-check':n.kind==='rejected'?'alert':n.kind==='effect'?(n.leak?'alert':'check'):n.kind==='call'?(TOOL_IC[n.tool]||'braces'):(n.label.indexOf(' result')>0?(TOOL_IC[n.label.split(' ')[0]]||'file'):'braces');
+    g.insertAdjacentHTML('beforeend', `<svg class="nic" x="10" y="${NH/2-8}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[nIc]||ICONS.info}</svg>`);
+    const t1=el('text',{x:34,y:n.sub?19:NH/2+4,class:'l1'},g); t1.textContent=short(n.label,19);
+    if(n.sub){ const t2=el('text',{x:34,y:34,class:'l2'},g); t2.textContent=short(n.sub,22); }
     // drag to move; a press without movement is a click that opens the inspector
     g.addEventListener('pointerdown',ev=>{ if(ev.button!==0) return; ev.stopPropagation(); cancelAnimationFrame(vbAnim);
       nodeDrag={id:n.id,x:ev.clientX,y:ev.clientY,l:n.l,t:n.t,moved:false}; try{ g.setPointerCapture(ev.pointerId); }catch(_){} });
@@ -468,14 +481,18 @@ svg.addEventListener('dblclick',()=>{ userView=false; fitView(visibleIds,true); 
 $('fit').onclick=()=>{ userView=false; fitView(visibleIds,true); };
 $('greset').onclick=()=>{ const keep=cur; drawGraph(); userView=false; renderTo(keep,false); };
 const gpanel=$('gpanel');
-function setMax(on, fromFs){
-  gpanel.classList.toggle('max',on); $('gmax').textContent=on?'Close':'Expand'; $('gmax').setAttribute('aria-label',on?'Close expanded graph':'Expand graph');
-  if(on && !fromFs && document.fullscreenEnabled){ gpanel.requestFullscreen().catch(()=>{}); }
-  if(!on && !fromFs && document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
-  userView=false; requestAnimationFrame(()=>requestAnimationFrame(()=>fitView(visibleIds,false)));
+let feSaved=null;
+function setMax(on){
+  gpanel.classList.toggle('max',on);
+  $('gmax').innerHTML = ic(on?'minimize':'maximize',15); $('gmax').setAttribute('aria-label',on?'Close expanded graph':'Expand graph'); $('gmax').title = on?'Close (Esc)':'Expand to the full window';
+  try{   // inside Streamlit the stage lives in an iframe: let it cover the whole browser window while expanded
+    const fe = window.frameElement;
+    if(fe){ if(on){ feSaved = fe.getAttribute('style'); fe.style.cssText = (feSaved||'')+';position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2147483000;background:#070A0F;border:0'; }
+            else { if(feSaved===null) fe.removeAttribute('style'); else fe.setAttribute('style',feSaved); feSaved=null; } }
+  }catch(_){}
+  userView=false; setTimeout(()=>fitView(visibleIds,false),60); setTimeout(()=>fitView(visibleIds,false),260);
 }
 $('gmax').onclick=()=>setMax(!gpanel.classList.contains('max'));
-document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement && gpanel.classList.contains('max')) setMax(false,true); else if(document.fullscreenElement){ userView=false; requestAnimationFrame(()=>fitView(visibleIds,false)); } });
 
 /* ---------- 3. playback ---------- */
 let cur = 0, timer = null, playing = false;
@@ -503,21 +520,22 @@ function applyFx(list, animate){
 function decisionRows(alertsSeen, leaksSeen){
   let h='';
   alertsSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const d=c&&c.decision; if(!d) return;
-    h+=`<div class="dt"><span class="c mono">${esc(d.requested)}</span><span class="c">${esc(d.cause)}</span><span class="c">${esc(d.policy)}</span><span class="dec b">BLOCKED${d.off?' · off-plan':''}</span></div>`; });
+    h+=`<div class="dt"><span class="c mono">${esc(d.requested)}</span><span class="c">${esc(d.cause)}</span><span class="c">${esc(d.policy)}</span><span class="dec b">${ic('shield-x',14)}BLOCKED${d.off?' · off-plan':''}</span></div>`; });
   leaksSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const ck=c&&c.checks.find(x=>x.trust!=='USER');
     const cause = ck? `${ARGP[ck.arg]||'value'} derived from ${originWords(ck.sources)} · UNTRUSTED`:'instruction in untrusted content';
-    h+=`<div class="dt"><span class="c">${esc(ev.description)}</span><span class="c">${esc(cause)}</span><span class="c">None applied (undefended)</span><span class="dec x">EXECUTED</span></div>`; });
+    h+=`<div class="dt"><span class="c">${esc(ev.description)}</span><span class="c">${esc(cause)}</span><span class="c">None applied (undefended)</span><span class="dec x">${ic('alert',14)}EXECUTED</span></div>`; });
   return h;
 }
+function setResIcon(name){ const e=$('r-ico'); if(e) e.innerHTML=ic(name,22); }
 function setResult(n, leaks, alertsN, done){
   const R=$('result'); R.className='result';
   const def=(EVENTS[0]||{}).defence||'';
-  if(!EVENTS.length){ $('r-kick').textContent='Ready'; $('r-title').textContent='No run yet'; $('r-sub').textContent='Choose a scenario and run it.'; return; }
+  if(!EVENTS.length){ setResIcon('shield'); $('r-kick').textContent='Ready'; $('r-title').textContent='No run yet'; $('r-sub').textContent='Choose a scenario and run it.'; return; }
   const task = done&&summary ? (summary.task_ok?'Legitimate task completed.':'Legitimate task did not complete.') : '';
-  if(leaks){ R.classList.add('hijack'); $('r-kick').textContent='No enforcement'; $('r-title').textContent=`${leaks} harmful action${leaks>1?'s':''} executed`; $('r-sub').textContent=`Instructions inside untrusted content were followed. ${task}`; }
-  else if(alertsN){ R.classList.add('block'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=`${alertsN} unsafe call${alertsN>1?'s':''} blocked`; $('r-sub').textContent=task||'Enforcing…'; }
-  else if(done){ R.classList.add('clean'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent='No violations'; $('r-sub').textContent=task+' No unsafe call was attempted.'; }
-  else { $('r-kick').textContent=def||'Running'; $('r-title').textContent=n?'Agent running':'Ready'; $('r-sub').textContent='Reading tool output…'; }
+  if(leaks){ setResIcon('alert'); R.classList.add('hijack'); $('r-kick').textContent='No enforcement'; $('r-title').textContent=`${leaks} harmful action${leaks>1?'s':''} executed`; $('r-sub').textContent=`Instructions inside untrusted content were followed. ${task}`; }
+  else if(alertsN){ setResIcon('shield-x'); R.classList.add('block'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent=`${alertsN} unsafe call${alertsN>1?'s':''} blocked`; $('r-sub').textContent=task||'Enforcing…'; }
+  else if(done){ setResIcon('shield-check'); R.classList.add('clean'); $('r-kick').textContent='Policy enforcement'; $('r-title').textContent='No violations'; $('r-sub').textContent=task+' No unsafe call was attempted.'; }
+  else { setResIcon('loader'); $('r-kick').textContent=def||'Running'; $('r-title').textContent=n?'Agent running':'Ready'; $('r-sub').textContent='Reading tool output…'; }
 }
 function renderTo(n, animate){
   n = Math.max(0,Math.min(EVENTS.length,n));
@@ -533,7 +551,7 @@ function renderTo(n, animate){
   if(n===0) userView=false;
   if(!userView) fitView(visibleIds, animate);
   const done = n>=EVENTS.length && !!summary;
-  if(done) $('feed').insertAdjacentHTML('beforeend', row({seq:EVENTS.length}, summary.task_ok?'ok':'harm', summary.task_ok?'<b>Task completed</b>':'Task not completed', ''));
+  if(done) $('feed').insertAdjacentHTML('beforeend', row({seq:EVENTS.length}, summary.task_ok?'ok':'harm', summary.task_ok?'<b>Task completed</b>':'Task not completed', '', false, summary.task_ok?'shield-check':'ban'));
   cur=n; $('scrub').value=n; $('pos').textContent=`${n} / ${EVENTS.length}`; $('feed').scrollTop=$('feed').scrollHeight;
   $('v-alert').textContent=pad2(aSeen.length); $('v-leak').textContent=pad2(lSeen.length); $('v-leak').className=lSeen.length?'red':''; $('v-ev').textContent=pad2(n);
   $('gcount').textContent = nodes.size? `${nodes.size} nodes`:''; $('m-ev2').textContent = EVENTS.length? `${n}/${EVENTS.length}`:'';
@@ -544,8 +562,8 @@ function renderTo(n, animate){
 }
 function stepDelay(k){ const t=(EVENTS[k]||{}).type; const spd=Number($('speed').value)||1; return (DELAY[t]||400)/spd; }
 function tick(){ if(cur>=EVENTS.length){ stop(); return; } renderTo(cur+1,true); if(cur>=EVENTS.length){ stop(); return; } timer=setTimeout(tick, stepDelay(cur)); }
-function play(){ if(!EVENTS.length) return; if(cur>=EVENTS.length) renderTo(0,false); playing=true; $('b-play').innerHTML='&#10074;&#10074; Pause'; $('b-play').setAttribute('aria-label','Pause'); timer=setTimeout(tick,150); }
-function stop(){ playing=false; clearTimeout(timer); $('b-play').innerHTML='&#9654; Play'; $('b-play').setAttribute('aria-label','Play'); }
+function play(){ if(!EVENTS.length) return; if(cur>=EVENTS.length) renderTo(0,false); playing=true; $('b-play').innerHTML=ic('pause',16)+'<span>Pause</span>'; $('b-play').setAttribute('aria-label','Pause'); timer=setTimeout(tick,150); }
+function stop(){ playing=false; clearTimeout(timer); $('b-play').innerHTML=ic('play',16)+'<span>Play</span>'; $('b-play').setAttribute('aria-label','Play'); }
 $('b-play').onclick=()=>playing?stop():play();
 $('b-next').onclick=()=>{stop();renderTo(cur+1,true);};
 $('b-prev').onclick=()=>{stop();renderTo(cur-1,false);};
