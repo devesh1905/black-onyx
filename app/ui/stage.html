@@ -40,10 +40,10 @@ button,select,input{font:inherit;color:inherit}
 /* ---- decision table ---- */
 .decision{border:1px solid var(--bd);border-radius:6px;background:var(--p);overflow:hidden}
 .decision[hidden]{display:none}
-.dt{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(160px,1.4fr) minmax(200px,2fr) 110px;gap:0 16px;padding:8px 16px;border-top:1px solid var(--bd);align-items:baseline}
+.dt{display:grid;grid-template-columns:minmax(110px,.8fr) minmax(160px,1.4fr) minmax(200px,2fr) max-content;gap:0 16px;padding:8px 16px;border-top:1px solid var(--bd);align-items:baseline}
 .dt.h{border-top:0;padding-top:9px;padding-bottom:7px;background:var(--p2)}
 .dt .c{overflow-wrap:anywhere}
-.dt .dec{font-weight:600;letter-spacing:.4px} .dt .dec.b{color:var(--red)} .dt .dec.x{color:var(--red)}
+.dt .dec{font-weight:600;letter-spacing:.4px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}.dt .dec .offp{margin-left:6px;font-weight:500;letter-spacing:.2px;color:var(--t2);font-size:12px} .dt .dec.b{color:var(--red)} .dt .dec.x{color:var(--red)}
 @media (max-width:760px){.dt{grid-template-columns:1fr 1fr}.dt.h{display:none}}
 /* ---- main ---- */
 .main{display:grid;grid-template-columns:minmax(300px,38%) 1fr;grid-template-rows:minmax(0,1fr);gap:12px;min-height:0;position:relative}
@@ -527,7 +527,7 @@ function applyFx(list, animate){
 function decisionRows(alertsSeen, leaksSeen){
   let h='';
   alertsSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const d=c&&c.decision; if(!d) return;
-    h+=`<div class="dt"><span class="c mono">${esc(d.requested)}</span><span class="c">${esc(d.cause)}</span><span class="c">${esc(d.policy)}</span><span class="dec b">${ic('shield-x',14)}BLOCKED${d.off?' · off-plan':''}</span></div>`; });
+    h+=`<div class="dt"><span class="c mono">${esc(d.requested)}</span><span class="c">${esc(d.cause)}</span><span class="c">${esc(d.policy)}</span><span class="dec b">${ic('shield-x',14)}BLOCKED${d.off?'<span class="offp">off-plan</span>':''}</span></div>`; });
   leaksSeen.forEach(ev=>{ const c=nodes.get(callNodes[ev.call_id]); const ck=c&&c.checks.find(x=>x.trust!=='USER');
     const cause = ck? `${ARGP[ck.arg]||'value'} derived from ${originWords(ck.sources)} · UNTRUSTED`:'instruction in untrusted content';
     h+=`<div class="dt"><span class="c">${esc(ev.description)}</span><span class="c">${esc(cause)}</span><span class="c">None applied (undefended)</span><span class="dec x">${ic('alert',14)}EXECUTED</span></div>`; });
