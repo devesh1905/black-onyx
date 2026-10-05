@@ -48,7 +48,7 @@ button,select,input{font:inherit;color:inherit}
 /* ---- main ---- */
 .main{display:grid;grid-template-columns:minmax(300px,38%) 1fr;grid-template-rows:minmax(0,1fr);gap:12px;min-height:0;position:relative}
 .main>*{min-width:0}
-.panel{display:flex;flex-direction:column;min-height:0;background:var(--p);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.panel{position:relative;display:flex;flex-direction:column;min-height:0;background:var(--p);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
 .panel>header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--bd)}
 .tl{flex:1;overflow:auto;padding:2px 14px 10px}
 .row{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd);animation:fade .25s ease-out both}
@@ -90,6 +90,12 @@ svg.dragging{cursor:grabbing}
 .node.effect.leak .l1{fill:var(--red)}
 .node.rejected rect.body{stroke:var(--amber);stroke-dasharray:4 3}
 .node:hover rect.body{stroke-width:2}
+.node{touch-action:none}.node.drag{cursor:grabbing}.node.drag rect.body{stroke:var(--tx);stroke-width:2.2}
+.node.show.dim{opacity:.3}.edge.show.dim,.arr.show.dim{opacity:.12}.elabel.show.dim{opacity:.15}
+.edge.hl{stroke-width:2.1}
+.gb{min-height:30px;min-width:40px;font-size:12px;padding:0 10px}
+#gcount{white-space:nowrap}
+.panel.max{position:fixed;inset:6px;z-index:30;box-shadow:0 0 0 9999px rgba(0,0,0,.55)}
 .node:focus-visible rect.body,.node.sel rect.body{stroke:var(--tx);stroke-width:2}
 .ring{fill:none;stroke:var(--red);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
 .node.shock .ring{animation:shock .7s ease-out 1}
@@ -172,18 +178,19 @@ select.btn option{background:#0D121A;color:#E6EAF0}
       <header><span class="lbl">Event timeline</span><span class="lbl" id="m-ev2"></span></header>
       <div class="tl" id="feed"></div>
     </section>
-    <section class="panel" aria-label="Provenance graph">
+    <section class="panel" id="gpanel" aria-label="Provenance graph">
       <header><span class="lbl">Provenance <span class="tip" title="Click a node to inspect it. Scroll to zoom, drag to pan.">i</span></span>
-        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view">Fit</button></span></header>
+        <span style="display:flex;gap:10px;align-items:center"><span class="lbl" id="gcount"></span><button class="btn gb" id="greset" title="Reset node positions" aria-label="Reset layout">Reset</button><button class="btn gb" id="gmax" title="Expand the graph (Esc to close)" aria-label="Expand graph">Expand</button><button class="btn gb" id="fit" style="min-height:30px;min-width:40px;font-size:12px;padding:0 10px" aria-label="Fit graph to view">Fit</button></span></header>
       <div class="graphwrap" id="gwrap">
         <svg id="svg" role="img" aria-label="Provenance graph. Tab to a node and press Enter to inspect it."></svg>
         <div class="key"><span><i style="background:var(--bd2)"></i>Trusted</span><span><i style="background:var(--amber)"></i>Untrusted</span><span><i style="background:var(--blue)"></i>Verified</span><span><i style="background:var(--green)"></i>Completed</span><span><i style="background:var(--red)"></i>Blocked</span></div>
       </div>
-    </section>
     <aside class="drawer" id="drawer" aria-label="Inspector">
       <header><h3 id="dtitle">Inspector</h3><button class="btn" id="dclose" aria-label="Close inspector" style="min-height:34px">&#10005;</button></header>
       <div class="body" id="dbody"></div>
     </aside>
+    </section>
+
   </div>
 
   <div class="controls" role="group" aria-label="Replay controls">
@@ -346,7 +353,44 @@ function layout(dir){
 }
 const svg = $('svg');
 function el(tag, attrs, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
-let baseVB=null, vb=null, gEdges, gNodes; const nodeEls = {}, edgeEls = [];
+let baseVB=null, vb=null, gEdges, gNodes, curTB=false, nodeDrag=null; const nodeEls = {}, edgeEls = [];
+const AL = 8, AW = 3.6;   // arrowhead length / half-width: the line stops at the arrowhead base, so they always connect
+function edgeGeom(e){
+  const na=nodes.get(e.from), nb=nodes.get(e.to); if(!na||!nb) return null;
+  let P0,P1,P2,P3;
+  if(curTB){
+    const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(24,Math.abs(y2-y1)/2);
+    if(y2>y1+4){ P0=[x1,y1]; P1=[x1,y1+dy]; P2=[x2,y2-dy]; P3=[x2,y2]; }
+    else if(y1>y2+NH+4){ P0=[x1,na.t]; P1=[x1,na.t-dy]; P2=[x2,nb.t+NH+dy]; P3=[x2,nb.t+NH]; }
+    else { const s=x2>=x1?1:-1; P0=[na.l+(s>0?NW:0),na.t+NH/2]; P1=[P0[0]+s*50,P0[1]]; P2=[nb.l+(s>0?0:NW)-s*50,nb.t+NH/2]; P3=[nb.l+(s>0?0:NW),nb.t+NH/2]; }
+  } else {
+    const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(28,Math.abs(x2-x1)/2);
+    if(x2>x1+4){ P0=[x1,y1]; P1=[x1+dx,y1]; P2=[x2-dx,y2]; P3=[x2,y2]; }
+    else if(na.t<=nb.t){ P0=[na.l+NW/2,na.t+NH]; P1=[P0[0],P0[1]+40]; P2=[nb.l+NW/2,nb.t-40]; P3=[nb.l+NW/2,nb.t]; }
+    else { P0=[na.l+NW/2,na.t]; P1=[P0[0],P0[1]-40]; P2=[nb.l+NW/2,nb.t+NH+40]; P3=[nb.l+NW/2,nb.t+NH]; }
+  }
+  let tx=P3[0]-P2[0], ty=P3[1]-P2[1]; const tl=Math.hypot(tx,ty)||1; tx/=tl; ty/=tl;
+  const E=[P3[0]-tx*AL, P3[1]-ty*AL];
+  return {d:`M${P0[0]},${P0[1]} C${P1[0]},${P1[1]} ${P2[0]},${P2[1]} ${E[0]},${E[1]}`,
+          pts:`${P3[0]},${P3[1]} ${E[0]-ty*AW},${E[1]+tx*AW} ${E[0]+ty*AW},${E[1]-tx*AW}`,
+          lx:(P0[0]+P3[0])/2+(curTB?8:0), ly:(P0[1]+P3[1])/2-(curTB?0:6)};
+}
+function updateEdge(i){
+  const e=edges[i], ee=edgeEls[i]; if(!ee) return; const g=edgeGeom(e); if(!g) return;
+  ee.p.setAttribute('d',g.d); ee.a.setAttribute('points',g.pts);
+  if(ee.lab){ ee.lab.setAttribute('x',g.lx); ee.lab.setAttribute('y',g.ly); }
+}
+function focusNode(id){
+  const keep=new Set([id]);
+  edges.forEach(e=>{ if(e.from===id||e.to===id){ keep.add(e.from); keep.add(e.to); } });
+  Object.entries(nodeEls).forEach(([nid,g])=>g.classList.toggle('dim',!keep.has(nid)));
+  edges.forEach((e,i)=>{ const ee=edgeEls[i]; if(!ee) return; const on=(e.from===id||e.to===id);
+    [ee.p,ee.a,ee.lab].forEach(x=>{ if(x){ x.classList.toggle('dim',!on); x.classList.toggle('hl',on); } }); });
+}
+function clearFocus(){
+  Object.values(nodeEls).forEach(g=>g.classList.remove('dim'));
+  edgeEls.forEach(ee=>{ if(ee) [ee.p,ee.a,ee.lab].forEach(x=>{ if(x) x.classList.remove('dim','hl'); }); });
+}
 function drawGraph(){
   svg.innerHTML='';
   if(!nodes.size) return;
@@ -354,40 +398,38 @@ function drawGraph(){
   const a = layout('LR'), b = layout('TB');
   const sc = (x)=>Math.min(PW/(x.maxX-x.minX), PH/(x.maxY-x.minY));
   const ext = sc(b) > sc(a)*0.9 ? b : layout('LR');
-  const TB = ext.TB === true;
+  curTB = ext.TB === true;
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
   baseVB = {x:ext.minX,y:ext.minY,w:ext.maxX-ext.minX,h:ext.maxY-ext.minY}; vb = {...baseVB};
   svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   gEdges = el('g',{},svg); gNodes = el('g',{},svg);
-  const AL = 8, AW = 3.6;   // arrowhead length / half-width: the line stops at the arrowhead base, so they always connect
   edges.forEach((e,idx)=>{
-    const na=nodes.get(e.from), nb=nodes.get(e.to); if(!na||!nb) return;
-    let P0,P1,P2,P3;
-    if(TB){
-      const x1=na.l+NW/2, y1=na.t+NH, x2=nb.l+NW/2, y2=nb.t, dy=Math.max(24,(y2-y1)/2);
-      if(y2>y1){ P0=[x1,y1]; P1=[x1,y1+dy]; P2=[x2,y2-dy]; P3=[x2,y2]; }
-      else { P0=[na.l+NW,na.t+NH/2]; P1=[na.l+NW+50,na.t+NH/2]; P2=[nb.l+NW+50,nb.t+NH/2]; P3=[nb.l+NW,nb.t+NH/2]; }
-    } else {
-      const x1=na.l+NW, y1=na.t+NH/2, x2=nb.l, y2=nb.t+NH/2, dx=Math.max(28,(x2-x1)/2);
-      if(x2>x1){ P0=[x1,y1]; P1=[x1+dx,y1]; P2=[x2-dx,y2]; P3=[x2,y2]; }
-      else { P0=[na.l+NW/2,na.t+NH]; P1=[na.l+NW/2,na.t+NH+40]; P2=[nb.l+NW/2,nb.t-40]; P3=[nb.l+NW/2,nb.t]; }
-    }
-    let tx=P3[0]-P2[0], ty=P3[1]-P2[1]; const tl=Math.hypot(tx,ty)||1; tx/=tl; ty/=tl;
-    const E=[P3[0]-tx*AL, P3[1]-ty*AL];
-    const d=`M${P0[0]},${P0[1]} C${P1[0]},${P1[1]} ${P2[0]},${P2[1]} ${E[0]},${E[1]}`;
+    const g = edgeGeom(e); if(!g) return;
     const cls = 'c-'+(e.trust||'NONE')+(e.deny?' deny':'');
-    const p = el('path',{d,class:'edge '+cls+(e.dash||e.kind==='seq'?' dash':'')},gEdges);
-    const a = el('polygon',{points:`${P3[0]},${P3[1]} ${E[0]-ty*AW},${E[1]+tx*AW} ${E[0]+ty*AW},${E[1]-tx*AW}`,class:'arr '+cls},gEdges);
-    let lab=null; if(e.label){ lab = el('text',{x:(P0[0]+P3[0])/2+(TB?8:0),y:(P0[1]+P3[1])/2-(TB?0:6),class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
-    edgeEls[idx]={p,a,lab};
+    const p = el('path',{d:g.d,class:'edge '+cls+(e.dash||e.kind==='seq'?' dash':'')},gEdges);
+    const ar = el('polygon',{points:g.pts,class:'arr '+cls},gEdges);
+    let lab=null; if(e.label){ lab = el('text',{x:g.lx,y:g.ly,class:'elabel','text-anchor':'middle'},gEdges); lab.textContent=e.label; }
+    edgeEls[idx]={p,a:ar,lab};
   });
   [...nodes.values()].forEach(n=>{
-    const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}`},gNodes);
+    const g = el('g',{class:`node ${n.kind} ${n.trust?'t-'+n.trust:''} ${n.leak?'leak':''}`,transform:`translate(${n.l},${n.t})`,tabindex:0,role:'button','aria-label':`${n.kind} ${n.label}. ${n.sub||''}. Drag to move, click to inspect.`},gNodes);
     el('rect',{class:'ring',x:0,y:0,width:NW,height:NH,rx:4},g);
     el('rect',{class:'body',x:0,y:0,width:NW,height:NH,rx:4},g);
     const t1=el('text',{x:12,y:n.sub?19:NH/2+4,class:'l1'},g); t1.textContent=short(n.label,20);
     if(n.sub){ const t2=el('text',{x:12,y:34,class:'l2'},g); t2.textContent=short(n.sub,24); }
-    g.addEventListener('click',()=>openDrawer(n.id));
+    // drag to move; a press without movement is a click that opens the inspector
+    g.addEventListener('pointerdown',ev=>{ if(ev.button!==0) return; ev.stopPropagation(); cancelAnimationFrame(vbAnim);
+      nodeDrag={id:n.id,x:ev.clientX,y:ev.clientY,l:n.l,t:n.t,moved:false}; try{ g.setPointerCapture(ev.pointerId); }catch(_){} });
+    g.addEventListener('pointermove',ev=>{ if(!nodeDrag||nodeDrag.id!==n.id) return;
+      const dx=ev.clientX-nodeDrag.x, dy=ev.clientY-nodeDrag.y;
+      if(!nodeDrag.moved){ if(Math.hypot(dx,dy)<4) return; nodeDrag.moved=true; g.classList.add('drag'); }
+      const r=svg.getBoundingClientRect(); const s=Math.max(vb.w/r.width, vb.h/r.height);
+      n.l=nodeDrag.l+dx*s; n.t=nodeDrag.t+dy*s; g.setAttribute('transform',`translate(${n.l},${n.t})`);
+      edges.forEach((e,i)=>{ if(e.from===n.id||e.to===n.id) updateEdge(i); }); });
+    const endNode=(ev)=>{ const was=nodeDrag; nodeDrag=null; g.classList.remove('drag'); if(was&&was.id===n.id&&!was.moved&&ev.type==='pointerup') openDrawer(n.id); };
+    g.addEventListener('pointerup',endNode); g.addEventListener('pointercancel',endNode);
+    g.addEventListener('pointerenter',()=>{ if(!nodeDrag) focusNode(n.id); }); g.addEventListener('pointerleave',()=>{ if(!nodeDrag) clearFocus(); });
+    g.addEventListener('focus',()=>focusNode(n.id)); g.addEventListener('blur',clearFocus);
     g.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openDrawer(n.id);} });
     nodeEls[n.id]=g;
   });
@@ -424,6 +466,16 @@ const endDrag=()=>{drag=null;svg.classList.remove('dragging');};
 svg.addEventListener('pointerup',endDrag); svg.addEventListener('pointercancel',endDrag);
 svg.addEventListener('dblclick',()=>{ userView=false; fitView(visibleIds,true); });
 $('fit').onclick=()=>{ userView=false; fitView(visibleIds,true); };
+$('greset').onclick=()=>{ const keep=cur; drawGraph(); userView=false; renderTo(keep,false); };
+const gpanel=$('gpanel');
+function setMax(on, fromFs){
+  gpanel.classList.toggle('max',on); $('gmax').textContent=on?'Close':'Expand'; $('gmax').setAttribute('aria-label',on?'Close expanded graph':'Expand graph');
+  if(on && !fromFs && document.fullscreenEnabled){ gpanel.requestFullscreen().catch(()=>{}); }
+  if(!on && !fromFs && document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
+  userView=false; requestAnimationFrame(()=>requestAnimationFrame(()=>fitView(visibleIds,false)));
+}
+$('gmax').onclick=()=>setMax(!gpanel.classList.contains('max'));
+document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement && gpanel.classList.contains('max')) setMax(false,true); else if(document.fullscreenElement){ userView=false; requestAnimationFrame(()=>fitView(visibleIds,false)); } });
 
 /* ---------- 3. playback ---------- */
 let cur = 0, timer = null, playing = false;
@@ -504,7 +556,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
   if(e.key===' '&&e.target.tagName!=='BUTTON'){e.preventDefault();playing?stop():play();}
   else if(e.key==='ArrowRight'){stop();renderTo(cur+1,true);} else if(e.key==='ArrowLeft'){stop();renderTo(cur-1,false);}
-  else if(e.key==='Escape'){closeDrawer();} else if(e.key==='r'||e.key==='R'){stop();renderTo(0,false);} else if(e.key==='e'||e.key==='E'){stop();renderTo(EVENTS.length,false);}
+  else if(e.key==='Escape'){ if($('drawer').classList.contains('open')) closeDrawer(); else if(gpanel.classList.contains('max')) setMax(false); } else if(e.key==='r'||e.key==='R'){stop();renderTo(0,false);} else if(e.key==='e'||e.key==='E'){stop();renderTo(EVENTS.length,false);}
 });
 
 /* ---------- 4. inspector ---------- */
